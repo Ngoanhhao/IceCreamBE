@@ -12,17 +12,16 @@ namespace IceCreamBE.Data
         }
         protected override void OnModelCreating(ModelBuilder modelBuilder)
         {
+            // table config
             modelBuilder.Entity<Accounts>(entity =>
             {
                 entity.ToTable("Accounts");
                 entity.HasKey(x => x.Id);
                 entity.Property(e => e.Id).ValueGeneratedOnAdd();
+                entity.Property(e => e.Username).HasMaxLength(255);
                 entity.HasOne<AccountDetail>(x => x.AccountDetail)
                     .WithOne(e => e.Accounts)
                     .HasForeignKey<AccountDetail>(e => e.Id);
-                entity.HasOne<Roles>(e => e.Role)
-                    .WithMany(e => e.Accounts)
-                    .HasForeignKey(e => e.RoleID);
                 entity.HasMany<Feedback>(e => e.Feedback)
                     .WithOne(e => e.Account)
                     .HasForeignKey(e => e.AccountID);
@@ -38,6 +37,9 @@ namespace IceCreamBE.Data
             {
                 entity.ToTable("AccountDetail");
                 entity.HasKey(x => x.Id);
+                entity.HasOne<Roles>(e => e.Role)
+                    .WithMany(e => e.AccountDetail)
+                    .HasForeignKey(e => e.RoleID);
                 entity.HasOne<Accounts>(x => x.Accounts)
                     .WithOne(e => e.AccountDetail)
                     .HasForeignKey<AccountDetail>(e => e.Id);
@@ -48,9 +50,10 @@ namespace IceCreamBE.Data
             modelBuilder.Entity<Roles>(entity =>
             {
                 entity.ToTable("Roles");
+                entity.Property(e => e.Role).HasMaxLength(50);
                 entity.HasKey(e => e.Id);
                 entity.Property(e => e.Id).ValueGeneratedOnAdd();
-                entity.HasMany(e => e.Accounts)
+                entity.HasMany(e => e.AccountDetail)
                     .WithOne(e => e.Role)
                     .HasForeignKey(e => e.RoleID)
                     .OnDelete(DeleteBehavior.NoAction);
@@ -144,6 +147,15 @@ namespace IceCreamBE.Data
                     .HasForeignKey(e => e.VoucherID)
                     .OnDelete(DeleteBehavior.NoAction);
             });
+
+            // table data
+            //modelBuilder.Entity<Accounts>().HasData(new Accounts { Username});
+
+            //modelBuilder.Entity<Roles>().HasData(new Roles[]{
+            //    new Roles {Role = "Admin" },
+            //    new Roles {Role = "Member" },
+            //    new Roles {Role = "Guest" },
+            //});
         }
 
         public DbSet<AccountDetail> AccountDetail { get; set; }
@@ -156,6 +168,7 @@ namespace IceCreamBE.Data
         public DbSet<Brands> Brands { get; set; }
         public DbSet<Recipe> Recipe { get; set; }
         public DbSet<Vouchers> Vouchers { get; set; }
+        public DbSet<Feedback> Feedback { get; set; }
 
     }
 }

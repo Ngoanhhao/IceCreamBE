@@ -4,6 +4,6 @@
     {
         public int Id { get; set; }
         public string Role { get; set; }
-        public ICollection<Accounts> Accounts { get; set; }
+        public virtual ICollection<AccountDetail> AccountDetail { get; set; }
     }
 }

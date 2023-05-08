@@ -1,4 +1,6 @@
 using IceCreamBE.Data;
+using IceCreamBE.Repository;
+using IceCreamBE.Repository.Irepository;
 using Microsoft.EntityFrameworkCore;
 
 namespace IceCreamBE
@@ -12,6 +14,18 @@ namespace IceCreamBE
 
             // Add services to the container.
             builder.Services.AddDbContext<IceCreamDbcontext>(options => options.UseSqlServer(builder.Configuration.GetConnectionString("DefaultConnection")));
+            builder.Services.AddScoped<IRepositoryRoles, RepositoryRoles>();
+            builder.Services.AddScoped<IRepositoryAccounts, RepositoryAccounts>();
+            builder.Services.AddScoped<IRepositoryAccountDetail, RepositoryAccountDetail>();
+            builder.Services.AddScoped<IRepositoryFeedback, RepositoryFeedback>();
+            builder.Services.AddScoped<IRepositoryStorage, RepositoryStorage>();
+            builder.Services.AddScoped<IRepositoryProduct, RepositoryProducts>();
+            builder.Services.AddScoped<IRepositoryBrand, RepositoryBrand>();
+
+            builder.Services.AddControllersWithViews()
+                .AddNewtonsoftJson(options =>
+                options.SerializerSettings.ReferenceLoopHandling = Newtonsoft.Json.ReferenceLoopHandling.Ignore
+            );
 
             builder.Services.AddControllers();
             // Learn more about configuring Swagger/OpenAPI at https://aka.ms/aspnetcore/swashbuckle

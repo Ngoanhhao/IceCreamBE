@@ -12,6 +12,6 @@ namespace IceCreamBE.Models
         public int Discount { get; set; } // percent
         public bool Status { get; set; }
         public DateTime ExpirationDate { get; set; }
-        public ICollection<Bill> Bill { get; set; }
+        public virtual ICollection<Bill> Bill { get; set; }
     }
 }

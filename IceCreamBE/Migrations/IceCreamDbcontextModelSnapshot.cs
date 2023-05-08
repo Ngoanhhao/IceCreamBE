@@ -28,7 +28,6 @@ namespace IceCreamBE.Migrations
                         .HasColumnType("int");
 
                     b.Property<string>("Avatar")
-                        .IsRequired()
                         .HasColumnType("nvarchar(max)");
 
                     b.Property<string>("Email")
@@ -51,7 +50,12 @@ namespace IceCreamBE.Migrations
                         .HasMaxLength(11)
                         .HasColumnType("nvarchar(11)");
 
+                    b.Property<int>("RoleID")
+                        .HasColumnType("int");
+
                     b.HasKey("Id");
+
+                    b.HasIndex("RoleID");
 
                     b.ToTable("AccountDetail", (string)null);
                 });
@@ -68,16 +72,12 @@ namespace IceCreamBE.Migrations
                         .IsRequired()
                         .HasColumnType("nvarchar(max)");
 
-                    b.Property<int>("RoleID")
-                        .HasColumnType("int");
-
                     b.Property<string>("Username")
                         .IsRequired()
-                        .HasColumnType("nvarchar(max)");
+                        .HasMaxLength(255)
+                        .HasColumnType("nvarchar(255)");
 
                     b.HasKey("Id");
-
-                    b.HasIndex("RoleID");
 
                     b.ToTable("Accounts", (string)null);
                 });
@@ -270,7 +270,8 @@ namespace IceCreamBE.Migrations
 
                     b.Property<string>("Role")
                         .IsRequired()
-                        .HasColumnType("nvarchar(max)");
+                        .HasMaxLength(50)
+                        .HasColumnType("nvarchar(50)");
 
                     b.HasKey("Id");
 
@@ -332,16 +333,13 @@ namespace IceCreamBE.Migrations
                         .OnDelete(DeleteBehavior.Cascade)
                         .IsRequired();
 
-                    b.Navigation("Accounts");
-                });
-
-            modelBuilder.Entity("IceCreamBE.Models.Accounts", b =>
-                {
                     b.HasOne("IceCreamBE.Models.Roles", "Role")
-                        .WithMany("Accounts")
+                        .WithMany("AccountDetail")
                         .HasForeignKey("RoleID")
                         .OnDelete(DeleteBehavior.NoAction)
                         .IsRequired();
+
+                    b.Navigation("Accounts");
 
                     b.Navigation("Role");
                 });
@@ -467,7 +465,7 @@ namespace IceCreamBE.Migrations
 
             modelBuilder.Entity("IceCreamBE.Models.Roles", b =>
                 {
-                    b.Navigation("Accounts");
+                    b.Navigation("AccountDetail");
                 });
 
             modelBuilder.Entity("IceCreamBE.Models.Vouchers", b =>

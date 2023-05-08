@@ -32,16 +32,16 @@ namespace IceCreamBE.Migrations
                         .Annotation("SqlServer:Identity", "1, 1"),
                     Username = table.Column<string>(type: "nvarchar(max)", nullable: false),
                     Password = table.Column<string>(type: "nvarchar(max)", nullable: false),
-                    RoleID = table.Column<int>(type: "int", nullable: false)
+                    //RoleID = table.Column<int>(type: "int", nullable: false)
                 },
                 constraints: table =>
                 {
                     table.PrimaryKey("PK_Accounts", x => x.Id);
-                    table.ForeignKey(
-                        name: "FK_Accounts_Roles_RoleID",
-                        column: x => x.RoleID,
-                        principalTable: "Roles",
-                        principalColumn: "Id");
+                    //table.ForeignKey(
+                    //    name: "FK_Accounts_Roles_RoleID",
+                    //    column: x => x.RoleID,
+                    //    principalTable: "Roles",
+                    //    principalColumn: "Id");
                 });
 
             migrationBuilder.CreateTable(
@@ -54,7 +54,8 @@ namespace IceCreamBE.Migrations
                     Avatar = table.Column<string>(type: "nvarchar(max)", nullable: false),
                     PhoneNumber = table.Column<string>(type: "nvarchar(max)", nullable: false),
                     ExtensionDate = table.Column<DateTime>(type: "datetime2", nullable: false),
-                    ExpirationDate = table.Column<DateTime>(type: "datetime2", nullable: false)
+                    ExpirationDate = table.Column<DateTime>(type: "datetime2", nullable: false),
+                    RoleID = table.Column<int>(type: "int", nullable: false)
                 },
                 constraints: table =>
                 {
@@ -65,11 +66,16 @@ namespace IceCreamBE.Migrations
                         principalTable: "Accounts",
                         principalColumn: "Id",
                         onDelete: ReferentialAction.Cascade);
+                    table.ForeignKey(
+                       name: "FK_AccountDetail_Roles_RoleID",
+                       column: x => x.RoleID,
+                       principalTable: "Roles",
+                       principalColumn: "Id");
                 });
 
             migrationBuilder.CreateIndex(
-                name: "IX_Accounts_RoleID",
-                table: "Accounts",
+                name: "IX_AccountDetail_RoleID",
+                table: "AccountDetail",
                 column: "RoleID");
         }
 
