@@ -11,6 +11,8 @@ using IceCreamBE.Repository.Irepository;
 using IceCreamBE.DTO.PageList;
 using IceCreamBE.DTO;
 using Microsoft.AspNetCore.Http.HttpResults;
+using IceCreamBE.Modules;
+using IceCreamBE.Migrations;
 
 namespace IceCreamBE.Controllers
 {
@@ -48,11 +50,14 @@ namespace IceCreamBE.Controllers
             return Ok(new PagedResponse<List<VouchersDTO>>
             {
                 Data = pagedData,
-                Succeeded = true,
-                currentPage = pageFilter.PageNumber,
-                PageSize = pageFilter.PageSize,
-                TotalPages = (int)Math.Ceiling((double)result.Count / (double)filter.PageSize),
-                TotalRecords = result.Count
+                Succeeded = pagedData == null ? false : true,
+                Pagination = new PagedResponseDetail<List<VouchersDTO>>
+                {
+                    current_page = pagedData == null ? 0 : pageFilter.PageNumber,
+                    Page_pize = pagedData == null ? 0 : pageFilter.PageSize,
+                    total_pages = (int)Math.Ceiling((double)result.Count / (double)filter.PageSize),
+                    total_records = result.Count
+                }
             });
         }
 
@@ -80,76 +85,64 @@ namespace IceCreamBE.Controllers
                 Succeeded = true
             });
         }
-        // test
-        //// PUT: api/Vouchers/5
-        //// To protect from overposting attacks, see https://go.microsoft.com/fwlink/?linkid=2123754
-        //[HttpPut("{id}")]
-        //public async Task<IActionResult> PutVouchers(int id, Vouchers vouchers)
-        //{
-        //    if (id != vouchers.Id)
-        //    {
-        //        return BadRequest();
-        //    }
 
-        //    _context.Entry(vouchers).State = EntityState.Modified;
+        // PUT: api/Vouchers/5
+        // To protect from overposting attacks, see https://go.microsoft.com/fwlink/?linkid=2123754
+        [HttpPut("{id}")]
+        public async Task<IActionResult> PutVouchers(int id, VouchersDTO vouchers)
+        {
+            if (id != vouchers.Id)
+            {
+                return BadRequest(new Response<List<VouchersDTO>> { Message = "value incorrect", Succeeded = false });
+            }
 
-        //    try
-        //    {
-        //        await _context.SaveChangesAsync();
-        //    }
-        //    catch (DbUpdateConcurrencyException)
-        //    {
-        //        if (!VouchersExists(id))
-        //        {
-        //            return NotFound();
-        //        }
-        //        else
-        //        {
-        //            throw;
-        //        }
-        //    }
+            var result = await _IRepositoryVourcher.GetAsync(e => e.Id == id);
+            if (result == null)
+            {
+                return NotFound(new Response<List<VouchersDTO>> { Message = "not found", Succeeded = false });
+            }
 
-        //    return NoContent();
-        //}
+            await _IRepositoryVourcher.UpdateAsync(new Vouchers { Id = vouchers.Id, Status = vouchers.Status });
 
-        //// POST: api/Vouchers
-        //// To protect from overposting attacks, see https://go.microsoft.com/fwlink/?linkid=2123754
-        //[HttpPost]
-        //public async Task<ActionResult<Vouchers>> PostVouchers(Vouchers vouchers)
-        //{
-        //    if (_context.Vouchers == null)
-        //    {
-        //        return Problem("Entity set 'IceCreamDbcontext.Vouchers'  is null.");
-        //    }
-        //    _context.Vouchers.Add(vouchers);
-        //    await _context.SaveChangesAsync();
+            return NoContent();
+        }
 
-        //    return CreatedAtAction("GetVouchers", new { id = vouchers.Id }, vouchers);
-        //}
+        // POST: api/Vouchers
+        // To protect from overposting attacks, see https://go.microsoft.com/fwlink/?linkid=2123754
+        [HttpPost]
+        public async Task<ActionResult<Vouchers>> PostVouchers(VouchersDTO vouchers)
+        {
+            if (!ModelState.IsValid)
+            {
+                return BadRequest(new Response<List<VouchersDTO>> { Message = "value incorrect", Succeeded = false });
+            }
 
-        //// DELETE: api/Vouchers/5
-        //[HttpDelete("{id}")]
-        //public async Task<IActionResult> DeleteVouchers(int id)
-        //{
-        //    if (_context.Vouchers == null)
-        //    {
-        //        return NotFound();
-        //    }
-        //    var vouchers = await _context.Vouchers.FindAsync(id);
-        //    if (vouchers == null)
-        //    {
-        //        return NotFound();
-        //    }
+            var voucher = Coupon.CouponGenarate(20);
 
-        //    _context.Vouchers.Remove(vouchers);
-        //    await _context.SaveChangesAsync();
+            await _IRepositoryVourcher.CreateAsync(new Vouchers { 
+                AdminID = vouchers.AdminID 
+                ,Status = vouchers.Status,
+                Voucher = voucher,
+                Discount = vouchers.Discount,
+                ExpirationDate = DateTime.UtcNow
+            });
 
-        //    return NoContent();
-        //}
+            return NotFound(new Response<string> { Data = voucher, Succeeded = true });
+        }
 
-        //private bool VouchersExists(int id)
-        //{
-        //    return (_context.Vouchers?.Any(e => e.Id == id)).GetValueOrDefault();
-        //}
+        // DELETE: api/Vouchers/5
+        [HttpDelete("{id}")]
+        public async Task<IActionResult> DeleteVouchers(int id)
+        {
+            var result = await _IRepositoryVourcher.GetAsync(e => e.Id == id);
+            if (result == null)
+            {
+                return NotFound(new Response<List<VouchersDTO>> { Message = "not found", Succeeded = false });
+            }
+
+            await _IRepositoryVourcher.DeleteAsync(result);
+
+            return NoContent();
+        }
     }
 }

@@ -4,7 +4,7 @@ using IceCreamBE.Repository.Irepository;
 using Microsoft.EntityFrameworkCore;
 using System.Linq.Expressions;
 
-namespace IceCreamBE.Repository
+namespace IceCreamBE.Repository.RepositoryTest
 {
     public class RepositoryBrandTest : IRepositoryBrand
     {
@@ -14,7 +14,7 @@ namespace IceCreamBE.Repository
         {
             this.dbcontext = dbcontext;
 
-            for (int i = 1; i <= 1000; i++)
+            for (int i = 1; i <= 24; i++)
             {
                 brandList.Add(new Brands { Id = i, BrandName = Guid.NewGuid().ToString() });
             }

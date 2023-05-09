@@ -36,11 +36,14 @@ namespace IceCreamBE.Controllers
             return Ok(new PagedResponse<List<RolesDTO>>
             {
                 Data = pagedData,
-                Succeeded = true,
-                currentPage = pageFilter.PageNumber,
-                PageSize = pageFilter.PageSize,
-                TotalPages = (int)Math.Ceiling((double)result.Count / (double)filter.PageSize),
-                TotalRecords = result.Count
+                Succeeded = pagedData == null ? false : true,
+                Pagination = new PagedResponseDetail<List<RolesDTO>>
+                {
+                    current_page = pagedData == null ? 0 : pageFilter.PageNumber,
+                    Page_pize = pagedData == null ? 0 : pageFilter.PageSize,
+                    total_pages = (int)Math.Ceiling((double)result.Count / (double)filter.PageSize),
+                    total_records = result.Count
+                }
             });
         }
 

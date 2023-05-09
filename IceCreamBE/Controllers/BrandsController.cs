@@ -30,18 +30,21 @@ namespace IceCreamBE.Controllers
         public async Task<ActionResult<IEnumerable<BrandsDTO>>> GetBrands([FromQuery] PaginationFilter<BrandsDTO>? filter)
         {
             var result = await _IRepositoryBrand.GetAllAsync();
+            var item = new List<BrandsDTO>();
+            result.ForEach(e => item.Add(new BrandsDTO { Id = e.Id, BrandName = e.BrandName }));
 
             var pageFilter = new PaginationFilter<BrandsDTO>(filter.PageNumber, filter.PageSize);
-            var pagedData = pageFilter.GetPageList(result);
+            var pagedData = pageFilter.GetPageList(item);
 
-            return Ok(new PagedResponse<List<Brands>>
-            {
+            return Ok(new PagedResponse<List<BrandsDTO>> {
                 Data = pagedData,
-                Succeeded = true,
-                currentPage = pageFilter.PageNumber,
-                PageSize = pageFilter.PageSize,
-                TotalPages = (int)Math.Ceiling((double)result.Count / (double)filter.PageSize),
-                TotalRecords = result.Count
+                Succeeded = pagedData == null ? false : true,
+                Pagination = new PagedResponseDetail<List<BrandsDTO>> {
+                    current_page = pageFilter.PageNumber,
+                    Page_pize = pageFilter.PageSize,
+                    total_pages = (int)Math.Ceiling((double)result.Count / (double)filter.PageSize),
+                    total_records = result.Count
+                }
             });
         }
 

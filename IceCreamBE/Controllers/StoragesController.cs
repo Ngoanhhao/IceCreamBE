@@ -53,18 +53,21 @@ namespace IceCreamBE.Controllers
                     Img = e.product.Img,
                     LastOrder = e.storage.LastOrder,
                     Quantity = e.storage.Quantity,
-                });
+                }).ToList();
             var pageFilter = new PaginationFilter<StorageDTO>(filter.PageNumber, filter.PageSize);
             var pagedData = pageFilter.GetPageList(result.ToList());
 
             return Ok(new PagedResponse<List<StorageDTO>>
             {
                 Data = pagedData,
-                Succeeded = true,
-                currentPage = pageFilter.PageNumber,
-                PageSize = pageFilter.PageSize,
-                TotalPages = (int)Math.Ceiling((double)result.ToList().Count / (double)filter.PageSize),
-                TotalRecords = result.ToList().Count
+                Succeeded = pagedData == null ? false : true,
+                Pagination = new PagedResponseDetail<List<StorageDTO>>
+                {
+                    current_page = pagedData == null ? 0 : pageFilter.PageNumber,
+                    Page_pize = pagedData == null ? 0 : pageFilter.PageSize,
+                    total_pages = (int)Math.Ceiling((double)result.Count / (double)filter.PageSize),
+                    total_records = result.Count
+                }
             });
         }
 

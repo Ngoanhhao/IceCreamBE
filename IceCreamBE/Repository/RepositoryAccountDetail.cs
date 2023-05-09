@@ -19,12 +19,12 @@ namespace IceCreamBE.Repository
         {
             var result = await dbcontext.AccountDetail.FirstOrDefaultAsync(e => e.Id == entity.Id);
 
-            result.ExtensionDate = entity.ExtensionDate;
-            result.ExpirationDate = entity.ExpirationDate;
+            result.ExtensionDate = entity.Extension_date;
+            result.ExpirationDate = entity.Expiration_date;
             result.Avatar = entity.Avatar;
-            result.PhoneNumber = entity.PhoneNumber;
+            result.PhoneNumber = entity.Phone_number;
             result.Email = entity.Email;
-            result.FullName = entity.FullName;
+            result.FullName = entity.Full_name;
             result.RoleID = entity.RoleID;
             await dbcontext.SaveChangesAsync();
         }

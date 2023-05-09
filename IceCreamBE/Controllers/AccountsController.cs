@@ -99,10 +99,10 @@ namespace IceCreamBE.Controllers
                     Id = result2.Id,
                     Avatar = entity.Avatar,
                     Email = entity.Email,
-                    ExpirationDate = entity.ExpirationDate,
-                    ExtensionDate = entity.ExtensionDate,
-                    FullName = entity.FullName,
-                    PhoneNumber = entity.PhoneNumber,
+                    Expiration_date = entity.ExpirationDate,
+                    Extension_date = entity.ExtensionDate,
+                    Full_name = entity.FullName,
+                    Phone_number = entity.PhoneNumber,
                     RoleID = entity.RoleID,
                 }
             });

@@ -21,7 +21,7 @@
                 lastItemIndex = 0,
                 pageCount = GetPageCount(list.Count, PageSize);
 
-            if (list != null)
+            if (list.Count != 0)
             {
                 PageNumber = PageNumber < 1 ? 1 : PageNumber;
                 PageNumber = PageNumber > pageCount ? pageCount : PageNumber;

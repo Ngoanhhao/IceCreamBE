@@ -70,11 +70,14 @@ namespace IceCreamBE.Controllers
             return Ok(new PagedResponse<List<FeedbackDetailDTO>>
             {
                 Data = pagedData,
-                Succeeded = true,
-                currentPage = pageFilter.PageNumber,
-                PageSize = pageFilter.PageSize,
-                TotalPages = (int)Math.Ceiling((double)result.Count / (double)filter.PageSize),
-                TotalRecords = result.Count
+                Succeeded = pagedData == null ? false : true,
+                Pagination = new PagedResponseDetail<List<FeedbackDetailDTO>>
+                {
+                    current_page = pageFilter.PageNumber,
+                    Page_pize = pageFilter.PageSize,
+                    total_pages = (int)Math.Ceiling((double)result.Count / (double)filter.PageSize),
+                    total_records = result.Count
+                }
             });
         }
 

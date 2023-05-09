@@ -11,6 +11,5 @@ namespace IceCreamBE.DTO
         public int Discount { get; set; } // percent
         public bool Status { get; set; }
         public DateTime ExpirationDate { get; set; }
-        //
     }
 }

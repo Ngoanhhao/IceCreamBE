@@ -1,6 +1,7 @@
 ﻿using IceCreamBE.Data;
 using IceCreamBE.Models;
 using IceCreamBE.Repository.Irepository;
+using Microsoft.EntityFrameworkCore;
 
 namespace IceCreamBE.Repository
 {
@@ -11,9 +12,11 @@ namespace IceCreamBE.Repository
         {
             dbcontext = _dbcontext;
         }
-        public Task UpdateAsync(Products entity)
+        public async Task UpdateAsync(Vouchers entity)
         {
-            throw new NotImplementedException();
+            var result = await dbcontext.Vouchers.FirstOrDefaultAsync(e => e.Id == entity.Id);
+            result.Status = entity.Status;  
+            await dbcontext.SaveChangesAsync();
         }
     }
 }
