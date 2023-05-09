@@ -39,7 +39,11 @@ namespace IceCreamBE.Controllers
             var result = await _RepositoryAccounts.GetAsync(e => e.Id == id);
             if (result == null)
             {
-                return NotFound();
+                return NotFound(new Response<List<AccountDetailDTO>>
+                {
+                    Succeeded = false,
+                    Message = "not found"
+                });
             }
 
             await _RepositoryAccounts.UpdateAsync(accounts);
@@ -60,12 +64,11 @@ namespace IceCreamBE.Controllers
             var result = await _RepositoryAccounts.GetAsync(e => e.Username.ToLower() == entity.Username.ToLower());
             if (result != null)
             {
-                //return Ok(new Response
-                //{
-                //    Message = "Username is valid",
-                //    Success = false,
-                //});
-                return BadRequest();
+                return BadRequest(new Response<List<AccountDetailDTO>>
+                {
+                    Succeeded = false,
+                    Message = "username is valid"
+                });
             }
 
             await _RepositoryAccounts.CreateAsync(new Accounts
@@ -88,32 +91,20 @@ namespace IceCreamBE.Controllers
                 RoleID = entity.RoleID,
             });
 
-            //return Ok(new Response
-            //{
-            //    Message = "Successed",
-            //    Success = true,
-            //    Result = new AccountDetail
-            //    {
-            //        Id = result2.Id,
-            //        Avatar = entity.Avatar,
-            //        Email = entity.Email,
-            //        ExpirationDate = entity.ExpirationDate,
-            //        ExtensionDate = entity.ExtensionDate,
-            //        FullName = entity.FullName,
-            //        PhoneNumber = entity.PhoneNumber,
-            //        RoleID = entity.RoleID,
-            //    }
-            //});
-            return Ok(new AccountDetail
+            return Ok(new Response<AccountDetailDTO>
             {
-                Id = result2.Id,
-                Avatar = entity.Avatar,
-                Email = entity.Email,
-                ExpirationDate = entity.ExpirationDate,
-                ExtensionDate = entity.ExtensionDate,
-                FullName = entity.FullName,
-                PhoneNumber = entity.PhoneNumber,
-                RoleID = entity.RoleID,
+                Succeeded = true,
+                Data = new AccountDetailDTO
+                {
+                    Id = result2.Id,
+                    Avatar = entity.Avatar,
+                    Email = entity.Email,
+                    ExpirationDate = entity.ExpirationDate,
+                    ExtensionDate = entity.ExtensionDate,
+                    FullName = entity.FullName,
+                    PhoneNumber = entity.PhoneNumber,
+                    RoleID = entity.RoleID,
+                }
             });
         }
     }

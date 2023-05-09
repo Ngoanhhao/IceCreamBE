@@ -9,6 +9,8 @@ using IceCreamBE.Data;
 using IceCreamBE.Models;
 using IceCreamBE.Repository.Irepository;
 using IceCreamBE.DTO;
+using IceCreamBE.DTO.PageList;
+using Microsoft.AspNetCore.Http.HttpResults;
 
 namespace IceCreamBE.Controllers
 {
@@ -25,9 +27,21 @@ namespace IceCreamBE.Controllers
 
         // GET: api/Roles
         [HttpGet]
-        public async Task<ActionResult> GetRoles()
+        public async Task<ActionResult> GetRoles([FromQuery] PaginationFilter<RolesDTO>? filter)
         {
-            return Ok(await _repository.GetAllAsync());
+            var result = (await _repository.GetAllAsync()).ToList();
+            var pageFilter = new PaginationFilter<RolesDTO>(filter.PageNumber, filter.PageSize);
+            var pagedData = pageFilter.GetPageList(result);
+
+            return Ok(new PagedResponse<List<RolesDTO>>
+            {
+                Data = pagedData,
+                Succeeded = true,
+                currentPage = pageFilter.PageNumber,
+                PageSize = pageFilter.PageSize,
+                TotalPages = (int)Math.Ceiling((double)result.Count / (double)filter.PageSize),
+                TotalRecords = result.Count
+            });
         }
 
         // GET: api/Roles/5
@@ -37,9 +51,9 @@ namespace IceCreamBE.Controllers
             var item = await _repository.GetAsync(e => e.Id == id);
             if (item == null)
             {
-                return NotFound();
+                return NotFound(new Response<Brands> { Succeeded = false, Message = "Not found" });
             }
-            return Ok(item);
+            return Ok(new Response<RolesDTO> { Succeeded = true, Data = item });
         }
 
         // PUT: api/Roles/5
@@ -49,7 +63,7 @@ namespace IceCreamBE.Controllers
         {
             if (id != roles.Id)
             {
-                return BadRequest();
+                return BadRequest(new Response<Brands> { Succeeded = false, Message = "value incorrect" });
             }
 
             if (await _repository.GetAsync(e => e.Id == id) != null)
@@ -58,7 +72,7 @@ namespace IceCreamBE.Controllers
                 return NoContent();
             }
 
-            return NotFound();
+            return NotFound(new Response<Brands> { Succeeded = false, Message = "Not found" });
         }
 
         // POST: api/Roles
@@ -82,7 +96,7 @@ namespace IceCreamBE.Controllers
             var item = await _repository.GetAsync(e => e.Id == id);
             if (item == null)
             {
-                return NotFound();
+                return NotFound(new Response<Brands> { Succeeded = false, Message = "Not found" });
             }
             await _repository.DeleteAsync(item);
 

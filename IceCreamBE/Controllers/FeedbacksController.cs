@@ -12,6 +12,7 @@ using IceCreamBE.DTO;
 using IceCreamBE.Migrations;
 using Newtonsoft.Json.Linq;
 using static Microsoft.EntityFrameworkCore.DbLoggerCategory;
+using IceCreamBE.DTO.PageList;
 
 namespace IceCreamBE.Controllers
 {
@@ -37,7 +38,7 @@ namespace IceCreamBE.Controllers
 
         // GET: api/Feedbacks
         [HttpGet]
-        public async Task<ActionResult<IEnumerable<FeedbackDetailDTO>>> GetFeedback()
+        public async Task<ActionResult<IEnumerable<FeedbackDetailDTO>>> GetFeedback([FromQuery] PaginationFilter<FeedbackDetailDTO>? filter)
         {
             var feedback = (await _IRepositoryFeedback.GetAllAsync()).AsQueryable<Feedback>();
             var account = (await _IRepositoryAccounts.GetAllAsync()).AsQueryable<Accounts>();
@@ -62,7 +63,19 @@ namespace IceCreamBE.Controllers
                     ReleaseDate = e.feedback.ReleaseDate,
                 })
                 .ToList();
-            return Ok(result);
+
+            var pageFilter = new PaginationFilter<FeedbackDetailDTO>(filter.PageNumber, filter.PageSize);
+            var pagedData = pageFilter.GetPageList(result);
+
+            return Ok(new PagedResponse<List<FeedbackDetailDTO>>
+            {
+                Data = pagedData,
+                Succeeded = true,
+                currentPage = pageFilter.PageNumber,
+                PageSize = pageFilter.PageSize,
+                TotalPages = (int)Math.Ceiling((double)result.Count / (double)filter.PageSize),
+                TotalRecords = result.Count
+            });
         }
 
         // GET: api/Feedbacks/5
@@ -96,9 +109,9 @@ namespace IceCreamBE.Controllers
 
             if (result == null)
             {
-                return NotFound();
+                return NotFound(new Response<FeedbackDetailDTO> { Message = "not found", Succeeded = false });
             }
-            return Ok(result);
+            return Ok(new Response<List<FeedbackDetailDTO>> { Data = result, Succeeded = true });
         }
 
         //GET: api/Feedbacks/fullname
@@ -132,9 +145,9 @@ namespace IceCreamBE.Controllers
 
             if (result == null)
             {
-                return NotFound();
+                return NotFound(new Response<FeedbackDetailDTO> { Message = "not found", Succeeded = false });
             }
-            return Ok(result);
+            return Ok(new Response<List<FeedbackDetailDTO>> { Data = result, Succeeded = true });
         }
 
         // PUT: api/Feedbacks/5
@@ -144,7 +157,7 @@ namespace IceCreamBE.Controllers
         {
             if (id != feedback.Id || !ModelState.IsValid)
             {
-                return BadRequest();
+                return BadRequest(new Response<FeedbackDetailDTO> { Message = "value incorrect", Succeeded = false });
             }
 
             var result = await _IRepositoryFeedback.GetAsync(e => e.Id == feedback.Id);
@@ -167,7 +180,7 @@ namespace IceCreamBE.Controllers
         {
             if (!ModelState.IsValid)
             {
-                return BadRequest();
+                return BadRequest(new Response<FeedbackDetailDTO> { Message = "value incorrect", Succeeded = false });
             }
 
             await _IRepositoryFeedback.CreateAsync(new Feedback
@@ -188,7 +201,7 @@ namespace IceCreamBE.Controllers
 
             if (result == null)
             {
-                return NotFound();
+                return NotFound(new Response<FeedbackDetailDTO> { Message = "not found", Succeeded = false });
             }
 
             await _IRepositoryFeedback.DeleteAsync(result);

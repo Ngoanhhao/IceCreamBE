@@ -10,6 +10,7 @@ using IceCreamBE.Models;
 using IceCreamBE.Migrations;
 using IceCreamBE.Repository.Irepository;
 using IceCreamBE.DTO;
+using IceCreamBE.DTO.PageList;
 
 namespace IceCreamBE.Controllers
 {
@@ -30,7 +31,7 @@ namespace IceCreamBE.Controllers
 
         //GET: api/Storages
         [HttpGet]
-        public async Task<ActionResult<IEnumerable<StorageDTO>>> Getstorage()
+        public async Task<ActionResult<IEnumerable<StorageDTO>>> Getstorage([FromQuery] PaginationFilter<StorageDTO>? filter)
         {
             var storage = (await _IRepositoryStorage.GetAllAsync()).AsQueryable<Storage>();
             var product = (await _IRepositoryProduct.GetAllAsync()).AsQueryable<Products>();
@@ -53,7 +54,18 @@ namespace IceCreamBE.Controllers
                     LastOrder = e.storage.LastOrder,
                     Quantity = e.storage.Quantity,
                 });
-            return Ok(result);
+            var pageFilter = new PaginationFilter<StorageDTO>(filter.PageNumber, filter.PageSize);
+            var pagedData = pageFilter.GetPageList(result.ToList());
+
+            return Ok(new PagedResponse<List<StorageDTO>>
+            {
+                Data = pagedData,
+                Succeeded = true,
+                currentPage = pageFilter.PageNumber,
+                PageSize = pageFilter.PageSize,
+                TotalPages = (int)Math.Ceiling((double)result.ToList().Count / (double)filter.PageSize),
+                TotalRecords = result.ToList().Count
+            });
         }
 
         // GET: api/Storages/5
@@ -82,7 +94,11 @@ namespace IceCreamBE.Controllers
                     LastOrder = e.storage.LastOrder,
                     Quantity = e.storage.Quantity,
                 });
-            return Ok(result);
+            if (result.Count() == 0)
+            {
+                return NotFound(new Response<List<StorageDTO>> { Message = "not found", Succeeded = false });
+            }
+            return Ok(new Response<List<StorageDTO>> { Data = result.ToList(), Succeeded = true });
         }
 
 
@@ -112,7 +128,11 @@ namespace IceCreamBE.Controllers
                     LastOrder = e.storage.LastOrder,
                     Quantity = e.storage.Quantity,
                 });
-            return Ok(result);
+            if (result.Count() == 0)
+            {
+                return NotFound(new Response<List<StorageDTO>> { Message = "not found", Succeeded = false });
+            }
+            return Ok(new Response<List<StorageDTO>> { Data = result.ToList(), Succeeded = true });
         }
 
         // PUT: api/Storages/5
@@ -122,13 +142,13 @@ namespace IceCreamBE.Controllers
         {
             if (!ModelState.IsValid)
             {
-                return BadRequest();
+                return BadRequest(new Response<List<StorageDTO>> { Message = "value incorrect", Succeeded = false });
             }
 
             var result = await _IRepositoryStorage.GetAsync(e => e.ProductID == id);
             if (result == null)
             {
-                return NotFound();
+                return NotFound(new Response<List<StorageDTO>> { Message = "not found", Succeeded = false });
             }
 
             await _IRepositoryStorage.UpdateAsync(id, quantity);
@@ -147,7 +167,7 @@ namespace IceCreamBE.Controllers
                 Quantity = storage.Quantity,
                 LastOrder = DateTime.UtcNow
             });
-            return Ok();
+            return Ok(new Response<List<StorageDTO>> { Succeeded = false });
         }
     }
 }

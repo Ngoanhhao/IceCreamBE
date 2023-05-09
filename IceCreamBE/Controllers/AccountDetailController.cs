@@ -10,6 +10,8 @@ using IceCreamBE.Models;
 using IceCreamBE.Repository.Irepository;
 using IceCreamBE.DTO;
 using Newtonsoft.Json.Linq;
+using IceCreamBE.DTO.PageList;
+using Microsoft.AspNetCore.Mvc.Filters;
 
 namespace IceCreamBE.Controllers
 {
@@ -26,7 +28,7 @@ namespace IceCreamBE.Controllers
 
         // GET: api/Accounts
         [HttpGet]
-        public async Task<ActionResult> GetAccounts()
+        public async Task<ActionResult> GetAccounts([FromQuery] PaginationFilter<BrandsDTO>? filter)
         {
             var value = new List<AccountDetailDTO>();
             var result = await _IRepositoryAccountDetail.GetAllAsync();
@@ -41,7 +43,19 @@ namespace IceCreamBE.Controllers
                 PhoneNumber = e.PhoneNumber,
                 RoleID = e.RoleID,
             }));
-            return Ok(value.ToList());
+
+            var pageFilter = new PaginationFilter<BrandsDTO>(filter.PageNumber, filter.PageSize);
+            var pagedData = pageFilter.GetPageList(value);
+
+            return Ok(new PagedResponse<List<AccountDetailDTO>>
+            {
+                Data = pagedData,
+                Succeeded = true,
+                currentPage = pageFilter.PageNumber,
+                PageSize = pageFilter.PageSize,
+                TotalPages = (int)Math.Ceiling((double)result.Count / (double)filter.PageSize),
+                TotalRecords = result.Count
+            });
         }
 
         // GET: api/Accounts/5
@@ -51,19 +65,29 @@ namespace IceCreamBE.Controllers
             var result = await _IRepositoryAccountDetail.GetAsync(e => e.Id == int.Parse(id));
             if (result != null)
             {
-                return Ok(new AccountDetailDTO
-                {
-                    Id = result.Id,
-                    Avatar = result.Avatar,
-                    Email = result.Email,
-                    ExpirationDate = result.ExpirationDate,
-                    ExtensionDate = result.ExtensionDate,
-                    FullName = result.FullName,
-                    PhoneNumber = result.PhoneNumber,
-                    RoleID = result.RoleID
-                });
+                return Ok(
+                    new Response<AccountDetailDTO>
+                    {
+                        Succeeded = true,
+                        Data = new AccountDetailDTO
+                        {
+                            Id = result.Id,
+                            Avatar = result.Avatar,
+                            Email = result.Email,
+                            ExpirationDate = result.ExpirationDate,
+                            ExtensionDate = result.ExtensionDate,
+                            FullName = result.FullName,
+                            PhoneNumber = result.PhoneNumber,
+                            RoleID = result.RoleID
+                        }
+                    }
+                    );
             }
-            return NotFound();
+            return NotFound(new Response<List<AccountDetailDTO>>
+            {
+                Succeeded = false,
+                Message = "not found"
+            });
         }
 
         //GET: api/Accounts/query
@@ -83,7 +107,21 @@ namespace IceCreamBE.Controllers
                 PhoneNumber = e.PhoneNumber,
                 RoleID = e.RoleID
             }));
-            return Ok(value);
+
+            if (result.Count == 0)
+            {
+                return NotFound(new Response<List<AccountDetailDTO>>
+                {
+                    Succeeded = false,
+                    Message = "not found"
+                });
+            }
+
+            return Ok(new Response<List<AccountDetailDTO>>
+            {
+                Succeeded = true,
+                Data = value
+            });
         }
 
 
@@ -114,7 +152,11 @@ namespace IceCreamBE.Controllers
 
                 return NoContent();
             }
-            return NotFound();
+            return NotFound(new Response<List<AccountDetailDTO>>
+            {
+                Succeeded = false,
+                Message = "not found"
+            });
         }
     }
 }
