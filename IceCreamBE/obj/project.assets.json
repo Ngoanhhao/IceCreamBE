@@ -10977,19 +10977,19 @@
     ]
   },
   "packageFolders": {
-    "C:\\Users\\VICTUS\\.nuget\\packages\\": {}
+    "C:\\Users\\ngoan\\.nuget\\packages\\": {}
   },
   "project": {
     "version": "1.0.0",
     "restore": {
-      "projectUniqueName": "D:\\Technology\\C#\\sour\\IceCreamBE\\IceCreamBE\\IceCreamBE.csproj",
+      "projectUniqueName": "C:\\Users\\ngoan\\OneDrive\\Desktop\\IceCreamBE\\IceCreamBE\\IceCreamBE.csproj",
       "projectName": "IceCreamBE",
-      "projectPath": "D:\\Technology\\C#\\sour\\IceCreamBE\\IceCreamBE\\IceCreamBE.csproj",
-      "packagesPath": "C:\\Users\\VICTUS\\.nuget\\packages\\",
-      "outputPath": "D:\\Technology\\C#\\sour\\IceCreamBE\\IceCreamBE\\obj\\",
+      "projectPath": "C:\\Users\\ngoan\\OneDrive\\Desktop\\IceCreamBE\\IceCreamBE\\IceCreamBE.csproj",
+      "packagesPath": "C:\\Users\\ngoan\\.nuget\\packages\\",
+      "outputPath": "C:\\Users\\ngoan\\OneDrive\\Desktop\\IceCreamBE\\IceCreamBE\\obj\\",
       "projectStyle": "PackageReference",
       "configFilePaths": [
-        "C:\\Users\\VICTUS\\AppData\\Roaming\\NuGet\\NuGet.Config",
+        "C:\\Users\\ngoan\\AppData\\Roaming\\NuGet\\NuGet.Config",
         "C:\\Program Files (x86)\\NuGet\\Config\\Microsoft.VisualStudio.Offline.config"
       ],
       "originalTargetFrameworks": [
@@ -11061,7 +11061,7 @@
             "privateAssets": "all"
           }
         },
-        "runtimeIdentifierGraphPath": "C:\\Program Files\\dotnet\\sdk\\7.0.202\\RuntimeIdentifierGraph.json"
+        "runtimeIdentifierGraphPath": "C:\\Program Files\\dotnet\\sdk\\7.0.203\\RuntimeIdentifierGraph.json"
       }
     }
   }
