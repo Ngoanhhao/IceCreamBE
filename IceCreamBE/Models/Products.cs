@@ -14,7 +14,7 @@ namespace IceCreamBE.Models
         public string? Description { get; set; }
         public string? Img { get; set; }
         public int? Discount { get; set; } // percent
-        public int Total { get; set; }
+        public double Total { get; set; }
         public bool Status { get; set; }
         public virtual ICollection<BillDetail> Details { get; set; }
         public virtual ICollection<Recipe> Recipe { get; set; }

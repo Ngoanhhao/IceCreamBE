@@ -38,7 +38,7 @@ namespace IceCreamBE.Controllers
             {
                 Id = e.Id,
                 adminID = e.AdminID,
-                discount = e.Discount,
+                discount_percent = e.Discount,
                 expiration_date = e.ExpirationDate,
                 status = e.Status,
                 voucher = e.Voucher,
@@ -62,7 +62,7 @@ namespace IceCreamBE.Controllers
         }
 
         //// GET: api/Vouchers/5
-        [HttpGet("{id}")]
+        [HttpGet("{id:int}")]
         public async Task<ActionResult<VouchersDTO>> GetVouchers(int id)
         {
             var result = await _IRepositoryVourcher.GetAsync(e => e.Id == id);
@@ -76,7 +76,7 @@ namespace IceCreamBE.Controllers
                 Data = new VouchersDTO
                 {
                     adminID = result.AdminID,
-                    discount = result.Discount,
+                    discount_percent = result.Discount,
                     expiration_date = result.ExpirationDate,
                     status = result.Status,
                     Id = result.Id,
@@ -85,6 +85,32 @@ namespace IceCreamBE.Controllers
                 Succeeded = true
             });
         }
+
+        //// GET: api/Vouchers/5
+        [HttpGet("{voucher}")]
+        public async Task<ActionResult<VouchersDTO>> GetVouchers(string voucher)
+        {
+            var result = await _IRepositoryVourcher.GetAsync(e => e.Voucher == voucher);
+            if (result == null)
+            {
+                return NotFound(new Response<List<VouchersDTO>> { Message = "not found", Succeeded = false });
+            }
+
+            return Ok(new Response<VouchersDTO>
+            {
+                Data = new VouchersDTO
+                {
+                    adminID = result.AdminID,
+                    discount_percent = result.Discount,
+                    expiration_date = result.ExpirationDate,
+                    status = result.Status,
+                    Id = result.Id,
+                    voucher = result.Voucher,
+                },
+                Succeeded = true
+            });
+        }
+
 
         // PUT: api/Vouchers/5
         // To protect from overposting attacks, see https://go.microsoft.com/fwlink/?linkid=2123754
@@ -119,11 +145,13 @@ namespace IceCreamBE.Controllers
 
             var voucher = Coupon.CouponGenarate(20);
 
-            await _IRepositoryVourcher.CreateAsync(new Vouchers { 
-                AdminID = vouchers.adminID 
-                ,Status = vouchers.status,
+            await _IRepositoryVourcher.CreateAsync(new Vouchers
+            {
+                AdminID = vouchers.adminID
+                ,
+                Status = vouchers.status,
                 Voucher = voucher,
-                Discount = vouchers.discount,
+                Discount = vouchers.discount_percent,
                 ExpirationDate = DateTime.UtcNow
             });
 

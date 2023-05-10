@@ -277,9 +277,6 @@ D:\Technology\C#\sour\IceCreamBE\IceCreamBE\bin\Debug\net7.0\Microsoft.AspNetCor
 D:\Technology\C#\sour\IceCreamBE\IceCreamBE\bin\Debug\net7.0\Microsoft.AspNetCore.Mvc.NewtonsoftJson.dll
 D:\Technology\C#\sour\IceCreamBE\IceCreamBE\bin\Debug\net7.0\Newtonsoft.Json.Bson.dll
 D:\Technology\C#\sour\IceCreamBE\IceCreamBE\bin\Debug\net7.0\Swashbuckle.AspNetCore.Newtonsoft.dll
-C:\Users\ngoan\OneDrive\Desktop\IceCreamBE\IceCreamBE\obj\Debug\net7.0\IceCreamBE.dll
-C:\Users\ngoan\OneDrive\Desktop\IceCreamBE\IceCreamBE\obj\Debug\net7.0\refint\IceCreamBE.dll
-C:\Users\ngoan\OneDrive\Desktop\IceCreamBE\IceCreamBE\obj\Debug\net7.0\IceCreamBE.pdb
 C:\Users\ngoan\OneDrive\Desktop\IceCreamBE\IceCreamBE\bin\Debug\net7.0\appsettings.Development.json
 C:\Users\ngoan\OneDrive\Desktop\IceCreamBE\IceCreamBE\bin\Debug\net7.0\appsettings.json
 C:\Users\ngoan\OneDrive\Desktop\IceCreamBE\IceCreamBE\bin\Debug\net7.0\IceCreamBE.exe
@@ -554,5 +551,8 @@ C:\Users\ngoan\OneDrive\Desktop\IceCreamBE\IceCreamBE\obj\Debug\net7.0\staticweb
 C:\Users\ngoan\OneDrive\Desktop\IceCreamBE\IceCreamBE\obj\Debug\net7.0\staticwebassets.development.json
 C:\Users\ngoan\OneDrive\Desktop\IceCreamBE\IceCreamBE\obj\Debug\net7.0\scopedcss\bundle\IceCreamBE.styles.css
 C:\Users\ngoan\OneDrive\Desktop\IceCreamBE\IceCreamBE\obj\Debug\net7.0\IceCreamBE.csproj.CopyComplete
+C:\Users\ngoan\OneDrive\Desktop\IceCreamBE\IceCreamBE\obj\Debug\net7.0\IceCreamBE.dll
+C:\Users\ngoan\OneDrive\Desktop\IceCreamBE\IceCreamBE\obj\Debug\net7.0\refint\IceCreamBE.dll
+C:\Users\ngoan\OneDrive\Desktop\IceCreamBE\IceCreamBE\obj\Debug\net7.0\IceCreamBE.pdb
 C:\Users\ngoan\OneDrive\Desktop\IceCreamBE\IceCreamBE\obj\Debug\net7.0\IceCreamBE.genruntimeconfig.cache
 C:\Users\ngoan\OneDrive\Desktop\IceCreamBE\IceCreamBE\obj\Debug\net7.0\ref\IceCreamBE.dll

@@ -11,8 +11,8 @@ namespace IceCreamBE.DTO
         public double price { get; set; }
         public string description { get; set; }
         public string img { get; set; }
-        public int discount { get; set; } // percent
-        public int total { get; set; }
+        public int discount_percent { get; set; } // percent
+        public double total { get; set; }
         public bool status { get; set; }
     }
 }

@@ -4,6 +4,7 @@ using IceCreamBE.Data;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Infrastructure;
 using Microsoft.EntityFrameworkCore.Metadata;
+using Microsoft.EntityFrameworkCore.Migrations;
 using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 
 #nullable disable
@@ -11,9 +12,11 @@ using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 namespace IceCreamBE.Migrations
 {
     [DbContext(typeof(IceCreamDbcontext))]
-    partial class IceCreamDbcontextModelSnapshot : ModelSnapshot
+    [Migration("20230510094311_update")]
+    partial class update
     {
-        protected override void BuildModel(ModelBuilder modelBuilder)
+        /// <inheritdoc />
+        protected override void BuildTargetModel(ModelBuilder modelBuilder)
         {
 #pragma warning disable 612, 618
             modelBuilder
@@ -274,23 +277,6 @@ namespace IceCreamBE.Migrations
                     b.HasKey("Id");
 
                     b.ToTable("Roles", (string)null);
-
-                    b.HasData(
-                        new
-                        {
-                            Id = 1,
-                            Role = "Admin"
-                        },
-                        new
-                        {
-                            Id = 2,
-                            Role = "Member"
-                        },
-                        new
-                        {
-                            Id = 3,
-                            Role = "Guest"
-                        });
                 });
 
             modelBuilder.Entity("IceCreamBE.Models.Storage", b =>
