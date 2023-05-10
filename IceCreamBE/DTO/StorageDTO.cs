@@ -3,10 +3,10 @@
     public class StorageDTO
     {
         public int Id { get; set; }
-        public string ProductName { get; set; }
-        public string Brand { get; set; }
-        public int Quantity { get; set; }
-        public string Img { get; set; }
-        public DateTime LastOrder { get; set; }
+        public string product_name { get; set; }
+        public string brand { get; set; }
+        public int quantity { get; set; }
+        public string img { get; set; }
+        public DateTime last_order { get; set; }
     }
 }

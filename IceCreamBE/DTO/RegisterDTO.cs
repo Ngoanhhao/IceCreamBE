@@ -3,14 +3,14 @@
     public class RegisterDTO
     {
         public int Id { get; set; }
-        public string Username { get; set; }
-        public string Password { get; set; }
-        public int RoleID { get; set; }
-        public string Email { get; set; }
-        public string FullName { get; set; }
-        public string Avatar { get; set; }
-        public string PhoneNumber { get; set; }
-        public DateTime ExtensionDate { get; set; }
-        public DateTime ExpirationDate { get; set; }
+        public string username { get; set; }
+        public string password { get; set; }
+        public int roleID { get; set; }
+        public string email { get; set; }
+        public string full_name { get; set; }
+        public string avatar { get; set; }
+        public string phone_number { get; set; }
+        public DateTime extension_date { get; set; }
+        public DateTime expiration_date { get; set; }
     }
 }

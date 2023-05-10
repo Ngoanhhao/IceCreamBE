@@ -3,11 +3,11 @@
     public class BillDTO
     {
         public int Id { get; set; }
-        public int AccountID { get; set; }
-        public int BillDetailID { get; set; }
-        public double Total { get; set; }
-        public double Status { get; set; }
-        public DateTime OrderTime { get; set; }
-        public int? VoucherID { get; set; }
+        public int accountID { get; set; }
+        public int bill_DetailID { get; set; }
+        public double total { get; set; }
+        public double status { get; set; }
+        public DateTime order_Time { get; set; }
+        public int? voucherID { get; set; }
     }
 }

@@ -31,7 +31,7 @@ namespace IceCreamBE.Controllers
         {
             var result = await _IRepositoryBrand.GetAllAsync();
             var item = new List<BrandsDTO>();
-            result.ForEach(e => item.Add(new BrandsDTO { Id = e.Id, BrandName = e.BrandName }));
+            result.ForEach(e => item.Add(new BrandsDTO { Id = e.Id, brand_name = e.BrandName }));
 
             var pageFilter = new PaginationFilter<BrandsDTO>(filter.PageNumber, filter.PageSize);
             var pagedData = pageFilter.GetPageList(item);
@@ -96,7 +96,7 @@ namespace IceCreamBE.Controllers
             await _IRepositoryBrand.UpdateAsync(new Brands
             {
                 Id = brands.Id,
-                BrandName = brands.BrandName
+                BrandName = brands.brand_name
             });
 
             return NoContent();
@@ -107,16 +107,16 @@ namespace IceCreamBE.Controllers
         [HttpPost]
         public async Task<ActionResult<BrandsDTO>> PostBrands(BrandsDTO brands)
         {
-            var result = await _IRepositoryBrand.GetAsync(e => e.BrandName == brands.BrandName);
+            var result = await _IRepositoryBrand.GetAsync(e => e.BrandName == brands.brand_name);
 
             if (result != null)
             {
-                return BadRequest(new Response<Brands> { Succeeded = false, Message = brands.BrandName + " is valid" });
+                return BadRequest(new Response<Brands> { Succeeded = false, Message = brands.brand_name + " is valid" });
             }
 
             await _IRepositoryBrand.CreateAsync(new Brands
             {
-                BrandName = brands.BrandName
+                BrandName = brands.brand_name
             });
 
             return CreatedAtAction("GetBrands", new { id = brands.Id }, brands);

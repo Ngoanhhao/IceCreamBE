@@ -48,11 +48,11 @@ namespace IceCreamBE.Controllers
                 .Select(e => new StorageDTO
                 {
                     Id = e.storage.ProductID,
-                    ProductName = e.product.Name,
-                    Brand = e.brand.BrandName,
-                    Img = e.product.Img,
-                    LastOrder = e.storage.LastOrder,
-                    Quantity = e.storage.Quantity,
+                    product_name = e.product.Name,
+                    brand = e.brand.BrandName,
+                    img = e.product.Img,
+                    last_order = e.storage.LastOrder,
+                    quantity = e.storage.Quantity,
                 }).ToList();
             var pageFilter = new PaginationFilter<StorageDTO>(filter.PageNumber, filter.PageSize);
             var pagedData = pageFilter.GetPageList(result.ToList());
@@ -91,11 +91,11 @@ namespace IceCreamBE.Controllers
                 .Select(e => new StorageDTO
                 {
                     Id = e.storage.ProductID,
-                    ProductName = e.product.Name,
-                    Brand = e.brand.BrandName,
-                    Img = e.product.Img,
-                    LastOrder = e.storage.LastOrder,
-                    Quantity = e.storage.Quantity,
+                    product_name = e.product.Name,
+                    brand = e.brand.BrandName,
+                    img = e.product.Img,
+                    last_order = e.storage.LastOrder,
+                    quantity = e.storage.Quantity,
                 });
             if (result.Count() == 0)
             {
@@ -125,11 +125,11 @@ namespace IceCreamBE.Controllers
                 .Select(e => new StorageDTO
                 {
                     Id = e.storage.ProductID,
-                    ProductName = e.product.Name,
-                    Brand = e.brand.BrandName,
-                    Img = e.product.Img,
-                    LastOrder = e.storage.LastOrder,
-                    Quantity = e.storage.Quantity,
+                    product_name = e.product.Name,
+                    brand = e.brand.BrandName,
+                    img = e.product.Img,
+                    last_order = e.storage.LastOrder,
+                    quantity = e.storage.Quantity,
                 });
             if (result.Count() == 0)
             {
@@ -167,7 +167,7 @@ namespace IceCreamBE.Controllers
             await _IRepositoryStorage.CreateAsync(new Storage
             {
                 ProductID = storage.ProductId,
-                Quantity = storage.Quantity,
+                Quantity = storage.quantity,
                 LastOrder = DateTime.UtcNow
             });
             return Ok(new Response<List<StorageDTO>> { Succeeded = false });

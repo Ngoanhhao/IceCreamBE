@@ -61,7 +61,7 @@ namespace IceCreamBE.Controllers
                 return BadRequest();
             }
 
-            var result = await _RepositoryAccounts.GetAsync(e => e.Username.ToLower() == entity.Username.ToLower());
+            var result = await _RepositoryAccounts.GetAsync(e => e.Username.ToLower() == entity.username.ToLower());
             if (result != null)
             {
                 return BadRequest(new Response<List<AccountDetailDTO>>
@@ -73,22 +73,22 @@ namespace IceCreamBE.Controllers
 
             await _RepositoryAccounts.CreateAsync(new Accounts
             {
-                Username = entity.Username,
-                Password = entity.Password
+                Username = entity.username,
+                Password = entity.password
             });
 
-            var result2 = await _RepositoryAccounts.GetAsync(e => e.Username == entity.Username && e.Password == entity.Password);
+            var result2 = await _RepositoryAccounts.GetAsync(e => e.Username == entity.username && e.Password == entity.password);
 
             await _RepositoryAccountDetail.CreateAsync(new AccountDetail
             {
                 Id = result2.Id,
-                Avatar = entity.Avatar,
-                Email = entity.Email,
-                ExpirationDate = entity.ExpirationDate,
-                ExtensionDate = entity.ExtensionDate,
-                FullName = entity.FullName,
-                PhoneNumber = entity.PhoneNumber,
-                RoleID = entity.RoleID,
+                Avatar = entity.avatar,
+                Email = entity.email,
+                ExpirationDate = entity.expiration_date,
+                ExtensionDate = entity.extension_date,
+                FullName = entity.full_name,
+                PhoneNumber = entity.phone_number,
+                RoleID = entity.roleID,
             });
 
             return Ok(new Response<AccountDetailDTO>
@@ -97,13 +97,13 @@ namespace IceCreamBE.Controllers
                 Data = new AccountDetailDTO
                 {
                     Id = result2.Id,
-                    Avatar = entity.Avatar,
-                    Email = entity.Email,
-                    Expiration_date = entity.ExpirationDate,
-                    Extension_date = entity.ExtensionDate,
-                    Full_name = entity.FullName,
-                    Phone_number = entity.PhoneNumber,
-                    RoleID = entity.RoleID,
+                    Avatar = entity.avatar,
+                    Email = entity.email,
+                    Expiration_date = entity.expiration_date,
+                    Extension_date = entity.extension_date,
+                    Full_name = entity.full_name,
+                    Phone_number = entity.phone_number,
+                    RoleID = entity.roleID,
                 }
             });
         }

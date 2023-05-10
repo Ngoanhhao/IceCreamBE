@@ -55,12 +55,12 @@ namespace IceCreamBE.Controllers
                 .Select(e => new FeedbackDetailDTO
                 {
                     Id = e.feedback.Id,
-                    Fullname = e.accountDetail.FullName,
-                    Username = e.feedback.Account.Username,
-                    Email = e.accountDetail.Email,
-                    PhoneNumber = e.accountDetail.PhoneNumber,
-                    FeedBackProduct = e.feedback.FeedBackProduct,
-                    ReleaseDate = e.feedback.ReleaseDate,
+                    full_name = e.accountDetail.FullName,
+                    username = e.feedback.Account.Username,
+                    email = e.accountDetail.Email,
+                    phone_number = e.accountDetail.PhoneNumber,
+                    feedBack_product = e.feedback.FeedBackProduct,
+                    release_date = e.feedback.ReleaseDate,
                 })
                 .ToList();
 
@@ -100,12 +100,12 @@ namespace IceCreamBE.Controllers
                 .Select(e => new FeedbackDetailDTO
                 {
                     Id = e.feedback.Id,
-                    Fullname = e.accountDetail.FullName,
-                    Username = e.feedback.Account.Username,
-                    Email = e.accountDetail.Email,
-                    PhoneNumber = e.accountDetail.PhoneNumber,
-                    FeedBackProduct = e.feedback.FeedBackProduct,
-                    ReleaseDate = e.feedback.ReleaseDate,
+                    full_name = e.accountDetail.FullName,
+                    username = e.feedback.Account.Username,
+                    email = e.accountDetail.Email,
+                    phone_number = e.accountDetail.PhoneNumber,
+                    feedBack_product = e.feedback.FeedBackProduct,
+                    release_date = e.feedback.ReleaseDate,
                 })
                 .Where(e => e.Id == id)
                 .ToList();
@@ -136,14 +136,14 @@ namespace IceCreamBE.Controllers
                 .Select(e => new FeedbackDetailDTO
                 {
                     Id = e.feedback.Id,
-                    Fullname = e.accountDetail.FullName,
-                    Username = e.feedback.Account.Username,
-                    Email = e.accountDetail.Email,
-                    PhoneNumber = e.accountDetail.PhoneNumber,
-                    FeedBackProduct = e.feedback.FeedBackProduct,
-                    ReleaseDate = e.feedback.ReleaseDate,
+                    full_name = e.accountDetail.FullName,
+                    username = e.feedback.Account.Username,
+                    email = e.accountDetail.Email,
+                    phone_number = e.accountDetail.PhoneNumber,
+                    feedBack_product = e.feedback.FeedBackProduct,
+                    release_date = e.feedback.ReleaseDate,
                 })
-                .Where(e => e.Fullname.Contains(query))
+                .Where(e => e.full_name.Contains(query))
                 .ToList();
 
             if (result == null)
@@ -168,9 +168,9 @@ namespace IceCreamBE.Controllers
             await _IRepositoryFeedback.UpdateAsync(new Feedback
             {
                 Id = feedback.Id,
-                FeedBackProduct = feedback.FeedBackProduct,
-                AccountID = feedback.AccountID,
-                ReleaseDate = feedback.ReleaseDate
+                FeedBackProduct = feedback.feedBack_product,
+                AccountID = feedback.accountID,
+                ReleaseDate = feedback.release_date
             });
 
             return NoContent();
@@ -188,8 +188,8 @@ namespace IceCreamBE.Controllers
 
             await _IRepositoryFeedback.CreateAsync(new Feedback
             {
-                AccountID = feedback.AccountID,
-                FeedBackProduct = feedback.FeedBackProduct,
+                AccountID = feedback.accountID,
+                FeedBackProduct = feedback.feedBack_product,
                 ReleaseDate = DateTime.UtcNow,
             });
 

@@ -3,8 +3,8 @@
     public class FeedbackDTO
     {
         public int Id { get; set; }
-        public string FeedBackProduct { get; set; }
-        public int AccountID { get; set; }
-        public DateTime ReleaseDate { get; set; }
+        public string feedBack_product { get; set; }
+        public int accountID { get; set; }
+        public DateTime release_date { get; set; }
     }
 }

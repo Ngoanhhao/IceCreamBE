@@ -3,11 +3,11 @@
     public class FeedbackDetailDTO
     {
         public int Id { get; set; }
-        public string FeedBackProduct { get; set; }
-        public string Username { get; set; }
-        public string Fullname { get; set; }
-        public string PhoneNumber { get; set; }
-        public string Email { get; set; }
-        public DateTime ReleaseDate { get; set; }
+        public string feedBack_product { get; set; }
+        public string username { get; set; }
+        public string full_name { get; set; }
+        public string phone_number { get; set; }
+        public string email { get; set; }
+        public DateTime release_date { get; set; }
     }
 }

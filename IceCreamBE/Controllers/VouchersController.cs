@@ -36,12 +36,12 @@ namespace IceCreamBE.Controllers
 
             result.ForEach(e => newResult.Add(new VouchersDTO
             {
-                AdminID = e.AdminID,
-                Discount = e.Discount,
-                ExpirationDate = e.ExpirationDate,
-                Status = e.Status,
                 Id = e.Id,
-                Voucher = e.Voucher,
+                adminID = e.AdminID,
+                discount = e.Discount,
+                expiration_date = e.ExpirationDate,
+                status = e.Status,
+                voucher = e.Voucher,
             }));
 
             var pageFilter = new PaginationFilter<VouchersDTO>(filter.PageNumber, filter.PageSize);
@@ -75,12 +75,12 @@ namespace IceCreamBE.Controllers
             {
                 Data = new VouchersDTO
                 {
-                    AdminID = result.AdminID,
-                    Discount = result.Discount,
-                    ExpirationDate = result.ExpirationDate,
-                    Status = result.Status,
+                    adminID = result.AdminID,
+                    discount = result.Discount,
+                    expiration_date = result.ExpirationDate,
+                    status = result.Status,
                     Id = result.Id,
-                    Voucher = result.Voucher,
+                    voucher = result.Voucher,
                 },
                 Succeeded = true
             });
@@ -102,7 +102,7 @@ namespace IceCreamBE.Controllers
                 return NotFound(new Response<List<VouchersDTO>> { Message = "not found", Succeeded = false });
             }
 
-            await _IRepositoryVourcher.UpdateAsync(new Vouchers { Id = vouchers.Id, Status = vouchers.Status });
+            await _IRepositoryVourcher.UpdateAsync(new Vouchers { Id = vouchers.Id, Status = vouchers.status });
 
             return NoContent();
         }
@@ -120,10 +120,10 @@ namespace IceCreamBE.Controllers
             var voucher = Coupon.CouponGenarate(20);
 
             await _IRepositoryVourcher.CreateAsync(new Vouchers { 
-                AdminID = vouchers.AdminID 
-                ,Status = vouchers.Status,
+                AdminID = vouchers.adminID 
+                ,Status = vouchers.status,
                 Voucher = voucher,
-                Discount = vouchers.Discount,
+                Discount = vouchers.discount,
                 ExpirationDate = DateTime.UtcNow
             });
 
