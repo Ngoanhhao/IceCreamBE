@@ -37,10 +37,10 @@ namespace IceCreamBE.Controllers
                 Id = e.Id,
                 Avatar = e.Avatar,
                 Email = e.Email,
-                ExpirationDate = e.ExpirationDate,
-                ExtensionDate = e.ExtensionDate,
-                FullName = e.FullName,
-                PhoneNumber = e.PhoneNumber,
+                Expiration_date = e.ExpirationDate,
+                Extension_date = e.ExtensionDate,
+                Full_name = e.FullName,
+                Phone_number = e.PhoneNumber,
                 RoleID = e.RoleID,
             }));
 
@@ -77,10 +77,10 @@ namespace IceCreamBE.Controllers
                             Id = result.Id,
                             Avatar = result.Avatar,
                             Email = result.Email,
-                            ExpirationDate = result.ExpirationDate,
-                            ExtensionDate = result.ExtensionDate,
-                            FullName = result.FullName,
-                            PhoneNumber = result.PhoneNumber,
+                            Expiration_date = result.ExpirationDate,
+                            Extension_date = result.ExtensionDate,
+                            Full_name = result.FullName,
+                            Phone_number = result.PhoneNumber,
                             RoleID = result.RoleID
                         }
                     }
@@ -95,7 +95,7 @@ namespace IceCreamBE.Controllers
 
         //GET: api/Accounts/query
         [HttpGet("{query}")]
-        public async Task<ActionResult<AccountDetailDTO>> GetAccounts(string query)
+        public async Task<ActionResult<AccountDetailDTO>> GetAccounts(string query, [FromQuery] PaginationFilter<BrandsDTO>? filter)
         {
             var value = new List<AccountDetailDTO>();
             var result = (await _IRepositoryAccountDetail.GetAllAsync(e => e.FullName.Contains(query)));
@@ -104,10 +104,10 @@ namespace IceCreamBE.Controllers
                 Id = e.Id,
                 Avatar = e.Avatar,
                 Email = e.Email,
-                ExpirationDate = e.ExpirationDate,
-                ExtensionDate = e.ExtensionDate,
-                FullName = e.FullName,
-                PhoneNumber = e.PhoneNumber,
+                Expiration_date = e.ExpirationDate,
+                Extension_date = e.ExtensionDate,
+                Full_name = e.FullName,
+                Phone_number = e.PhoneNumber,
                 RoleID = e.RoleID
             }));
 
@@ -120,10 +120,20 @@ namespace IceCreamBE.Controllers
                 });
             }
 
-            return Ok(new Response<List<AccountDetailDTO>>
+            var pageFilter = new PaginationFilter<BrandsDTO>(filter.PageNumber, filter.PageSize);
+            var pagedData = pageFilter.GetPageList(value);
+
+            return Ok(new PagedResponse<List<AccountDetailDTO>>
             {
-                Succeeded = true,
-                Data = value
+                Data = pagedData,
+                Succeeded = pagedData == null ? false : true,
+                Pagination = new PagedResponseDetail<List<AccountDetailDTO>>
+                {
+                    current_page = pagedData == null ? 0 : pageFilter.PageNumber,
+                    Page_pize = pagedData == null ? 0 : pageFilter.PageSize,
+                    total_pages = (int)Math.Ceiling((double)result.Count / (double)filter.PageSize),
+                    total_records = result.Count
+                }
             });
         }
 
@@ -147,10 +157,10 @@ namespace IceCreamBE.Controllers
                     RoleID = accounts.RoleID,
                     Avatar = accounts.Avatar,
                     Email = accounts.Email,
-                    ExpirationDate = accounts.ExpirationDate,
-                    ExtensionDate = accounts.ExtensionDate,
-                    FullName = accounts.FullName,
-                    PhoneNumber = accounts.PhoneNumber,
+                    Expiration_date = accounts.Expiration_date,
+                    Extension_date = accounts.Extension_date,
+                    Full_name = accounts.Full_name,
+                    Phone_number = accounts.Phone_number,
                 });
 
                 return NoContent();
