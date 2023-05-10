@@ -110,7 +110,7 @@ namespace IceCreamBE.Controllers
                 .Where(e => e.Id == id)
                 .ToList();
 
-            if (result == null)
+            if (result.Count == 0)
             {
                 return NotFound(new Response<FeedbackDetailDTO> { Message = "not found", Succeeded = false });
             }
@@ -146,7 +146,7 @@ namespace IceCreamBE.Controllers
                 .Where(e => e.full_name.Contains(query))
                 .ToList();
 
-            if (result == null)
+            if (result.Count == 0)
             {
                 return NotFound(new Response<FeedbackDetailDTO> { Message = "not found", Succeeded = false });
             }

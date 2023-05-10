@@ -23,6 +23,7 @@ namespace IceCreamBE
             builder.Services.AddScoped<IRepositoryProduct, RepositoryProducts>();
             builder.Services.AddScoped<IRepositoryBrand, RepositoryBrandTest>(); // test
             builder.Services.AddScoped<IRepositoryVourcher, RepositoryVoucher>();
+            builder.Services.AddScoped<IRepositoryRecipe, RepositoryRecipe>();
 
             builder.Services.AddControllersWithViews()
                 .AddNewtonsoftJson(options =>

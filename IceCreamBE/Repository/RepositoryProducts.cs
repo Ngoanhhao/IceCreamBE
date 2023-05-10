@@ -14,9 +14,19 @@ namespace IceCreamBE.Repository
             dbcontext = _dbcontext;
         }
 
-        public Task UpdateAsync(Products entity)
+        public async Task UpdateAsync(Products entity)
         {
-            throw new NotImplementedException();
+            var result = await dbcontext.Products.FirstOrDefaultAsync(e => e.Id == entity.Id);
+            result.Status = entity.Status;
+            result.Description = entity.Description;
+            result.Cost = entity.Cost;
+            result.Price = entity.Price;
+            result.Discount = entity.Discount;
+            result.BrandID = entity.BrandID;
+            result.Img = entity.Img;
+            result.Name = entity.Name;
+            result.Total = entity.Total;
+            await dbcontext.SaveChangesAsync();
         }
     }
 }
