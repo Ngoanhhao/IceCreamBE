@@ -86,7 +86,7 @@ namespace IceCreamBE.Controllers
                     }
                     );
             }
-            return NotFound(new Response<List<AccountDetailDTO>>
+            return NotFound(new Response<AccountDetailDTO>
             {
                 Succeeded = false,
                 Message = "not found"

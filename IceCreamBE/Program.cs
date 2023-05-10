@@ -21,7 +21,7 @@ namespace IceCreamBE
             builder.Services.AddScoped<IRepositoryFeedback, RepositoryFeedback>();
             builder.Services.AddScoped<IRepositoryStorage, RepositoryStorage>();
             builder.Services.AddScoped<IRepositoryProduct, RepositoryProducts>();
-            builder.Services.AddScoped<IRepositoryBrand, RepositoryBrandTest>(); // test
+            builder.Services.AddScoped<IRepositoryBrand, RepositoryBrand>(); // test
             builder.Services.AddScoped<IRepositoryVourcher, RepositoryVoucher>();
             builder.Services.AddScoped<IRepositoryRecipe, RepositoryRecipe>();
 

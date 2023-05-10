@@ -85,9 +85,9 @@ namespace IceCreamBE.Controllers
         [HttpGet("{id:int}")]
         public async Task<ActionResult<FeedbackDTO>> GetFeedback(int id)
         {
-            var feedback = (await _IRepositoryFeedback.GetAllAsync()).AsQueryable<Feedback>();
-            var account = (await _IRepositoryAccounts.GetAllAsync()).AsQueryable<Accounts>();
-            var accountDetail = (await _IRepositoryAccountDetail.GetAllAsync()).AsQueryable<AccountDetail>();
+            var feedback = (await _IRepositoryFeedback.GetAllAsync());
+            var account = (await _IRepositoryAccounts.GetAllAsync());
+            var accountDetail = (await _IRepositoryAccountDetail.GetAllAsync());
             var result = feedback
                 .Join(accountDetail,
                     e => e.AccountID,
@@ -107,14 +107,13 @@ namespace IceCreamBE.Controllers
                     feedBack_product = e.feedback.FeedBackProduct,
                     release_date = e.feedback.ReleaseDate,
                 })
-                .Where(e => e.Id == id)
-                .ToList();
+                .FirstOrDefault(e => e.Id == id);
 
-            if (result.Count == 0)
+            if (result == null)
             {
                 return NotFound(new Response<FeedbackDetailDTO> { Message = "not found", Succeeded = false });
             }
-            return Ok(new Response<List<FeedbackDetailDTO>> { Data = result, Succeeded = true });
+            return Ok(new Response<FeedbackDetailDTO> { Data = result, Succeeded = true });
         }
 
         //GET: api/Feedbacks/fullname

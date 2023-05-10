@@ -1,6 +1,6 @@
 ﻿namespace IceCreamBE.DTO
 {
-    public class RecipeDetailDTO
+    public class RecipeInDTO
     {
         public int Id { get; set; }
         public int productID { get; set; }

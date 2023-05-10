@@ -31,7 +31,7 @@ namespace IceCreamBE.Controllers
 
         //GET: api/Storages
         [HttpGet]
-        public async Task<ActionResult<IEnumerable<StorageDTO>>> Getstorage([FromQuery] PaginationFilter<StorageDTO>? filter)
+        public async Task<ActionResult<IEnumerable<StorageOutDTO>>> Getstorage([FromQuery] PaginationFilter<StorageOutDTO>? filter)
         {
             var storage = (await _IRepositoryStorage.GetAllAsync()).AsQueryable<Storage>();
             var product = (await _IRepositoryProduct.GetAllAsync()).AsQueryable<Products>();
@@ -45,7 +45,7 @@ namespace IceCreamBE.Controllers
                     s => s.product.BrandID,
                     b => b.Id,
                     (s, b) => new { storage = s.storage, product = s.product, brand = b })
-                .Select(e => new StorageDTO
+                .Select(e => new StorageOutDTO
                 {
                     Id = e.storage.ProductID,
                     product_name = e.product.Name,
@@ -54,14 +54,14 @@ namespace IceCreamBE.Controllers
                     last_order = e.storage.LastOrder,
                     quantity = e.storage.Quantity,
                 }).ToList();
-            var pageFilter = new PaginationFilter<StorageDTO>(filter.PageNumber, filter.PageSize);
+            var pageFilter = new PaginationFilter<StorageOutDTO>(filter.PageNumber, filter.PageSize);
             var pagedData = pageFilter.GetPageList(result.ToList());
 
-            return Ok(new PagedResponse<List<StorageDTO>>
+            return Ok(new PagedResponse<List<StorageOutDTO>>
             {
                 Data = pagedData,
                 Succeeded = pagedData == null ? false : true,
-                Pagination = new PagedResponseDetail<List<StorageDTO>>
+                Pagination = new PagedResponseDetail<List<StorageOutDTO>>
                 {
                     current_page = pagedData == null ? 0 : pageFilter.PageNumber,
                     Page_pize = pagedData == null ? 0 : pageFilter.PageSize,
@@ -73,7 +73,7 @@ namespace IceCreamBE.Controllers
 
         // GET: api/Storages/5
         [HttpGet("{id:int}")]
-        public async Task<ActionResult<StorageDTO>> GetStorage(int id)
+        public async Task<ActionResult<StorageOutDTO>> GetStorage(int id)
         {
             var storage = (await _IRepositoryStorage.GetAllAsync()).AsQueryable<Storage>();
             var product = (await _IRepositoryProduct.GetAllAsync()).AsQueryable<Products>();
@@ -88,7 +88,7 @@ namespace IceCreamBE.Controllers
                     b => b.Id,
                     (s, b) => new { storage = s.storage, product = s.product, brand = b })
                 .Where(e => e.storage.ProductID == id)
-                .Select(e => new StorageDTO
+                .Select(e => new StorageOutDTO
                 {
                     Id = e.storage.ProductID,
                     product_name = e.product.Name,
@@ -99,15 +99,15 @@ namespace IceCreamBE.Controllers
                 });
             if (result.Count() == 0)
             {
-                return NotFound(new Response<List<StorageDTO>> { Message = "not found", Succeeded = false });
+                return NotFound(new Response<List<StorageOutDTO>> { Message = "not found", Succeeded = false });
             }
-            return Ok(new Response<List<StorageDTO>> { Data = result.ToList(), Succeeded = true });
+            return Ok(new Response<List<StorageOutDTO>> { Data = result.ToList(), Succeeded = true });
         }
 
 
         // GET: api/Storages/productname
         [HttpGet("{query}")]
-        public async Task<ActionResult<StorageDTO>> GetStorage(string query)
+        public async Task<ActionResult<StorageOutDTO>> GetStorage(string query)
         {
             var storage = (await _IRepositoryStorage.GetAllAsync()).AsQueryable<Storage>();
             var product = (await _IRepositoryProduct.GetAllAsync()).AsQueryable<Products>();
@@ -122,7 +122,7 @@ namespace IceCreamBE.Controllers
                     b => b.Id,
                     (s, b) => new { storage = s.storage, product = s.product, brand = b })
                 .Where(e => e.product.Name.Contains(query) || e.brand.BrandName.Contains(query))
-                .Select(e => new StorageDTO
+                .Select(e => new StorageOutDTO
                 {
                     Id = e.storage.ProductID,
                     product_name = e.product.Name,
@@ -133,9 +133,9 @@ namespace IceCreamBE.Controllers
                 });
             if (result.Count() == 0)
             {
-                return NotFound(new Response<List<StorageDTO>> { Message = "not found", Succeeded = false });
+                return NotFound(new Response<List<StorageOutDTO>> { Message = "not found", Succeeded = false });
             }
-            return Ok(new Response<List<StorageDTO>> { Data = result.ToList(), Succeeded = true });
+            return Ok(new Response<List<StorageOutDTO>> { Data = result.ToList(), Succeeded = true });
         }
 
         // PUT: api/Storages/5
@@ -145,13 +145,13 @@ namespace IceCreamBE.Controllers
         {
             if (!ModelState.IsValid)
             {
-                return BadRequest(new Response<List<StorageDTO>> { Message = "value incorrect", Succeeded = false });
+                return BadRequest(new Response<List<StorageOutDTO>> { Message = "value incorrect", Succeeded = false });
             }
 
             var result = await _IRepositoryStorage.GetAsync(e => e.ProductID == id);
             if (result == null)
             {
-                return NotFound(new Response<List<StorageDTO>> { Message = "not found", Succeeded = false });
+                return NotFound(new Response<List<StorageOutDTO>> { Message = "not found", Succeeded = false });
             }
 
             await _IRepositoryStorage.UpdateAsync(id, quantity);
@@ -162,7 +162,7 @@ namespace IceCreamBE.Controllers
         // POST: api/Storages
         // To protect from overposting attacks, see https://go.microsoft.com/fwlink/?linkid=2123754
         [HttpPost]
-        public async Task<ActionResult<StorageDTO>> PostStorage(StorageDTOCreate storage)
+        public async Task<ActionResult<StorageOutDTO>> PostStorage(StorageInDTO storage)
         {
             await _IRepositoryStorage.CreateAsync(new Storage
             {
@@ -170,7 +170,7 @@ namespace IceCreamBE.Controllers
                 Quantity = storage.quantity,
                 LastOrder = DateTime.UtcNow
             });
-            return Ok(new Response<List<StorageDTO>> { Succeeded = false });
+            return Ok(new Response<List<StorageOutDTO>> { Succeeded = false });
         }
     }
 }
