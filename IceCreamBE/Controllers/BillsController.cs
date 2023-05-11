@@ -47,6 +47,7 @@ namespace IceCreamBE.Controllers
         {
             var bill = await _IRepositoryBill.GetAllAsync();
             var billDetail = await _IRepositoryBillDetail.GetAllAsync();
+            //var product = await _IRepositoryProduct.GetAllAsync();
             var accountDetail = await _IRepositoryAccountDetail.GetAllAsync();
             var voucher = await _IRepositoryVourcher.GetAllAsync();
             var account = await _IRepositoryAccounts.GetAllAsync();
@@ -108,7 +109,7 @@ namespace IceCreamBE.Controllers
                     status = e.status,
                     total = e.total,
                     voucher = voucherItem == null ? null : voucherItem.Voucher,
-                    bill_detail = billDetailItem
+                    //bill_detail = billDetailItem
                 });
             }
 
