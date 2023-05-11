@@ -4,6 +4,7 @@ using IceCreamBE.Data;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Infrastructure;
 using Microsoft.EntityFrameworkCore.Metadata;
+using Microsoft.EntityFrameworkCore.Migrations;
 using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 
 #nullable disable
@@ -11,9 +12,11 @@ using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 namespace IceCreamBE.Migrations
 {
     [DbContext(typeof(IceCreamDbcontext))]
-    partial class IceCreamDbcontextModelSnapshot : ModelSnapshot
+    [Migration("20230511090449_repair")]
+    partial class repair
     {
-        protected override void BuildModel(ModelBuilder modelBuilder)
+        /// <inheritdoc />
+        protected override void BuildTargetModel(ModelBuilder modelBuilder)
         {
 #pragma warning disable 612, 618
             modelBuilder
@@ -64,8 +67,8 @@ namespace IceCreamBE.Migrations
                         {
                             Id = 1,
                             Email = "ngoanhhao24@gmail.com",
-                            ExpirationDate = new DateTime(2023, 5, 21, 21, 27, 0, 446, DateTimeKind.Local).AddTicks(7),
-                            ExtensionDate = new DateTime(2023, 5, 11, 21, 27, 0, 446, DateTimeKind.Local).AddTicks(48),
+                            ExpirationDate = new DateTime(2023, 5, 21, 16, 4, 49, 269, DateTimeKind.Local).AddTicks(5149),
+                            ExtensionDate = new DateTime(2023, 5, 11, 16, 4, 49, 269, DateTimeKind.Local).AddTicks(5175),
                             FullName = "Ngô Anh Hào",
                             PhoneNumber = "1234567890",
                             RoleID = 1
@@ -113,6 +116,9 @@ namespace IceCreamBE.Migrations
                     b.Property<int>("AccountID")
                         .HasColumnType("int");
 
+                    b.Property<int>("BillDetailID")
+                        .HasColumnType("int");
+
                     b.Property<DateTime>("OrderTime")
                         .HasColumnType("datetime2");
 
@@ -141,7 +147,8 @@ namespace IceCreamBE.Migrations
                         {
                             Id = 1,
                             AccountID = 1,
-                            OrderTime = new DateTime(2023, 5, 11, 21, 27, 0, 446, DateTimeKind.Local).AddTicks(143),
+                            BillDetailID = 1,
+                            OrderTime = new DateTime(2023, 5, 11, 16, 4, 49, 269, DateTimeKind.Local).AddTicks(5234),
                             Status = true,
                             SubTotal = 15000.0,
                             Total = 15000.0
