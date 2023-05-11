@@ -4,6 +4,7 @@ using IceCreamBE.Data;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Infrastructure;
 using Microsoft.EntityFrameworkCore.Metadata;
+using Microsoft.EntityFrameworkCore.Migrations;
 using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 
 #nullable disable
@@ -11,9 +12,11 @@ using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 namespace IceCreamBE.Migrations
 {
     [DbContext(typeof(IceCreamDbcontext))]
-    partial class IceCreamDbcontextModelSnapshot : ModelSnapshot
+    [Migration("20230510141953_data")]
+    partial class data
     {
-        protected override void BuildModel(ModelBuilder modelBuilder)
+        /// <inheritdoc />
+        protected override void BuildTargetModel(ModelBuilder modelBuilder)
         {
 #pragma warning disable 612, 618
             modelBuilder
@@ -58,18 +61,6 @@ namespace IceCreamBE.Migrations
                     b.HasIndex("RoleID");
 
                     b.ToTable("AccountDetail", (string)null);
-
-                    b.HasData(
-                        new
-                        {
-                            Id = 1,
-                            Email = "ngoanhhao24@gmail.com",
-                            ExpirationDate = new DateTime(2023, 5, 21, 16, 4, 49, 269, DateTimeKind.Local).AddTicks(5149),
-                            ExtensionDate = new DateTime(2023, 5, 11, 16, 4, 49, 269, DateTimeKind.Local).AddTicks(5175),
-                            FullName = "Ngô Anh Hào",
-                            PhoneNumber = "1234567890",
-                            RoleID = 1
-                        });
                 });
 
             modelBuilder.Entity("IceCreamBE.Models.Accounts", b =>
@@ -92,14 +83,6 @@ namespace IceCreamBE.Migrations
                     b.HasKey("Id");
 
                     b.ToTable("Accounts", (string)null);
-
-                    b.HasData(
-                        new
-                        {
-                            Id = 1,
-                            Password = "Admin",
-                            Username = "Admin"
-                        });
                 });
 
             modelBuilder.Entity("IceCreamBE.Models.Bill", b =>
@@ -119,10 +102,7 @@ namespace IceCreamBE.Migrations
                     b.Property<DateTime>("OrderTime")
                         .HasColumnType("datetime2");
 
-                    b.Property<bool>("Status")
-                        .HasColumnType("bit");
-
-                    b.Property<double>("SubTotal")
+                    b.Property<double>("Status")
                         .HasColumnType("float");
 
                     b.Property<double>("Total")
@@ -138,18 +118,6 @@ namespace IceCreamBE.Migrations
                     b.HasIndex("VoucherID");
 
                     b.ToTable("Bill", (string)null);
-
-                    b.HasData(
-                        new
-                        {
-                            Id = 1,
-                            AccountID = 1,
-                            BillDetailID = 1,
-                            OrderTime = new DateTime(2023, 5, 11, 16, 4, 49, 269, DateTimeKind.Local).AddTicks(5234),
-                            Status = true,
-                            SubTotal = 15000.0,
-                            Total = 15000.0
-                        });
                 });
 
             modelBuilder.Entity("IceCreamBE.Models.BillDetail", b =>
@@ -162,9 +130,6 @@ namespace IceCreamBE.Migrations
 
                     b.Property<int>("BillID")
                         .HasColumnType("int");
-
-                    b.Property<double>("Price")
-                        .HasColumnType("float");
 
                     b.Property<int>("ProductID")
                         .HasColumnType("int");
@@ -182,17 +147,6 @@ namespace IceCreamBE.Migrations
                     b.HasIndex("ProductID");
 
                     b.ToTable("BillDetail", (string)null);
-
-                    b.HasData(
-                        new
-                        {
-                            Id = 1,
-                            BillID = 1,
-                            Price = 15000.0,
-                            ProductID = 1,
-                            Quantity = 2,
-                            Total = 30000.0
-                        });
                 });
 
             modelBuilder.Entity("IceCreamBE.Models.Brands", b =>
@@ -211,13 +165,6 @@ namespace IceCreamBE.Migrations
                     b.HasKey("Id");
 
                     b.ToTable("Brands");
-
-                    b.HasData(
-                        new
-                        {
-                            Id = 1,
-                            BrandName = "Pepsi"
-                        });
                 });
 
             modelBuilder.Entity("IceCreamBE.Models.Feedback", b =>
@@ -287,18 +234,6 @@ namespace IceCreamBE.Migrations
                     b.HasIndex("BrandID");
 
                     b.ToTable("Products", (string)null);
-
-                    b.HasData(
-                        new
-                        {
-                            Id = 1,
-                            BrandID = 1,
-                            Cost = 10000.0,
-                            Name = "Pepsi",
-                            Price = 15000.0,
-                            Status = true,
-                            Total = 15000.0
-                        });
                 });
 
             modelBuilder.Entity("IceCreamBE.Models.Recipe", b =>

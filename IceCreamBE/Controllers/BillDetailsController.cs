@@ -33,25 +33,21 @@ namespace IceCreamBE.Controllers
 
         // GET: api/BillDetails
         [HttpGet]
-        public async Task<ActionResult<IEnumerable<BillDetail>>> GetBillDetail([FromQuery] PaginationFilter<BillDetailOutDTO>? filter)
+        public async Task<ActionResult<IEnumerable<BillDetailOutDTO>>> GetBillDetail([FromQuery] PaginationFilter<BillDetailOutDTO>? filter)
         {
             var bill = await _IRepositoryBill.GetAllAsync();
             var billDetail = await _IRepositoryBillDetail.GetAllAsync();
             var product = await _IRepositoryProduct.GetAllAsync();
 
-            var result = billDetail.
-                Join(bill,
-                    dt => dt.Id,
-                    b => b.BillDetailID,
-                    (dt, b) => new { billDetail = dt, bill = b })
+            var result = billDetail
                 .Join(product,
-                    dt => dt.billDetail.ProductID,
-                    p => p.Id,
-                    (dt, p) => new { bill = dt.bill, billDetail = dt.billDetail, product = p })
+                    e => e.ProductID,
+                    q => q.Id,
+                    (e, q) => new { billDetail = e, product = q })
                 .Select(e => (new BillDetailOutDTO
                 {
-                    Id = e.bill.Id,
-                    billID = e.bill.Id,
+                    Id = e.billDetail.Id,
+                    billID = e.billDetail.BillID,
                     product_name = e.product.Name,
                     quantity = e.billDetail.Quantity,
                     total = e.billDetail.Total

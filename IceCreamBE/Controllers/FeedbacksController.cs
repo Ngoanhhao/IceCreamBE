@@ -51,7 +51,7 @@ namespace IceCreamBE.Controllers
                 .Join(account,
                     k => k.feedback.AccountID,
                     t => t.Id,
-                    (k, t) => new { feedback = k.feedback, accountDetail = k.accountDetail, t = account })
+                    (k, t) => new { feedback = k.feedback, accountDetail = k.accountDetail, account = t })
                 .Select(e => new FeedbackDetailDTO
                 {
                     Id = e.feedback.Id,
@@ -96,7 +96,7 @@ namespace IceCreamBE.Controllers
                 .Join(account,
                     k => k.feedback.AccountID,
                     t => t.Id,
-                    (k, t) => new { feedback = k.feedback, accountDetail = k.accountDetail, t = account })
+                    (k, t) => new { feedback = k.feedback, accountDetail = k.accountDetail, account = t })
                 .Select(e => new FeedbackDetailDTO
                 {
                     Id = e.feedback.Id,

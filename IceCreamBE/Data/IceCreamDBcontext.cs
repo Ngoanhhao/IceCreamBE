@@ -12,6 +12,7 @@ namespace IceCreamBE.Data
         }
         protected override void OnModelCreating(ModelBuilder modelBuilder)
         {
+            
             // table config
             modelBuilder.Entity<Accounts>(entity =>
             {
@@ -148,14 +149,9 @@ namespace IceCreamBE.Data
                     .OnDelete(DeleteBehavior.NoAction);
             });
 
-            // table data
-            //modelBuilder.Entity<Accounts>().HasData(new Accounts { Username});
 
-            //modelBuilder.Entity<Roles>().HasData(new Roles[]{
-            //    new Roles {Role = "Admin" },
-            //    new Roles {Role = "Member" },
-            //    new Roles {Role = "Guest" },
-            //});
+            base.OnModelCreating(modelBuilder);
+            new DbInitializer(modelBuilder).Seed();
         }
 
         public DbSet<AccountDetail> AccountDetail { get; set; }
