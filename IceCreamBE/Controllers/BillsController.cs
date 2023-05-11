@@ -29,14 +29,14 @@ namespace IceCreamBE.Controllers
             IRepositoryProduct iRepositoryProduct,
             IRepositoryAccounts iRepositoryAccounts,
             IRepositoryVourcher iRepositoryVourcher,
-            IRepositoryBillDetail iRepositoryBillDetail, 
+            IRepositoryBillDetail iRepositoryBillDetail,
             IRepositoryAccountDetail iRepositoryAccountDetail
             )
         {
             _IRepositoryBill = iRepositoryBill;
             _IRepositoryProduct = iRepositoryProduct;
             _IRepositoryAccounts = iRepositoryAccounts;
-            _IRepositoryVourcher = iRepositoryVourcher; 
+            _IRepositoryVourcher = iRepositoryVourcher;
             _IRepositoryBillDetail = iRepositoryBillDetail;
             _IRepositoryAccountDetail = iRepositoryAccountDetail;
         }
@@ -52,103 +52,112 @@ namespace IceCreamBE.Controllers
             var voucher = await _IRepositoryVourcher.GetAllAsync();
             var account = await _IRepositoryAccounts.GetAllAsync();
 
-            var result = bill
-                .Join(billDetail,
-                    b => b.BillDetailID,
-                    dt => dt.Id,
-                    (b, dt) => new { bill = b, billDetail = dt })
-                .Join(product,
-                    e => e.billDetail.ProductID,
-                    p => p.Id,
-                    (e, p) => new { bill = e.bill, billDetail = e.billDetail, product = p })
-                .Join(voucher,
-                    q => q.bill.VoucherID,
-                    v => v.Id,
-                    (q, v) => new { bill = q.bill, billDetail = q.billDetail, product = q.product, voucher = v})
-                .Join(account,
-                    q => q.bill.AccountID,
-                    v => v.Id,
-                    (q,v)=> new { bill = q.bill, billDetail = q.billDetail, product = q.product, voucher = q.voucher, account = v})
-                .Join(accountDetail,
-                    q => q.account.Id,
-                    v => v.Id,
-                    (q,v) => new { bill = q.bill, billDetail = q.billDetail, product = q.product, voucher = q.voucher, account = q.account, accountDetail = v })
-                .Select(e => new BillOutDTO
-                {
-                    Id = e.bill.Id,
-                    full_name = e.bill.Account.AccountDetail.FullName,
-                    bill_detailID = e.billDetail.Id,
-                    order_Time = e.bill.OrderTime,
-                    status = e.bill.Status,
-                    voucher = e.bill.Vouchers.Voucher
-                }).ToList();
+            var billDT = bill
+                    .Join(billDetail,
+                        b => b.BillDetailID,
+                        dt => dt.Id,
+                        (b, dt) => new { bill = b, billDetail = dt })
+                    .Join(product,
+                        e => e.billDetail.ProductID,
+                        q => q.Id,
+                        (e, q) => new { bill = e.bill, billDetail = e.billDetail, product = q })
+                    .Select(e => new BillDetailOutDTO
+                    {
+                        Id = e.billDetail.Id,
+                        product_name = e.billDetail.Product.Name,
+                        billID = e.billDetail.Id,
+                        quantity = e.billDetail.Quantity,
+                        total = 0
+                    }).Where(e => e.billID == 2);
 
-            result = from p in bill
-                     join w in billDetail
-                     on p.BillDetailID equals w.Id
+            return Ok(billDT);
 
-                     from k in product
-                     join j in 
+            //var result = bill
+            //    .Join(billDetail,
+            //        b => b.BillDetailID,
+            //        dt => dt.Id,
+            //        (b, dt) => new { bill = b, billDetail = dt })
+                //.Join(product,
+                //    e => e.billDetail.ProductID,
+                //    p => p.Id,
+                //    (e, p) => new { bill = e.bill, billDetail = e.billDetail, product = p })
+                //.Join(account,
+                //    e => e.bill.AccountID,
+                //    q => q.Id,
+                //    (e, q) => new { bill = e.bill, billDetail = e.billDetail, product = e.product, account = q })
+                //.Join(accountDetail,
+                //    e => e.account.Id,
+                //    q => q.Id,
+                //    (e, q) => new{ bill = e.bill, billDetail = e.billDetail, product = e.product, account = e.account, accountDetail = q})
+            //    .Select(e => new BillOutDTO
+            //    {
+            //        Id = e.bill.Id,
+            //        full_name = e.bill.AccountID.ToString(),
+            //        bill_detailID = new billde,
+            //        order_Time = e.bill.OrderTime,
+            //        status = e.bill.Status,
+            //        voucher = e.bill.VoucherID.ToString()
+            //    }).ToList();
 
-            var pageFilter = new PaginationFilter<BillOutDTO>(filter.PageNumber, filter.PageSize);
-            var pagedData = pageFilter.GetPageList(result);
+            //var pageFilter = new PaginationFilter<BillOutDTO>(filter.PageNumber, filter.PageSize);
+            //var pagedData = pageFilter.GetPageList(result);
 
-            return Ok(new PagedResponse<List<BillOutDTO>>
-            {
-                Data = pagedData,
-                Succeeded = pagedData == null ? false : true,
-                Pagination = new PagedResponseDetail<List<BillOutDTO>>
-                {
-                    current_page = pagedData == null ? 0 : pageFilter.PageNumber,
-                    Page_pize = pagedData == null ? 0 : pageFilter.PageSize,
-                    total_pages = (int)Math.Ceiling((double)result.Count / (double)filter.PageSize),
-                    total_records = result.Count
-                }
-            });
+            //return Ok(new PagedResponse<List<BillOutDTO>>
+            //{
+            //    Data = pagedData,
+            //    Succeeded = pagedData == null ? false : true,
+            //    Pagination = new PagedResponseDetail<List<BillOutDTO>>
+            //    {
+            //        current_page = pagedData == null ? 0 : pageFilter.PageNumber,
+            //        Page_pize = pagedData == null ? 0 : pageFilter.PageSize,
+            //        total_pages = (int)Math.Ceiling((double)result.Count / (double)filter.PageSize),
+            //        total_records = result.Count
+            //    }
+            //});
         }
 
         // GET: api/Bills/product name
-        [HttpGet("{query}")]
-        public async Task<ActionResult<IEnumerable<Bill>>> GetBill(string query, [FromQuery] PaginationFilter<BillDetailOutDTO>? filter)
-        {
-            var bill = await _IRepositoryBill.GetAllAsync();
-            var billDetail = await _IRepositoryBillDetail.GetAllAsync();
-            var product = await _IRepositoryProduct.GetAllAsync();
-            var result = bill
-                .Join(billDetail,
-                    b => b.BillDetailID,
-                    dt => dt.Id,
-                    (b, dt) => new { bill = b, billDetail = dt })
-                .Join(product,
-                e => e.billDetail.ProductID,
-                p => p.Id,
-                (e, p) => new { bill = e.bill, billDetail = e.billDetail, product = p })
-                .Where(e => e.product.Name.Contains(query))
-                .Select(e => new BillDetailOutDTO
-                {
-                    Id = e.bill.Id,
-                    billID = e.bill.Id,
-                    product_name = e.product.Name,
-                    quantity = e.billDetail.Quantity,
-                    total = e.billDetail.Total,
-                }).ToList();
+        //[HttpGet("{query}")]
+        //public async Task<ActionResult<IEnumerable<Bill>>> GetBill(string query, [FromQuery] PaginationFilter<BillDetailOutDTO>? filter)
+        //{
+        //    var bill = await _IRepositoryBill.GetAllAsync();
+        //    var billDetail = await _IRepositoryBillDetail.GetAllAsync();
+        //    var product = await _IRepositoryProduct.GetAllAsync();
+        //    var result = bill
+        //        .Join(billDetail,
+        //            b => b.BillDetailID,
+        //            dt => dt.Id,
+        //            (b, dt) => new { bill = b, billDetail = dt })
+        //        .Join(product,
+        //        e => e.billDetail.ProductID,
+        //        p => p.Id,
+        //        (e, p) => new { bill = e.bill, billDetail = e.billDetail, product = p })
+        //        .Where(e => e.product.Name.Contains(query))
+        //        .Select(e => new BillDetailOutDTO
+        //        {
+        //            Id = e.bill.Id,
+        //            billID = e.bill.Id,
+        //            product_name = e.product.Name,
+        //            quantity = e.billDetail.Quantity,
+        //            total = e.billDetail.Total,
+        //        }).ToList();
 
-            var pageFilter = new PaginationFilter<BillDetailOutDTO>(filter.PageNumber, filter.PageSize);
-            var pagedData = pageFilter.GetPageList(result);
+        //    var pageFilter = new PaginationFilter<BillDetailOutDTO>(filter.PageNumber, filter.PageSize);
+        //    var pagedData = pageFilter.GetPageList(result);
 
-            return Ok(new PagedResponse<List<BillDetailOutDTO>>
-            {
-                Data = pagedData,
-                Succeeded = pagedData == null ? false : true,
-                Pagination = new PagedResponseDetail<List<BillDetailOutDTO>>
-                {
-                    current_page = pagedData == null ? 0 : pageFilter.PageNumber,
-                    Page_pize = pagedData == null ? 0 : pageFilter.PageSize,
-                    total_pages = (int)Math.Ceiling((double)result.Count / (double)filter.PageSize),
-                    total_records = result.Count
-                }
-            });
-        }
+        //    return Ok(new PagedResponse<List<BillDetailOutDTO>>
+        //    {
+        //        Data = pagedData,
+        //        Succeeded = pagedData == null ? false : true,
+        //        Pagination = new PagedResponseDetail<List<BillDetailOutDTO>>
+        //        {
+        //            current_page = pagedData == null ? 0 : pageFilter.PageNumber,
+        //            Page_pize = pagedData == null ? 0 : pageFilter.PageSize,
+        //            total_pages = (int)Math.Ceiling((double)result.Count / (double)filter.PageSize),
+        //            total_records = result.Count
+        //        }
+        //    });
+        //}
 
         //// GET: api/Bills/5
         //[HttpGet("{id}")]
