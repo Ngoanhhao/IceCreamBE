@@ -11,6 +11,7 @@
     <WebStackScaffolding_DbContextTypeFullName>IceCreamBE.Data.IceCreamDbcontext</WebStackScaffolding_DbContextTypeFullName>
     <WebStackScaffolding_IsAsyncSelected>False</WebStackScaffolding_IsAsyncSelected>
     <ActiveDebugProfile>IceCreamBE</ActiveDebugProfile>
+    <NameOfLastUsedPublishProfile>D:\Technology\C#\sour\IceCreamBE\IceCreamBE\Properties\PublishProfiles\FolderProfile1.pubxml</NameOfLastUsedPublishProfile>
   </PropertyGroup>
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Debug|AnyCPU'">
     <DebuggerFlavor>ProjectDebugger</DebuggerFlavor>

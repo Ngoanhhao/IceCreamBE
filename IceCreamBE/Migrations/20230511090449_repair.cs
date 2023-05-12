@@ -51,7 +51,7 @@ namespace IceCreamBE.Migrations
             migrationBuilder.InsertData(
                 table: "Bill",
                 columns: new[] { "Id", "AccountID", "BillDetailID", "OrderTime", "Status", "SubTotal", "Total", "VoucherID" },
-                values: new object[] { 1, 1, 1, new DateTime(2023, 5, 11, 16, 4, 49, 269, DateTimeKind.Local).AddTicks(5234), true, 15000.0, 15000.0, null });
+                values: new object[] { 1, 1, 1, new DateTime(2023, 5, 11, 16, 4, 49, 269, DateTimeKind.Local).AddTicks(5234), true, 30000.0, 30000.0, null });
 
             migrationBuilder.InsertData(
                 table: "Products",

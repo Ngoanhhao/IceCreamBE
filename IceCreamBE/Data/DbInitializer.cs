@@ -65,8 +65,8 @@ namespace IceCreamBE.Data
                 AccountID = 1,
                 OrderTime = DateTime.Now,
                 Status = true,
-                SubTotal = 15000,
-                Total = 15000,
+                SubTotal = 30000,
+                Total = 30000,
             });
 
             modelBuilder.Entity<BillDetail>().HasData(new BillDetail
