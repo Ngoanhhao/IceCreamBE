@@ -63,7 +63,6 @@ namespace IceCreamBE.Data
             {
                 Id = 1,
                 AccountID = 1,
-                BillDetailID = 1,
                 OrderTime = DateTime.Now,
                 Status = true,
                 SubTotal = 15000,

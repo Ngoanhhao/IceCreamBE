@@ -46,14 +46,10 @@ namespace IceCreamBE.Controllers
         public async Task<ActionResult<IEnumerable<BillInDTO>>> GetBill([FromQuery] PaginationFilter<BillInDTO>? filter)
         {
             var bill = await _IRepositoryBill.GetAllAsync();
-            var billDetail = await _IRepositoryBillDetail.GetAllAsync();
-            //var product = await _IRepositoryProduct.GetAllAsync();
             var accountDetail = await _IRepositoryAccountDetail.GetAllAsync();
-            var voucher = await _IRepositoryVourcher.GetAllAsync();
-            var account = await _IRepositoryAccounts.GetAllAsync();
-            var result = new List<BillOutDTO>();
 
-            var billDT = bill
+            // Bill
+            var result = bill
                     .Join(accountDetail,
                         e => e.AccountID,
                         q => q.Id,
@@ -66,11 +62,95 @@ namespace IceCreamBE.Controllers
                         status = e.bill.Status,
                         total = e.bill.Total,
                         voucher = e.bill.VoucherID.ToString(),
+                        sub_total = e.bill.SubTotal,
+                        email = e.accountDetail.Email,
+                        phone_number = e.accountDetail.PhoneNumber,
                     }).ToList();
 
 
-            foreach (var e in billDT)
+            foreach (var e in result)
             {
+                var billdetail = await _IRepositoryBillDetail.GetAllAsync(q => q.BillID == e.Id);
+                var product = await _IRepositoryProduct.GetAllAsync();
+
+                // get bill detail
+                var billDetailItem = billdetail
+                    .Join(product,
+                        e => e.ProductID,
+                        q => q.Id,
+                        (e, q) => new { billdetail = e, product = q })
+                    .Select(e => new BillDetailOutDTO
+                    {
+                        Id = e.billdetail.Id,
+                        billID = e.billdetail.BillID,
+                        product_name = e.product.Name,
+                        quantity = e.billdetail.Quantity,
+                        total = e.billdetail.Total,
+                        price = e.billdetail.Price,
+                    })
+                    .ToList();
+
+                //get voucher from voucherID
+                var voucherItem = (await _IRepositoryVourcher.GetAsync(v => v.Id == int.Parse(e.voucher.Equals("") ? "0" : e.voucher)));
+
+                e.voucher = voucherItem == null ? null : voucherItem.Voucher;
+                e.products = billDetailItem;
+            }
+
+            var pageFilter = new PaginationFilter<BillOutDTO>(filter.PageNumber, filter.PageSize);
+            var pagedData = pageFilter.GetPageList(result);
+
+            return Ok(new PagedResponse<List<BillOutDTO>>
+            {
+                Data = pagedData,
+                Succeeded = pagedData == null ? false : true,
+                Pagination = new PagedResponseDetail<List<BillOutDTO>>
+                {
+                    current_page = pagedData == null ? 0 : pageFilter.PageNumber,
+                    Page_pize = pagedData == null ? 0 : pageFilter.PageSize,
+                    total_pages = (int)Math.Ceiling((double)result.Count / (double)filter.PageSize),
+                    total_records = result.Count
+                }
+            });
+        }
+
+
+        //GET: api/Bills/name, email, phone number
+        [HttpGet("{query}")]
+        public async Task<ActionResult<IEnumerable<BillOutDTO>>> GetBill(string query, [FromQuery] PaginationFilter<BillOutDTO>? filter)
+        {
+            var bill = await _IRepositoryBill.GetAllAsync();
+            var accountDetail = await _IRepositoryAccountDetail.GetAllAsync();
+
+            // Bill
+            var result = bill
+                    .Join(accountDetail,
+                        e => e.AccountID,
+                        q => q.Id,
+                        (e, q) => new { bill = e, accountDetail = q })
+                    .Where(e => e.accountDetail.FullName.Contains(query) || e.accountDetail.Email.Contains(query) || e.accountDetail.PhoneNumber.Contains(query))
+                    .Select(e => new BillOutDTO
+                    {
+                        Id = e.bill.Id,
+                        full_name = e.accountDetail.FullName,
+                        order_Time = e.bill.OrderTime,
+                        status = e.bill.Status,
+                        total = e.bill.Total,
+                        voucher = e.bill.VoucherID.ToString(),
+                        sub_total = e.bill.SubTotal,
+                        email = e.accountDetail.Email,
+                        phone_number = e.accountDetail.PhoneNumber,
+                    })
+                    .ToList();
+
+            if (result.Count == 0)
+            {
+                return NotFound(new Response<BillOutDTO> { Message = "not found", Succeeded = false });
+            }
+
+            foreach (var e in result)
+            {
+                // get bill detail
                 var billdetail = await _IRepositoryBillDetail.GetAllAsync(q => q.BillID == e.Id);
                 var product = await _IRepositoryProduct.GetAllAsync();
 
@@ -85,211 +165,159 @@ namespace IceCreamBE.Controllers
                         billID = e.billdetail.BillID,
                         product_name = e.product.Name,
                         quantity = e.billdetail.Quantity,
-                        total = e.billdetail.Total
-                    }).ToList();
+                        total = e.billdetail.Total,
+                        price = e.billdetail.Price,
+                    })
+                    .ToList();
 
-                //List<BillDetailOutDTO> billDetailOut = new List<BillDetailOutDTO>();
-                //billdetail.ForEach(e =>
-                //{
-                //    billDetailOut.Add(new BillDetailOutDTO
-                //    {
-                //        Id = e.Id,
-                //        billID = e.BillID,
-                //        product_name = e.,
-
-                //    });
-                //});
-
+                //get voucher from voucherID
                 var voucherItem = (await _IRepositoryVourcher.GetAsync(v => v.Id == int.Parse(e.voucher.Equals("") ? "0" : e.voucher)));
-                result.Add(new BillOutDTO
-                {
-                    Id = e.Id,
-                    full_name = e.full_name,
-                    order_Time = e.order_Time,
-                    status = e.status,
-                    total = e.total,
-                    voucher = voucherItem == null ? null : voucherItem.Voucher,
-                    //bill_detail = billDetailItem
-                });
+
+                e.voucher = voucherItem == null ? null : voucherItem.Voucher;
+                e.products = billDetailItem;
             }
 
-            return Ok(result);
+            var pageFilter = new PaginationFilter<BillOutDTO>(filter.PageNumber, filter.PageSize);
+            var pagedData = pageFilter.GetPageList(result);
 
-            //var result = bill
-            //    .Join(billDetail,
-            //        b => b.BillDetailID,
-            //        dt => dt.Id,
-            //        (b, dt) => new { bill = b, billDetail = dt })
-            //.Join(product,
-            //    e => e.billDetail.ProductID,
-            //    p => p.Id,
-            //    (e, p) => new { bill = e.bill, billDetail = e.billDetail, product = p })
-            //.Join(account,
-            //    e => e.bill.AccountID,
-            //    q => q.Id,
-            //    (e, q) => new { bill = e.bill, billDetail = e.billDetail, product = e.product, account = q })
-            //.Join(accountDetail,
-            //    e => e.account.Id,
-            //    q => q.Id,
-            //    (e, q) => new{ bill = e.bill, billDetail = e.billDetail, product = e.product, account = e.account, accountDetail = q})
-            //    .Select(e => new BillOutDTO
-            //    {
-            //        Id = e.bill.Id,
-            //        full_name = e.bill.AccountID.ToString(),
-            //        bill_detailID = new billde,
-            //        order_Time = e.bill.OrderTime,
-            //        status = e.bill.Status,
-            //        voucher = e.bill.VoucherID.ToString()
-            //    }).ToList();
-
-            //var pageFilter = new PaginationFilter<BillOutDTO>(filter.PageNumber, filter.PageSize);
-            //var pagedData = pageFilter.GetPageList(result);
-
-            //return Ok(new PagedResponse<List<BillOutDTO>>
-            //{
-            //    Data = pagedData,
-            //    Succeeded = pagedData == null ? false : true,
-            //    Pagination = new PagedResponseDetail<List<BillOutDTO>>
-            //    {
-            //        current_page = pagedData == null ? 0 : pageFilter.PageNumber,
-            //        Page_pize = pagedData == null ? 0 : pageFilter.PageSize,
-            //        total_pages = (int)Math.Ceiling((double)result.Count / (double)filter.PageSize),
-            //        total_records = result.Count
-            //    }
-            //});
+            return Ok(new PagedResponse<List<BillOutDTO>>
+            {
+                Data = pagedData,
+                Succeeded = pagedData == null ? false : true,
+                Pagination = new PagedResponseDetail<List<BillOutDTO>>
+                {
+                    current_page = pagedData == null ? 0 : pageFilter.PageNumber,
+                    Page_pize = pagedData == null ? 0 : pageFilter.PageSize,
+                    total_pages = (int)Math.Ceiling((double)result.Count / (double)filter.PageSize),
+                    total_records = result.Count
+                }
+            });
         }
 
+        //GET: api/Bills/id
+        [HttpGet("{id:int}")]
+        public async Task<ActionResult<IEnumerable<BillOutDTO>>> GetBill(int id, [FromQuery] PaginationFilter<BillOutDTO>? filter)
+        {
+            var bill = await _IRepositoryBill.GetAllAsync();
+            var accountDetail = await _IRepositoryAccountDetail.GetAllAsync();
 
-        // GET: api/Bills/product name
-        //[HttpGet("{query}")]
-        //public async Task<ActionResult<IEnumerable<Bill>>> GetBill(string query, [FromQuery] PaginationFilter<BillDetailOutDTO>? filter)
-        //{
-        //    var bill = await _IRepositoryBill.GetAllAsync();
-        //    var billDetail = await _IRepositoryBillDetail.GetAllAsync();
-        //    var product = await _IRepositoryProduct.GetAllAsync();
-        //    var result = bill
-        //        .Join(billDetail,
-        //            b => b.BillDetailID,
-        //            dt => dt.Id,
-        //            (b, dt) => new { bill = b, billDetail = dt })
-        //        .Join(product,
-        //        e => e.billDetail.ProductID,
-        //        p => p.Id,
-        //        (e, p) => new { bill = e.bill, billDetail = e.billDetail, product = p })
-        //        .Where(e => e.product.Name.Contains(query))
-        //        .Select(e => new BillDetailOutDTO
-        //        {
-        //            Id = e.bill.Id,
-        //            billID = e.bill.Id,
-        //            product_name = e.product.Name,
-        //            quantity = e.billDetail.Quantity,
-        //            total = e.billDetail.Total,
-        //        }).ToList();
+            // Bill
+            var result = bill
+                    .Join(accountDetail,
+                        e => e.AccountID,
+                        q => q.Id,
+                        (e, q) => new { bill = e, accountDetail = q })
+                    .Select(e => new BillOutDTO
+                    {
+                        Id = e.bill.Id,
+                        full_name = e.accountDetail.FullName,
+                        order_Time = e.bill.OrderTime,
+                        status = e.bill.Status,
+                        total = e.bill.Total,
+                        voucher = e.bill.VoucherID.ToString(),
+                        sub_total = e.bill.SubTotal,
+                        email = e.accountDetail.Email,
+                        phone_number = e.accountDetail.PhoneNumber,
+                    }).FirstOrDefault(e => e.Id == id);
 
-        //    var pageFilter = new PaginationFilter<BillDetailOutDTO>(filter.PageNumber, filter.PageSize);
-        //    var pagedData = pageFilter.GetPageList(result);
+            if (result == null)
+            {
+                return NotFound(new Response<BillOutDTO> { Message = "not found", Succeeded = false });
+            }
 
-        //    return Ok(new PagedResponse<List<BillDetailOutDTO>>
-        //    {
-        //        Data = pagedData,
-        //        Succeeded = pagedData == null ? false : true,
-        //        Pagination = new PagedResponseDetail<List<BillDetailOutDTO>>
-        //        {
-        //            current_page = pagedData == null ? 0 : pageFilter.PageNumber,
-        //            Page_pize = pagedData == null ? 0 : pageFilter.PageSize,
-        //            total_pages = (int)Math.Ceiling((double)result.Count / (double)filter.PageSize),
-        //            total_records = result.Count
-        //        }
-        //    });
-        //}
+            // get bill detail
+            var billdetail = await _IRepositoryBillDetail.GetAllAsync(q => q.BillID == result.Id);
+            var product = await _IRepositoryProduct.GetAllAsync();
 
-        //// GET: api/Bills/5
-        //[HttpGet("{id}")]
-        //public async Task<ActionResult<Bill>> GetBill(int id)
-        //{
-        //    if (_context.Bill == null)
-        //    {
-        //        return NotFound();
-        //    }
-        //    var bill = await _context.Bill.FindAsync(id);
+            var billDetailItem = billdetail
+                .Join(product,
+                    e => e.ProductID,
+                    q => q.Id,
+                    (e, q) => new { billdetail = e, product = q })
+                .Select(e => new BillDetailOutDTO
+                {
+                    Id = e.billdetail.Id,
+                    billID = e.billdetail.BillID,
+                    product_name = e.product.Name,
+                    quantity = e.billdetail.Quantity,
+                    total = e.billdetail.Total,
+                    price = e.billdetail.Price,
+                })
+                .ToList();
 
-        //    if (bill == null)
-        //    {
-        //        return NotFound();
-        //    }
+            //get voucher from voucherID
+            var voucherItem = (await _IRepositoryVourcher.GetAsync(v => v.Id == int.Parse(result.voucher.Equals("") ? "0" : result.voucher)));
 
-        //    return bill;
-        //}
+            result.voucher = voucherItem == null ? null : voucherItem.Voucher;
+            result.products = billDetailItem;
 
-        //// PUT: api/Bills/5
-        //// To protect from overposting attacks, see https://go.microsoft.com/fwlink/?linkid=2123754
-        //[HttpPut("{id}")]
-        //public async Task<IActionResult> PutBill(int id, Bill bill)
-        //{
-        //    if (id != bill.Id)
-        //    {
-        //        return BadRequest();
-        //    }
+            return Ok(new Response<BillOutDTO> { Data = result, Succeeded = true });
+        }
 
-        //    _context.Entry(bill).State = EntityState.Modified;
+        // PUT: api/Bills/5
+        // To protect from overposting attacks, see https://go.microsoft.com/fwlink/?linkid=2123754
+        [HttpPut("{id}")]
+        public async Task<IActionResult> PutBill(int id, BillInDTO bill)
+        {
+            if (id != bill.Id)
+            {
+                return BadRequest(new Response<BillOutDTO> { Message = "value incorrect", Succeeded = false });
+            }
 
-        //    try
-        //    {
-        //        await _context.SaveChangesAsync();
-        //    }
-        //    catch (DbUpdateConcurrencyException)
-        //    {
-        //        if (!BillExists(id))
-        //        {
-        //            return NotFound();
-        //        }
-        //        else
-        //        {
-        //            throw;
-        //        }
-        //    }
+            var result = await _IRepositoryBill.GetAsync(e => e.Id == id);
 
-        //    return NoContent();
-        //}
+            if (result == null)
+            {
+                return NotFound(new Response<BillOutDTO> { Message = "not found", Succeeded = false });
+            }
 
-        //// POST: api/Bills
-        //// To protect from overposting attacks, see https://go.microsoft.com/fwlink/?linkid=2123754
-        //[HttpPost]
-        //public async Task<ActionResult<Bill>> PostBill(Bill bill)
-        //{
-        //    if (_context.Bill == null)
-        //    {
-        //        return Problem("Entity set 'IceCreamDbcontext.Bill'  is null.");
-        //    }
-        //    _context.Bill.Add(bill);
-        //    await _context.SaveChangesAsync();
+            await _IRepositoryBill.UpdateAsync(new Bill
+            {
+                Id = bill.Id,
+                Status = bill.status,
+                VoucherID = bill.voucherID,
+            });
 
-        //    return CreatedAtAction("GetBill", new { id = bill.Id }, bill);
-        //}
+            return NoContent();
+        }
+
+        // POST: api/Bills
+        // To protect from overposting attacks, see https://go.microsoft.com/fwlink/?linkid=2123754
+        [HttpPost]
+        public async Task<ActionResult<BillOutDTO>> PostBill(BillInDTO bill)
+        {
+            if (!ModelState.IsValid)
+            {
+                return BadRequest(new Response<BillOutDTO> { Message = "value incorrect", Succeeded = false });
+            }
+
+            await _IRepositoryBill.CreateAsync(new Bill
+            {
+                AccountID = bill.accountID,
+                VoucherID = bill.voucherID,
+                Status = false,
+            });
+
+            return CreatedAtAction("GetBill", new { id = bill.Id }, bill);
+        }
 
         //// DELETE: api/Bills/5
-        //[HttpDelete("{id}")]
-        //public async Task<IActionResult> DeleteBill(int id)
-        //{
-        //    if (_context.Bill == null)
-        //    {
-        //        return NotFound();
-        //    }
-        //    var bill = await _context.Bill.FindAsync(id);
-        //    if (bill == null)
-        //    {
-        //        return NotFound();
-        //    }
+        [HttpDelete("{id}")]
+        public async Task<IActionResult> DeleteBill(int id)
+        {
+            var result = await _IRepositoryBill.GetAsync(e => e.Id == id);
 
-        //    _context.Bill.Remove(bill);
-        //    await _context.SaveChangesAsync();
+            if (result == null)
+            {
+                return NotFound(new Response<BillOutDTO> { Message = "not found", Succeeded = false });
+            }
 
-        //    return NoContent();
-        //}
+            await _IRepositoryBill.DeleteAsync(result);
+            var billList = await _IRepositoryBillDetail.GetAllAsync(e => e.BillID == result.Id);
+            billList.ForEach(async e => await _IRepositoryBillDetail.DeleteAsync(e));
 
-        //private bool BillExists(int id)
-        //{
-        //    return (_context.Bill?.Any(e => e.Id == id)).GetValueOrDefault();
-        //}
+
+            return NoContent();
+        }
     }
 }

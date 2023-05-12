@@ -5,7 +5,6 @@
         public int Id { get; set; }
         public int AccountID { get; set; }
         public Accounts Account { get; set; }
-        public int BillDetailID { get; set; }
         public virtual ICollection<BillDetail> BillDetail { get; set; }
         public double SubTotal { get; set; }
         public double Total { get; set; }
