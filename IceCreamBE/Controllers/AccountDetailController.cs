@@ -23,12 +23,14 @@ namespace IceCreamBE.Controllers
         private readonly IRepositoryAccountDetail _IRepositoryAccountDetail;
         private readonly IRepositoryAccounts _IRepositoryAccounts;
         private readonly IRepositoryRoles _IRepositoryRoles;
+        private readonly IRepositoryFileService _IRepositoryFileService;
 
-        public AccountDetailController(IRepositoryAccountDetail iRepositoryAccountDetail, IRepositoryAccounts repositoryAccounts, IRepositoryRoles iRepositoryRoles)
+        public AccountDetailController(IRepositoryAccountDetail iRepositoryAccountDetail, IRepositoryAccounts repositoryAccounts, IRepositoryRoles iRepositoryRoles, IRepositoryFileService iRepositoryFileService)
         {
             _IRepositoryAccountDetail = iRepositoryAccountDetail;
             _IRepositoryAccounts = repositoryAccounts;
             _IRepositoryRoles = iRepositoryRoles;
+            _IRepositoryFileService = iRepositoryFileService;
         }
 
         // GET: api/Accounts
