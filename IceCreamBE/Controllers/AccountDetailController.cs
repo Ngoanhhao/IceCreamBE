@@ -12,6 +12,7 @@ using IceCreamBE.DTO;
 using Newtonsoft.Json.Linq;
 using IceCreamBE.DTO.PageList;
 using Microsoft.AspNetCore.Mvc.Filters;
+using IceCreamBE.Repository;
 
 namespace IceCreamBE.Controllers
 {
@@ -20,10 +21,16 @@ namespace IceCreamBE.Controllers
     public class AccountDetailController : ControllerBase
     {
         private readonly IRepositoryAccountDetail _IRepositoryAccountDetail;
+        private readonly IRepositoryAccounts _IRepositoryAccounts;
+        private readonly IRepositoryRoles _IRepositoryRoles;
+        private readonly IRepositoryFileService _IRepositoryFileService;
 
-        public AccountDetailController(IRepositoryAccountDetail iRepositoryAccountDetail)
+        public AccountDetailController(IRepositoryAccountDetail iRepositoryAccountDetail, IRepositoryAccounts repositoryAccounts, IRepositoryRoles iRepositoryRoles, IRepositoryFileService iRepositoryFileService)
         {
             _IRepositoryAccountDetail = iRepositoryAccountDetail;
+            _IRepositoryAccounts = repositoryAccounts;
+            _IRepositoryRoles = iRepositoryRoles;
+            _IRepositoryFileService = iRepositoryFileService;
         }
 
         // GET: api/Accounts
@@ -93,12 +100,45 @@ namespace IceCreamBE.Controllers
             });
         }
 
+        [HttpGet("getme/{username}")]
+        public async Task<ActionResult<AccountDetailDTO>> GetAccountss(string username)
+        {
+            var user = await _IRepositoryAccounts.GetAsync(e => e.Username == username);
+
+            if (user != null)
+            {
+                var detail = await _IRepositoryAccountDetail.GetAsync(e => e.Id == user.Id);
+                var roles = await _IRepositoryRoles.GetAsync(e => e.Id == detail.RoleID);
+                return Ok(new Response<LoginOutDTO>
+                {
+                    Data = new LoginOutDTO
+                    {
+                        Id = user.Id,
+                        UserName = user.Username,
+                        Full_name = detail.FullName,
+                        Email = detail.Email,
+                        Phone_number = detail.PhoneNumber,
+                        Avatar = detail.Avatar,
+                        Role = roles.Role,
+                        Expiration_date = detail.ExpirationDate,
+                        Extension_date = detail.ExtensionDate
+                    },
+                    Succeeded = true
+                });
+            }
+            return NotFound(new Response<AccountDetailDTO>
+            {
+                Succeeded = false,
+                Message = "not found"
+            });
+        }
+
         //GET: api/Accounts/query
         [HttpGet("{query}")]
-        public async Task<ActionResult<AccountDetailDTO>> GetAccounts(string query, [FromQuery] PaginationFilter<BrandsDTO>? filter)
+        public async Task<ActionResult<List<AccountDetailDTO>>> GetAccounts(string query, [FromQuery] PaginationFilter<BrandsDTO>? filter)
         {
             var value = new List<AccountDetailDTO>();
-            var result = (await _IRepositoryAccountDetail.GetAllAsync(e => e.FullName.Contains(query)));
+            var result = (await _IRepositoryAccountDetail.GetAllAsync(e => e.FullName.Contains(query) || e.Email == query));
             result.ForEach(e => value.Add(new AccountDetailDTO
             {
                 Id = e.Id,

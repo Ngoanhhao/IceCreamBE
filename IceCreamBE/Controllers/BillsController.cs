@@ -313,6 +313,9 @@ namespace IceCreamBE.Controllers
             }
 
             await _IRepositoryBill.DeleteAsync(result);
+            var billList = await _IRepositoryBillDetail.GetAllAsync(e => e.BillID == result.Id);
+            billList.ForEach(async e => await _IRepositoryBillDetail.DeleteAsync(e));
+
 
             return NoContent();
         }

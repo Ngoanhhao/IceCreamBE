@@ -10,6 +10,8 @@ using IceCreamBE.Models;
 using IceCreamBE.Repository;
 using IceCreamBE.DTO;
 using IceCreamBE.Repository.Irepository;
+using static System.Net.WebRequestMethods;
+using System.Xml;
 
 namespace IceCreamBE.Controllers
 {
@@ -78,6 +80,7 @@ namespace IceCreamBE.Controllers
             });
 
             var result2 = await _RepositoryAccounts.GetAsync(e => e.Username == entity.username && e.Password == entity.password);
+            string url = $"{Request.Scheme}://{Request.Host}/api/image/";
 
             await _RepositoryAccountDetail.CreateAsync(new AccountDetail
             {
@@ -97,7 +100,7 @@ namespace IceCreamBE.Controllers
                 Data = new AccountDetailDTO
                 {
                     Id = result2.Id,
-                    Avatar = entity.avatar,
+                    Avatar = url + entity.avatar,
                     Email = entity.email,
                     Expiration_date = entity.expiration_date,
                     Extension_date = entity.extension_date,
