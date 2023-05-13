@@ -34,7 +34,6 @@ namespace IceCreamBE.Controllers
         {
             var recipe = (await _IRepositoryRecipe.GetAllAsync());
             var product = (await _IRepositoryProduct.GetAllAsync());
-            var item = new List<RecipeOutDTO>();
 
             var result = recipe.Join(product,
                         r => r.ProductId,
@@ -53,7 +52,7 @@ namespace IceCreamBE.Controllers
 
             return Ok(new PagedResponse<List<RecipeOutDTO>>
             {
-                Data = item,
+                Data = pagedData,
                 Succeeded = pagedData == null ? false : true,
                 Pagination = new PagedResponseDetail<List<RecipeOutDTO>>
                 {
@@ -70,6 +69,7 @@ namespace IceCreamBE.Controllers
         public async Task<ActionResult<RecipeOutDTO>> GetRecipe(int id)
         {
             var result = await _IRepositoryRecipe.GetAsync(e => e.Id == id);
+            var product = await _IRepositoryProduct.GetAsync(e => e.Id == result.ProductId);
             if (result == null)
             {
                 return NotFound(new Response<RecipeOutDTO> { Message = "not found", Succeeded = false });
@@ -82,7 +82,7 @@ namespace IceCreamBE.Controllers
                 {
                     Id = result.Id,
                     description = result.Description,
-                    product_name = result.Product.Name,
+                    product_name = product.Name,
                     status = result.Status
                 }
             });
@@ -95,7 +95,6 @@ namespace IceCreamBE.Controllers
         {
             var recipe = (await _IRepositoryRecipe.GetAllAsync());
             var product = (await _IRepositoryProduct.GetAllAsync());
-            var item = new List<RecipeOutDTO>();
 
             var result = recipe.Join(product,
                         r => r.ProductId,
@@ -109,7 +108,7 @@ namespace IceCreamBE.Controllers
                             status = e.recipe.Status
                         })
                         .Where(e => e.product_name.Contains(query)).ToList();
-            if(result.Count == 0)
+            if (result.Count == 0)
             {
                 return NotFound(new Response<RecipeInDTO> { Message = "not found", Succeeded = false });
             }
@@ -119,7 +118,7 @@ namespace IceCreamBE.Controllers
 
             return Ok(new PagedResponse<List<RecipeOutDTO>>
             {
-                Data = item,
+                Data = pagedData,
                 Succeeded = pagedData == null ? false : true,
                 Pagination = new PagedResponseDetail<List<RecipeOutDTO>>
                 {
@@ -166,6 +165,12 @@ namespace IceCreamBE.Controllers
             if (!ModelState.IsValid)
             {
                 return BadRequest(new Response<FeedbackDetailDTO> { Message = "value incorrect", Succeeded = false });
+            }
+
+            var product = await _IRepositoryProduct.GetAsync(e => e.Id == recipe.productID);
+            if (product == null)
+            {
+                return BadRequest(new Response<FeedbackDetailDTO> { Message = "product incorrect", Succeeded = false });
             }
 
             await _IRepositoryRecipe.CreateAsync(new Recipe

@@ -13,6 +13,7 @@ using Newtonsoft.Json.Linq;
 using IceCreamBE.DTO.PageList;
 using Microsoft.AspNetCore.Mvc.Filters;
 using IceCreamBE.Repository;
+using System.Diagnostics.Eventing.Reader;
 
 namespace IceCreamBE.Controllers
 {
@@ -39,10 +40,11 @@ namespace IceCreamBE.Controllers
         {
             var value = new List<AccountDetailDTO>();
             var result = await _IRepositoryAccountDetail.GetAllAsync();
+            string url = $"{Request.Scheme}://{Request.Host}/api/image/";
             result.ForEach(e => value.Add(new AccountDetailDTO
             {
                 Id = e.Id,
-                Avatar = e.Avatar,
+                Avatar = _IRepositoryFileService.CheckImage(e.Avatar, "Images") ? url + e.Avatar : null,
                 Email = e.Email,
                 Expiration_date = e.ExpirationDate,
                 Extension_date = e.ExtensionDate,
@@ -75,6 +77,7 @@ namespace IceCreamBE.Controllers
             var result = await _IRepositoryAccountDetail.GetAsync(e => e.Id == int.Parse(id));
             if (result != null)
             {
+                string url = $"{Request.Scheme}://{Request.Host}/api/image/";
                 return Ok(
                     new Response<AccountDetailDTO>
                     {
@@ -82,7 +85,7 @@ namespace IceCreamBE.Controllers
                         Data = new AccountDetailDTO
                         {
                             Id = result.Id,
-                            Avatar = result.Avatar,
+                            Avatar = _IRepositoryFileService.CheckImage(result.Avatar, "Images") ? url + result.Avatar : null,
                             Email = result.Email,
                             Expiration_date = result.ExpirationDate,
                             Extension_date = result.ExtensionDate,
@@ -109,6 +112,7 @@ namespace IceCreamBE.Controllers
             {
                 var detail = await _IRepositoryAccountDetail.GetAsync(e => e.Id == user.Id);
                 var roles = await _IRepositoryRoles.GetAsync(e => e.Id == detail.RoleID);
+                string url = $"{Request.Scheme}://{Request.Host}/api/image/";
                 return Ok(new Response<LoginOutDTO>
                 {
                     Data = new LoginOutDTO
@@ -118,7 +122,7 @@ namespace IceCreamBE.Controllers
                         Full_name = detail.FullName,
                         Email = detail.Email,
                         Phone_number = detail.PhoneNumber,
-                        Avatar = detail.Avatar,
+                        Avatar = _IRepositoryFileService.CheckImage(detail.Avatar, "Images") ? url + detail.Avatar : null,
                         Role = roles.Role,
                         Expiration_date = detail.ExpirationDate,
                         Extension_date = detail.ExtensionDate
@@ -139,10 +143,11 @@ namespace IceCreamBE.Controllers
         {
             var value = new List<AccountDetailDTO>();
             var result = (await _IRepositoryAccountDetail.GetAllAsync(e => e.FullName.Contains(query) || e.Email == query));
+            string url = $"{Request.Scheme}://{Request.Host}/api/image/";
             result.ForEach(e => value.Add(new AccountDetailDTO
             {
                 Id = e.Id,
-                Avatar = e.Avatar,
+                Avatar = _IRepositoryFileService.CheckImage(e.Avatar, "Images") ? url + e.Avatar : null,
                 Email = e.Email,
                 Expiration_date = e.ExpirationDate,
                 Extension_date = e.ExtensionDate,
@@ -185,7 +190,11 @@ namespace IceCreamBE.Controllers
         {
             if (id != accounts.Id)
             {
-                return BadRequest();
+                return BadRequest(new Response<List<AccountDetailDTO>>
+                {
+                    Succeeded = false,
+                    Message = "value incorrect"
+                });
             }
 
             var resultAccount = await _IRepositoryAccountDetail.GetAsync(e => e.Id == id);

@@ -21,11 +21,13 @@ namespace IceCreamBE.Controllers
     {
         private readonly IRepositoryAccounts _RepositoryAccounts;
         private readonly IRepositoryAccountDetail _RepositoryAccountDetail;
+        private readonly IRepositoryRoles _IRepositoryRoles;
 
-        public AccountsController(IRepositoryAccounts RepositoryAccounts, IRepositoryAccountDetail repositoryAccountDetail)
+        public AccountsController(IRepositoryAccounts RepositoryAccounts, IRepositoryAccountDetail repositoryAccountDetail, IRepositoryRoles repositoryRoles)
         {
             _RepositoryAccounts = RepositoryAccounts;
             _RepositoryAccountDetail = repositoryAccountDetail;
+            _IRepositoryRoles = repositoryRoles;
         }
 
         // PUT: api/Accounts/5
@@ -64,12 +66,23 @@ namespace IceCreamBE.Controllers
             }
 
             var result = await _RepositoryAccounts.GetAsync(e => e.Username.ToLower() == entity.username.ToLower());
+
             if (result != null)
             {
                 return BadRequest(new Response<List<AccountDetailDTO>>
                 {
                     Succeeded = false,
                     Message = "username is valid"
+                });
+            }
+
+            var role = await _IRepositoryRoles.GetAsync(e => e.Id == entity.roleID);
+            if (role == null)
+            {
+                return BadRequest(new Response<List<AccountDetailDTO>>
+                {
+                    Succeeded = false,
+                    Message = "role incorrect"
                 });
             }
 

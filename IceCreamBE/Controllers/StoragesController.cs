@@ -50,7 +50,6 @@ namespace IceCreamBE.Controllers
                     Id = e.storage.ProductID,
                     product_name = e.product.Name,
                     brand = e.brand.BrandName,
-                    img = e.product.Img,
                     last_order = e.storage.LastOrder,
                     quantity = e.storage.Quantity,
                 }).ToList();
@@ -93,7 +92,6 @@ namespace IceCreamBE.Controllers
                     Id = e.storage.ProductID,
                     product_name = e.product.Name,
                     brand = e.brand.BrandName,
-                    img = e.product.Img,
                     last_order = e.storage.LastOrder,
                     quantity = e.storage.Quantity,
                 });
@@ -127,7 +125,6 @@ namespace IceCreamBE.Controllers
                     Id = e.storage.ProductID,
                     product_name = e.product.Name,
                     brand = e.brand.BrandName,
-                    img = e.product.Img,
                     last_order = e.storage.LastOrder,
                     quantity = e.storage.Quantity,
                 });
@@ -164,13 +161,19 @@ namespace IceCreamBE.Controllers
         [HttpPost]
         public async Task<ActionResult<StorageOutDTO>> PostStorage(StorageInDTO storage)
         {
+            var product = await _IRepositoryStorage.GetAsync(e => e.ProductID == storage.ProductId);
+            if (product != null)
+            {
+                return BadRequest(new Response<List<StorageOutDTO>> { Message = "product is available", Succeeded = false });
+            }
+
             await _IRepositoryStorage.CreateAsync(new Storage
             {
                 ProductID = storage.ProductId,
                 Quantity = storage.quantity,
-                LastOrder = DateTime.UtcNow
+                LastOrder = DateTime.UtcNow,
             });
-            return Ok(new Response<List<StorageOutDTO>> { Succeeded = false });
+            return Ok(new Response<List<StorageOutDTO>> { Succeeded = true });
         }
     }
 }

@@ -17,7 +17,7 @@ namespace IceCreamBE.Repository
             {
                 var contentPath = this.environment.ContentRootPath;
                 // path = "c://projects/productminiapi/uploads" ,not exactly something like that
-                var path = Path.Combine(contentPath, "Assets\\"+FolderPatch); 
+                var path = Path.Combine(contentPath, "Assets\\" + FolderPatch);
                 if (!Directory.Exists(path))
                 {
                     Directory.CreateDirectory(path);
@@ -42,8 +42,15 @@ namespace IceCreamBE.Repository
             }
             catch (Exception ex)
             {
-                return new Tuple<int, string, string>(0, "","Error has occured");
+                return new Tuple<int, string, string>(0, "", "Error has occured");
             }
+        }
+
+        public bool CheckImage(string filePatch, string? FolderPatch = "Other")
+        {
+            var contentPath = this.environment.ContentRootPath;
+            var path = Path.Combine(contentPath, "Assets\\" + FolderPatch + "\\" + filePatch);
+            return File.Exists(path);
         }
 
         public bool DeleteImage(string imageFileName)

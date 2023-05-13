@@ -23,26 +23,28 @@ namespace IceCreamBE.Controllers
     {
         private readonly IRepositoryProduct _IRepositoryProduct;
         private readonly IRepositoryBrand _IRepositoryBrand;
+        private readonly IRepositoryFileService _IRepositoryFileService;
 
-        public ProductsController(IRepositoryProduct repositoryProduct, IRepositoryBrand iRepositoryBrand)
+        public ProductsController(IRepositoryProduct repositoryProduct, IRepositoryBrand iRepositoryBrand, IRepositoryFileService iRepositoryFileService)
         {
             _IRepositoryProduct = repositoryProduct;
             _IRepositoryBrand = iRepositoryBrand;
+            _IRepositoryFileService = iRepositoryFileService;
         }
 
         // GET: api/Products
         [HttpGet]
-        public async Task<ActionResult<IEnumerable<ProductDetailDTO>>> GetProducts([FromQuery] PaginationFilter<ProductDetailDTO>? filter)
+        public async Task<ActionResult<IEnumerable<ProductOutDTO>>> GetProducts([FromQuery] PaginationFilter<ProductsInDTO>? filter)
         {
             var brand = (await _IRepositoryBrand.GetAllAsync());
             var product = (await _IRepositoryProduct.GetAllAsync());
-            var item = new List<ProductDetailDTO>();
+            string url = $"{Request.Scheme}://{Request.Host}/api/image/";
 
             var result = product.Join(brand,
                         r => r.BrandID,
                         p => p.Id,
                         (r, p) => new { product = r, brand = p })
-                        .Select(e => new ProductDetailDTO
+                        .Select(e => new ProductOutDTO
                         {
                             Id = e.product.Id,
                             brand_name = e.brand.BrandName,
@@ -50,20 +52,20 @@ namespace IceCreamBE.Controllers
                             description = e.product.Description,
                             price = e.product.Price,
                             discount_percent = e.product.Discount,
-                            img = e.product.Img,
+                            img = _IRepositoryFileService.CheckImage(e.product.Img, "Images") ? url + e.product.Img : null,
                             name = e.product.Name,
                             status = e.product.Status,
                             total = e.product.Total
                         }).ToList();
 
-            var pageFilter = new PaginationFilter<ProductDetailDTO>(filter.PageNumber, filter.PageSize);
+            var pageFilter = new PaginationFilter<ProductOutDTO>(filter.PageNumber, filter.PageSize);
             var pagedData = pageFilter.GetPageList(result);
 
-            return Ok(new PagedResponse<List<ProductDetailDTO>>
+            return Ok(new PagedResponse<List<ProductOutDTO>>
             {
                 Data = result,
                 Succeeded = pagedData == null ? false : true,
-                Pagination = new PagedResponseDetail<List<ProductDetailDTO>>
+                Pagination = new PagedResponseDetail<List<ProductOutDTO>>
                 {
                     current_page = pagedData == null ? 0 : pageFilter.PageNumber,
                     Page_pize = pagedData == null ? 0 : pageFilter.PageSize,
@@ -75,26 +77,27 @@ namespace IceCreamBE.Controllers
 
         // GET: api/Products/5
         [HttpGet("{id}")]
-        public async Task<ActionResult<ProductDetailDTO>> GetProducts(int id)
+        public async Task<ActionResult<ProductOutDTO>> GetProducts(int id)
         {
             var product = await _IRepositoryProduct.GetAsync(e => e.Id == id);
             var brand = await _IRepositoryBrand.GetAsync(e => e.Id == product.BrandID);
+            string url = $"{Request.Scheme}://{Request.Host}/api/image/";
 
             if (product == null)
             {
-                return NotFound(new Response<ProductDetailDTO> { Message = "not found", Succeeded = false });
+                return NotFound(new Response<ProductOutDTO> { Message = "not found", Succeeded = false });
             }
 
-            return Ok(new Response<ProductDetailDTO>
+            return Ok(new Response<ProductOutDTO>
             {
                 Succeeded = true,
-                Data = new ProductDetailDTO
+                Data = new ProductOutDTO
                 {
                     Id = product.Id,
                     total = product.Total,
                     status = product.Status,
                     name = product.Name,
-                    img = product.Img,
+                    img = _IRepositoryFileService.CheckImage(product.Img, "Images") ? url + product.Img : null,
                     brand_name = brand.BrandName,
                     cost = product.Cost,
                     description = product.Description,
@@ -107,17 +110,22 @@ namespace IceCreamBE.Controllers
         // PUT: api/Products/5
         // To protect from overposting attacks, see https://go.microsoft.com/fwlink/?linkid=2123754
         [HttpPut("{id}")]
-        public async Task<IActionResult> PutProducts(int id, ProductsDTO products)
+        public async Task<IActionResult> PutProducts(int id, ProductsInDTO products)
         {
             if (id != products.Id)
             {
-                return BadRequest(new Response<ProductDetailDTO> { Message = "value incorrect", Succeeded = false });
+                return BadRequest(new Response<ProductOutDTO> { Message = "value incorrect", Succeeded = false });
             }
 
             var result = await _IRepositoryProduct.GetAsync(e => e.Id == id);
             if (result == null)
             {
-                return NotFound(new Response<ProductDetailDTO> { Message = "not found", Succeeded = false });
+                return NotFound(new Response<ProductOutDTO> { Message = "not found", Succeeded = false });
+            }
+            var brand = await _IRepositoryBrand.GetAsync(e => e.Id == products.brandID);
+            if (brand == null)
+            {
+                return BadRequest(new Response<ProductOutDTO> { Message = "brand is valid", Succeeded = false });
             }
 
             await _IRepositoryProduct.UpdateAsync(new Products
@@ -127,9 +135,9 @@ namespace IceCreamBE.Controllers
                 BrandID = products.brandID,
                 Cost = products.cost,
                 Img = products.img,
-                Price = products.price,
                 Discount = products.discount_percent,
-                Total = products.total,
+                Price = products.price,
+                Total = products.discount_percent != null ? ((100 - products.discount_percent) * 0.01) * products.price : products.price,
                 Status = products.status,
                 Name = products.name
             });
@@ -140,11 +148,16 @@ namespace IceCreamBE.Controllers
         // POST: api/Products
         // To protect from overposting attacks, see https://go.microsoft.com/fwlink/?linkid=2123754
         [HttpPost]
-        public async Task<ActionResult<Products>> PostProducts(ProductsDTO products)
+        public async Task<ActionResult<Products>> PostProducts(ProductsInDTO products)
         {
             if (!ModelState.IsValid)
             {
-                return BadRequest(new Response<ProductDetailDTO> { Message = "value incorrect", Succeeded = false });
+                return BadRequest(new Response<ProductOutDTO> { Message = "value incorrect", Succeeded = false });
+            }
+            var brand = await _IRepositoryBrand.GetAsync(e => e.Id == products.brandID);
+            if (brand == null)
+            {
+                return BadRequest(new Response<ProductOutDTO> { Message = "brand is valid", Succeeded = false });
             }
 
             await _IRepositoryProduct.CreateAsync(new Products
