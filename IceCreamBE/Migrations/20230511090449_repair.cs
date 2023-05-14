@@ -105,7 +105,7 @@ namespace IceCreamBE.Migrations
                 name: "SubTotal",
                 table: "Bill");
 
-            migrationBuilder.AlterColumn<double>(
+            migrationBuilder.AlterColumn<bool>(
                 name: "Status",
                 table: "Bill",
                 type: "float",

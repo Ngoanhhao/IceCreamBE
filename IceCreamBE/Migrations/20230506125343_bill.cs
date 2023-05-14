@@ -37,7 +37,7 @@ namespace IceCreamBE.Migrations
                     AccountID = table.Column<int>(type: "int", nullable: false),
                     BillDetailID = table.Column<int>(type: "int", nullable: false),
                     Total = table.Column<double>(type: "float", nullable: false),
-                    Status = table.Column<double>(type: "float", nullable: false),
+                    Status = table.Column<bool>(type: "bit", nullable: false),
                     OrderTime = table.Column<DateTime>(type: "datetime2", nullable: false)
                 },
                 constraints: table =>

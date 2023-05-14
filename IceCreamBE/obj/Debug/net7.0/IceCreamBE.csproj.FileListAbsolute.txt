@@ -556,3 +556,6 @@ C:\Users\ngoan\OneDrive\Desktop\IceCreamBE\IceCreamBE\obj\Debug\net7.0\refint\Ic
 C:\Users\ngoan\OneDrive\Desktop\IceCreamBE\IceCreamBE\obj\Debug\net7.0\IceCreamBE.pdb
 C:\Users\ngoan\OneDrive\Desktop\IceCreamBE\IceCreamBE\obj\Debug\net7.0\IceCreamBE.genruntimeconfig.cache
 C:\Users\ngoan\OneDrive\Desktop\IceCreamBE\IceCreamBE\obj\Debug\net7.0\ref\IceCreamBE.dll
+D:\Technology\C#\sour\IceCreamBE\IceCreamBE\bin\Debug\net7.0\BouncyCastle.Cryptography.dll
+D:\Technology\C#\sour\IceCreamBE\IceCreamBE\bin\Debug\net7.0\MailKit.dll
+D:\Technology\C#\sour\IceCreamBE\IceCreamBE\bin\Debug\net7.0\MimeKit.dll

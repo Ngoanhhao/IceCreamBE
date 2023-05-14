@@ -12,7 +12,7 @@ namespace IceCreamBE.Data
         }
         protected override void OnModelCreating(ModelBuilder modelBuilder)
         {
-            
+
             // table config
             modelBuilder.Entity<Accounts>(entity =>
             {
@@ -149,6 +149,13 @@ namespace IceCreamBE.Data
                     .OnDelete(DeleteBehavior.NoAction);
             });
 
+            modelBuilder.Entity<ResponseCode>(entity =>
+            {
+                entity.ToTable("ResponseCode");
+                entity.HasKey(e => e.Id);
+                entity.Property(e => e.Id).ValueGeneratedOnAdd();
+            });
+
 
             base.OnModelCreating(modelBuilder);
             new DbInitializer(modelBuilder).Seed();
@@ -165,6 +172,7 @@ namespace IceCreamBE.Data
         public DbSet<Recipe> Recipe { get; set; }
         public DbSet<Vouchers> Vouchers { get; set; }
         public DbSet<Feedback> Feedback { get; set; }
+        public DbSet<ResponseCode> ResponseCode { get; set; }
 
     }
 }

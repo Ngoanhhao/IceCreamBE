@@ -105,6 +105,7 @@ namespace IceCreamBE.Controllers
                 FullName = entity.full_name,
                 PhoneNumber = entity.phone_number,
                 RoleID = entity.roleID,
+                CreateDate = DateTime.UtcNow,
             });
 
             return Ok(new Response<AccountDetailDTO>

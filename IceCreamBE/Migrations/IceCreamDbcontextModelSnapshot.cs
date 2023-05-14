@@ -30,6 +30,9 @@ namespace IceCreamBE.Migrations
                     b.Property<string>("Avatar")
                         .HasColumnType("nvarchar(max)");
 
+                    b.Property<DateTime>("CreateDate")
+                        .HasColumnType("datetime2");
+
                     b.Property<string>("Email")
                         .IsRequired()
                         .HasMaxLength(100)
@@ -63,9 +66,10 @@ namespace IceCreamBE.Migrations
                         new
                         {
                             Id = 1,
+                            CreateDate = new DateTime(1, 1, 1, 0, 0, 0, 0, DateTimeKind.Unspecified),
                             Email = "ngoanhhao24@gmail.com",
-                            ExpirationDate = new DateTime(2023, 5, 21, 21, 27, 0, 446, DateTimeKind.Local).AddTicks(7),
-                            ExtensionDate = new DateTime(2023, 5, 11, 21, 27, 0, 446, DateTimeKind.Local).AddTicks(48),
+                            ExpirationDate = new DateTime(2023, 5, 24, 16, 38, 27, 595, DateTimeKind.Local).AddTicks(2192),
+                            ExtensionDate = new DateTime(2023, 5, 14, 16, 38, 27, 595, DateTimeKind.Local).AddTicks(2222),
                             FullName = "Ngô Anh Hào",
                             PhoneNumber = "1234567890",
                             RoleID = 1
@@ -141,10 +145,10 @@ namespace IceCreamBE.Migrations
                         {
                             Id = 1,
                             AccountID = 1,
-                            OrderTime = new DateTime(2023, 5, 11, 21, 27, 0, 446, DateTimeKind.Local).AddTicks(143),
+                            OrderTime = new DateTime(2023, 5, 14, 16, 38, 27, 595, DateTimeKind.Local).AddTicks(2300),
                             Status = true,
-                            SubTotal = 15000.0,
-                            Total = 15000.0
+                            SubTotal = 30000.0,
+                            Total = 30000.0
                         });
                 });
 
@@ -312,14 +316,37 @@ namespace IceCreamBE.Migrations
                     b.Property<int>("ProductId")
                         .HasColumnType("int");
 
-                    b.Property<double>("Status")
-                        .HasColumnType("float");
+                    b.Property<bool>("Status")
+                        .HasColumnType("bit");
 
                     b.HasKey("Id");
 
                     b.HasIndex("ProductId");
 
                     b.ToTable("Recipe", (string)null);
+                });
+
+            modelBuilder.Entity("IceCreamBE.Models.ResponseCode", b =>
+                {
+                    b.Property<int>("Id")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("int");
+
+                    SqlServerPropertyBuilderExtensions.UseIdentityColumn(b.Property<int>("Id"));
+
+                    b.Property<string>("Code")
+                        .IsRequired()
+                        .HasColumnType("nvarchar(max)");
+
+                    b.Property<int>("Email")
+                        .HasColumnType("int");
+
+                    b.Property<bool>("Status")
+                        .HasColumnType("bit");
+
+                    b.HasKey("Id");
+
+                    b.ToTable("ResponseCode", (string)null);
                 });
 
             modelBuilder.Entity("IceCreamBE.Models.Roles", b =>
