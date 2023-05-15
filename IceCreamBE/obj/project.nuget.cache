@@ -1,8 +1,8 @@
 {
   "version": 2,
-  "dgSpecHash": "CiDh3ZkEjX/UXdfr9M2oC5u2Ep1s8vUJkk/iVEqyrGAXjuMHniG3qN4PUFkDT7C9NMlXv9YevrdczWX7G1JOrQ==",
+  "dgSpecHash": "K5Y/Jr+4TCpQTADhhvjULW5Yn552f1CaYE4WujPxitnTXLAOx2GHjUjiYWFLd3f0n2bob/ut6o704h5an9u0gw==",
   "success": true,
-  "projectFilePath": "D:\\Technology\\C#\\sour\\IceCreamBE\\IceCreamBE\\IceCreamBE.csproj",
+  "projectFilePath": "D:\\Technology\\Project\\Project_SEM03\\IceCreamBE\\IceCreamBE\\IceCreamBE.csproj",
   "expectedPackageFiles": [
     "C:\\Users\\VICTUS\\.nuget\\packages\\azure.core\\1.24.0\\azure.core.1.24.0.nupkg.sha512",
     "C:\\Users\\VICTUS\\.nuget\\packages\\azure.identity\\1.6.0\\azure.identity.1.6.0.nupkg.sha512",

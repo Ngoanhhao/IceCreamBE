@@ -66,10 +66,10 @@ namespace IceCreamBE.Migrations
                         new
                         {
                             Id = 1,
-                            CreateDate = new DateTime(1, 1, 1, 0, 0, 0, 0, DateTimeKind.Unspecified),
+                            CreateDate = new DateTime(2023, 5, 15, 11, 12, 52, 680, DateTimeKind.Local).AddTicks(4792),
                             Email = "ngoanhhao24@gmail.com",
-                            ExpirationDate = new DateTime(2023, 5, 24, 16, 38, 27, 595, DateTimeKind.Local).AddTicks(2192),
-                            ExtensionDate = new DateTime(2023, 5, 14, 16, 38, 27, 595, DateTimeKind.Local).AddTicks(2222),
+                            ExpirationDate = new DateTime(2023, 5, 25, 11, 12, 52, 680, DateTimeKind.Local).AddTicks(4803),
+                            ExtensionDate = new DateTime(2023, 5, 15, 11, 12, 52, 680, DateTimeKind.Local).AddTicks(4817),
                             FullName = "Ngô Anh Hào",
                             PhoneNumber = "1234567890",
                             RoleID = 1
@@ -145,7 +145,7 @@ namespace IceCreamBE.Migrations
                         {
                             Id = 1,
                             AccountID = 1,
-                            OrderTime = new DateTime(2023, 5, 14, 16, 38, 27, 595, DateTimeKind.Local).AddTicks(2300),
+                            OrderTime = new DateTime(2023, 5, 15, 11, 12, 52, 680, DateTimeKind.Local).AddTicks(4876),
                             Status = true,
                             SubTotal = 30000.0,
                             Total = 30000.0
@@ -338,15 +338,16 @@ namespace IceCreamBE.Migrations
                         .IsRequired()
                         .HasColumnType("nvarchar(max)");
 
-                    b.Property<int>("Email")
-                        .HasColumnType("int");
+                    b.Property<string>("Email")
+                        .IsRequired()
+                        .HasColumnType("nvarchar(max)");
 
                     b.Property<bool>("Status")
                         .HasColumnType("bit");
 
                     b.HasKey("Id");
 
-                    b.ToTable("ResponseCode", (string)null);
+                    b.ToTable("ResponseCode");
                 });
 
             modelBuilder.Entity("IceCreamBE.Models.Roles", b =>

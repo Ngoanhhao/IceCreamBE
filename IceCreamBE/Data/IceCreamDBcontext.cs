@@ -12,7 +12,7 @@ namespace IceCreamBE.Data
         }
         protected override void OnModelCreating(ModelBuilder modelBuilder)
         {
-
+            
             // table config
             modelBuilder.Entity<Accounts>(entity =>
             {
@@ -147,13 +147,6 @@ namespace IceCreamBE.Data
                     .WithOne(e => e.Vouchers)
                     .HasForeignKey(e => e.VoucherID)
                     .OnDelete(DeleteBehavior.NoAction);
-            });
-
-            modelBuilder.Entity<ResponseCode>(entity =>
-            {
-                entity.ToTable("ResponseCode");
-                entity.HasKey(e => e.Id);
-                entity.Property(e => e.Id).ValueGeneratedOnAdd();
             });
 
 

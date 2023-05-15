@@ -1,17 +1,17 @@
 {
   "format": 1,
   "restore": {
-    "D:\\Technology\\C#\\sour\\IceCreamBE\\IceCreamBE\\IceCreamBE.csproj": {}
+    "D:\\Technology\\Project\\Project_SEM03\\IceCreamBE\\IceCreamBE\\IceCreamBE.csproj": {}
   },
   "projects": {
-    "D:\\Technology\\C#\\sour\\IceCreamBE\\IceCreamBE\\IceCreamBE.csproj": {
+    "D:\\Technology\\Project\\Project_SEM03\\IceCreamBE\\IceCreamBE\\IceCreamBE.csproj": {
       "version": "1.0.0",
       "restore": {
-        "projectUniqueName": "D:\\Technology\\C#\\sour\\IceCreamBE\\IceCreamBE\\IceCreamBE.csproj",
+        "projectUniqueName": "D:\\Technology\\Project\\Project_SEM03\\IceCreamBE\\IceCreamBE\\IceCreamBE.csproj",
         "projectName": "IceCreamBE",
-        "projectPath": "D:\\Technology\\C#\\sour\\IceCreamBE\\IceCreamBE\\IceCreamBE.csproj",
+        "projectPath": "D:\\Technology\\Project\\Project_SEM03\\IceCreamBE\\IceCreamBE\\IceCreamBE.csproj",
         "packagesPath": "C:\\Users\\VICTUS\\.nuget\\packages\\",
-        "outputPath": "D:\\Technology\\C#\\sour\\IceCreamBE\\IceCreamBE\\obj\\",
+        "outputPath": "D:\\Technology\\Project\\Project_SEM03\\IceCreamBE\\IceCreamBE\\obj\\",
         "projectStyle": "PackageReference",
         "configFilePaths": [
           "C:\\Users\\VICTUS\\AppData\\Roaming\\NuGet\\NuGet.Config",

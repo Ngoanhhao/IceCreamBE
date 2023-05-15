@@ -10,8 +10,6 @@ using IceCreamBE.Models;
 using IceCreamBE.Repository;
 using IceCreamBE.DTO;
 using IceCreamBE.Repository.Irepository;
-using static System.Net.WebRequestMethods;
-using System.Xml;
 
 namespace IceCreamBE.Controllers
 {
@@ -22,12 +20,21 @@ namespace IceCreamBE.Controllers
         private readonly IRepositoryAccounts _RepositoryAccounts;
         private readonly IRepositoryAccountDetail _RepositoryAccountDetail;
         private readonly IRepositoryRoles _IRepositoryRoles;
+        private readonly IHandleResponseCode _HandleResponseCode;
+        private readonly IRepositoryFileService _IRepositoryFileService;
 
-        public AccountsController(IRepositoryAccounts RepositoryAccounts, IRepositoryAccountDetail repositoryAccountDetail, IRepositoryRoles repositoryRoles)
+        public AccountsController(
+            IRepositoryAccounts RepositoryAccounts,
+            IRepositoryAccountDetail repositoryAccountDetail,
+            IRepositoryRoles repositoryRoles, IHandleResponseCode handleResponseCode,
+            IRepositoryFileService iRepositoryFileService
+            )
         {
             _RepositoryAccounts = RepositoryAccounts;
             _RepositoryAccountDetail = repositoryAccountDetail;
             _IRepositoryRoles = repositoryRoles;
+            _HandleResponseCode = handleResponseCode;
+            _IRepositoryFileService = iRepositoryFileService;
         }
 
         // PUT: api/Accounts/5
@@ -62,7 +69,11 @@ namespace IceCreamBE.Controllers
         {
             if (!ModelState.IsValid)
             {
-                return BadRequest();
+                return BadRequest(new Response<List<AccountDetailDTO>>
+                {
+                    Succeeded = false,
+                    Message = "value incorrect"
+                });
             }
 
             var result = await _RepositoryAccounts.GetAsync(e => e.Username.ToLower() == entity.username.ToLower());
@@ -76,6 +87,16 @@ namespace IceCreamBE.Controllers
                 });
             }
 
+            var email = await _RepositoryAccountDetail.GetAsync(e => e.Email.ToLower() == entity.email.ToLower());
+            if (email != null)
+            {
+                return BadRequest(new Response<List<AccountDetailDTO>>
+                {
+                    Succeeded = false,
+                    Message = "email is valid"
+                });
+            }
+
             var role = await _IRepositoryRoles.GetAsync(e => e.Id == entity.roleID);
             if (role == null)
             {
@@ -83,6 +104,16 @@ namespace IceCreamBE.Controllers
                 {
                     Succeeded = false,
                     Message = "role incorrect"
+                });
+            }
+
+            var code = await _HandleResponseCode.GetAsync(e => e.Email.Equals(entity.email) && e.Code.Equals(entity.code));
+            if (code == null || code.Status == true)
+            {
+                return BadRequest(new Response<List<AccountDetailDTO>>
+                {
+                    Succeeded = false,
+                    Message = "code incorrect"
                 });
             }
 
@@ -98,7 +129,7 @@ namespace IceCreamBE.Controllers
             await _RepositoryAccountDetail.CreateAsync(new AccountDetail
             {
                 Id = result2.Id,
-                Avatar = entity.avatar,
+                Avatar = _IRepositoryFileService.CheckImage(entity.avatar, "Images") ? url + entity.avatar : null,
                 Email = entity.email,
                 ExpirationDate = entity.expiration_date,
                 ExtensionDate = entity.extension_date,
@@ -108,13 +139,19 @@ namespace IceCreamBE.Controllers
                 CreateDate = DateTime.UtcNow,
             });
 
+            await _HandleResponseCode.UpdateAsync(new ResponseCode
+            {
+                Email = entity.email,
+                Code = entity.code
+            });
+
             return Ok(new Response<AccountDetailDTO>
             {
                 Succeeded = true,
                 Data = new AccountDetailDTO
                 {
                     Id = result2.Id,
-                    Avatar = url + entity.avatar,
+                    Avatar = _IRepositoryFileService.CheckImage(entity.avatar, "Images") ? url + entity.avatar : null,
                     Email = entity.email,
                     Expiration_date = entity.expiration_date,
                     Extension_date = entity.extension_date,

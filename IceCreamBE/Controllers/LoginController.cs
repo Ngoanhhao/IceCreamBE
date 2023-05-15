@@ -31,9 +31,9 @@ namespace IceCreamBE.Controllers
 
             var detail = await _IRepositoryAccountDetail.GetAsync(e => e.Id == result.Id);
             var roles = await _IRepositoryRoles.GetAsync(e => e.Id == detail.RoleID);
-            return Ok(new Response<LoginOutDTO>
+            return Ok(new Response<AccountDetailOutDTO>
             {
-                Data = new LoginOutDTO
+                Data = new AccountDetailOutDTO
                 {
                     Id = result.Id,
                     UserName = username,

@@ -28,6 +28,7 @@ namespace IceCreamBE
             builder.Services.AddScoped<IRepositoryBillDetail, RepositoryBillDetail>();
             builder.Services.AddScoped<IRepositoryFileService, RepositoryFileService>();
             builder.Services.AddScoped<IMailHandle, MailHandle>();
+            builder.Services.AddScoped<IHandleResponseCode, HandleResponseCode>();
 
             builder.Services.AddControllersWithViews()
                 .AddNewtonsoftJson(options =>

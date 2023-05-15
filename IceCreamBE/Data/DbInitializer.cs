@@ -36,6 +36,7 @@ namespace IceCreamBE.Data
                     Email = "ngoanhhao24@gmail.com",
                     FullName = "Ngô Anh Hào",
                     PhoneNumber = "1234567890",
+                    CreateDate = DateTime.Now,
                     ExpirationDate = DateTime.Now.AddDays(10),
                     ExtensionDate = DateTime.Now,
                     RoleID = 1,
