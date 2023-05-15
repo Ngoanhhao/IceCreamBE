@@ -117,6 +117,15 @@ namespace IceCreamBE.Controllers
                 });
             }
 
+            if (code.ExpirationDate < DateTime.UtcNow)
+            {
+                return BadRequest(new Response<List<AccountDetailDTO>>
+                {
+                    Succeeded = false,
+                    Message = "code has expired, please re-create it"
+                });
+            }
+
             await _RepositoryAccounts.CreateAsync(new Accounts
             {
                 Username = entity.username,

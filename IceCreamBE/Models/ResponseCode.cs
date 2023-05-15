@@ -6,5 +6,6 @@
         public string Code { get; set; }
         public string Email { get; set; }
         public bool Status { get; set; }
+        public DateTime ExpirationDate { get; set; }
     }
 }

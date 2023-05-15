@@ -11118,11 +11118,11 @@
   "project": {
     "version": "1.0.0",
     "restore": {
-      "projectUniqueName": "D:\\Technology\\Project\\Project_SEM03\\IceCreamBE\\IceCreamBE\\IceCreamBE.csproj",
+      "projectUniqueName": "C:\\Users\\VICTUS\\OneDrive - 2yk7xj\\Desktop\\New folder\\IceCreamBE\\IceCreamBE\\IceCreamBE.csproj",
       "projectName": "IceCreamBE",
-      "projectPath": "D:\\Technology\\Project\\Project_SEM03\\IceCreamBE\\IceCreamBE\\IceCreamBE.csproj",
+      "projectPath": "C:\\Users\\VICTUS\\OneDrive - 2yk7xj\\Desktop\\New folder\\IceCreamBE\\IceCreamBE\\IceCreamBE.csproj",
       "packagesPath": "C:\\Users\\VICTUS\\.nuget\\packages\\",
-      "outputPath": "D:\\Technology\\Project\\Project_SEM03\\IceCreamBE\\IceCreamBE\\obj\\",
+      "outputPath": "C:\\Users\\VICTUS\\OneDrive - 2yk7xj\\Desktop\\New folder\\IceCreamBE\\IceCreamBE\\obj\\",
       "projectStyle": "PackageReference",
       "configFilePaths": [
         "C:\\Users\\VICTUS\\AppData\\Roaming\\NuGet\\NuGet.Config",

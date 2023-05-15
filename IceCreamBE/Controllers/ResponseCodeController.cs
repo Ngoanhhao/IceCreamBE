@@ -32,8 +32,9 @@ namespace IceCreamBE.Controllers
             {
                 Email = email,
                 Code = randomNumber.ToString(),
-                Status = false
-            });
+                Status = false,
+                ExpirationDate = DateTime.UtcNow.AddMinutes(5)
+            }); ;
             return Ok(new Response<string>
             {
                 Succeeded = true,
