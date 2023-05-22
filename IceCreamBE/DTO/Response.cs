@@ -16,5 +16,6 @@
         public string Message { get; set; }
         public string[] Errors { get; set; }
         public T Data { get; set; }
+        public TokenOutDTO? Token { get; set; }
     }
 }

@@ -66,10 +66,10 @@ namespace IceCreamBE.Migrations
                         new
                         {
                             Id = 1,
-                            CreateDate = new DateTime(2023, 5, 15, 14, 54, 5, 382, DateTimeKind.Local).AddTicks(4897),
+                            CreateDate = new DateTime(2023, 5, 22, 15, 12, 25, 681, DateTimeKind.Local).AddTicks(1804),
                             Email = "ngoanhhao24@gmail.com",
-                            ExpirationDate = new DateTime(2023, 5, 25, 14, 54, 5, 382, DateTimeKind.Local).AddTicks(4909),
-                            ExtensionDate = new DateTime(2023, 5, 15, 14, 54, 5, 382, DateTimeKind.Local).AddTicks(4922),
+                            ExpirationDate = new DateTime(2023, 6, 1, 15, 12, 25, 681, DateTimeKind.Local).AddTicks(1820),
+                            ExtensionDate = new DateTime(2023, 5, 22, 15, 12, 25, 681, DateTimeKind.Local).AddTicks(1845),
                             FullName = "Ngô Anh Hào",
                             PhoneNumber = "1234567890",
                             RoleID = 1
@@ -145,7 +145,7 @@ namespace IceCreamBE.Migrations
                         {
                             Id = 1,
                             AccountID = 1,
-                            OrderTime = new DateTime(2023, 5, 15, 14, 54, 5, 382, DateTimeKind.Local).AddTicks(5033),
+                            OrderTime = new DateTime(2023, 5, 22, 15, 12, 25, 681, DateTimeKind.Local).AddTicks(1949),
                             Status = true,
                             SubTotal = 30000.0,
                             Total = 30000.0
@@ -324,6 +324,41 @@ namespace IceCreamBE.Migrations
                     b.HasIndex("ProductId");
 
                     b.ToTable("Recipe", (string)null);
+                });
+
+            modelBuilder.Entity("IceCreamBE.Models.RefreshToken", b =>
+                {
+                    b.Property<int>("id")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("int");
+
+                    SqlServerPropertyBuilderExtensions.UseIdentityColumn(b.Property<int>("id"));
+
+                    b.Property<string>("accessToken")
+                        .IsRequired()
+                        .HasColumnType("nvarchar(max)");
+
+                    b.Property<DateTime>("createDate")
+                        .HasColumnType("datetime2");
+
+                    b.Property<DateTime>("expirationDate")
+                        .HasColumnType("datetime2");
+
+                    b.Property<bool>("isUsed")
+                        .HasColumnType("bit");
+
+                    b.Property<string>("refreshToken")
+                        .IsRequired()
+                        .HasColumnType("nvarchar(max)");
+
+                    b.Property<int>("userId")
+                        .HasColumnType("int");
+
+                    b.HasKey("id");
+
+                    b.HasIndex("userId");
+
+                    b.ToTable("RefreshToken", (string)null);
                 });
 
             modelBuilder.Entity("IceCreamBE.Models.ResponseCode", b =>
@@ -524,6 +559,17 @@ namespace IceCreamBE.Migrations
                     b.Navigation("Product");
                 });
 
+            modelBuilder.Entity("IceCreamBE.Models.RefreshToken", b =>
+                {
+                    b.HasOne("IceCreamBE.Models.Accounts", "user")
+                        .WithMany("RefreshToken")
+                        .HasForeignKey("userId")
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired();
+
+                    b.Navigation("user");
+                });
+
             modelBuilder.Entity("IceCreamBE.Models.Storage", b =>
                 {
                     b.HasOne("IceCreamBE.Models.Products", "Product")
@@ -554,6 +600,8 @@ namespace IceCreamBE.Migrations
                     b.Navigation("Bill");
 
                     b.Navigation("Feedback");
+
+                    b.Navigation("RefreshToken");
 
                     b.Navigation("vouchers");
                 });

@@ -1,8 +1,11 @@
-using IceCreamBE.Data;
+﻿using IceCreamBE.Data;
 using IceCreamBE.Repository;
 using IceCreamBE.Repository.Irepository;
 using IceCreamBE.Repository.RepositoryTest;
+using Microsoft.AspNetCore.Authentication.JwtBearer;
 using Microsoft.EntityFrameworkCore;
+using Microsoft.IdentityModel.Tokens;
+using System.Text;
 
 namespace IceCreamBE
 {
@@ -29,6 +32,28 @@ namespace IceCreamBE
             builder.Services.AddScoped<IRepositoryFileService, RepositoryFileService>();
             builder.Services.AddScoped<IMailHandle, MailHandle>();
             builder.Services.AddScoped<IHandleResponseCode, HandleResponseCode>();
+            builder.Services.AddScoped<IToken, Token>();
+            builder.Services.AddScoped<IRepositoryRefreshtoken, RepositoryRefreshToken>();
+
+
+            builder.Services.AddAuthentication(JwtBearerDefaults.AuthenticationScheme)
+            .AddJwtBearer(options =>
+            {
+                options.RequireHttpsMetadata = false;
+                options.SaveToken = true;
+                options.TokenValidationParameters = new TokenValidationParameters
+                {
+                    //tự cấp token
+                    ValidateIssuer = false,
+                    ValidateAudience = false,
+                    ValidateLifetime = true, //kiểm tra hạn token
+                    //ký vào token
+                    ValidateIssuerSigningKey = true,
+                    IssuerSigningKey = new SymmetricSecurityKey(Encoding.UTF8.GetBytes(builder.Configuration["Authentication:key"])),
+                    //ClockSkew = TimeSpan.Zero
+                };
+            });
+
 
             builder.Services.AddControllersWithViews()
                 .AddNewtonsoftJson(options =>
@@ -51,8 +76,9 @@ namespace IceCreamBE
 
             app.UseHttpsRedirection();
 
-            app.UseAuthorization();
+            app.UseAuthentication();
 
+            app.UseAuthorization();
 
             app.MapControllers();
 

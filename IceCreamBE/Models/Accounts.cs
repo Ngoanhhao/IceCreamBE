@@ -11,5 +11,6 @@ namespace IceCreamBE.Models
         public virtual ICollection<Feedback> Feedback { get; set; }
         public virtual ICollection<Bill> Bill { get; set; }
         public virtual ICollection<Vouchers> vouchers { get; set; }
+        public virtual ICollection<RefreshToken> RefreshToken { get; set; }
     }
 }

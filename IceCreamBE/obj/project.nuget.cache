@@ -1,6 +1,6 @@
 {
   "version": 2,
-  "dgSpecHash": "Cl0k9lCW71/2tOSOnrjWD7uYzJD4UFRt2U/Km4w5zYIV6sX9aZl+qMfIFaefO6/CtT5ml36AQfMAKLvJ486LuA==",
+  "dgSpecHash": "FFiJHi7gGFY2qnVhqLA1nyafAGlsFer3bDE7jnF4rQDOYx9MsfY2ZwGlW+aEZwdcKKrDAoUhucd1WeUfaMUijw==",
   "success": true,
   "projectFilePath": "C:\\Users\\VICTUS\\OneDrive - 2yk7xj\\Desktop\\New folder\\IceCreamBE\\IceCreamBE\\IceCreamBE.csproj",
   "expectedPackageFiles": [
@@ -9,6 +9,7 @@
     "C:\\Users\\VICTUS\\.nuget\\packages\\bouncycastle.cryptography\\2.1.1\\bouncycastle.cryptography.2.1.1.nupkg.sha512",
     "C:\\Users\\VICTUS\\.nuget\\packages\\humanizer.core\\2.14.1\\humanizer.core.2.14.1.nupkg.sha512",
     "C:\\Users\\VICTUS\\.nuget\\packages\\mailkit\\4.0.0\\mailkit.4.0.0.nupkg.sha512",
+    "C:\\Users\\VICTUS\\.nuget\\packages\\microsoft.aspnetcore.authentication.jwtbearer\\7.0.5\\microsoft.aspnetcore.authentication.jwtbearer.7.0.5.nupkg.sha512",
     "C:\\Users\\VICTUS\\.nuget\\packages\\microsoft.aspnetcore.jsonpatch\\7.0.0\\microsoft.aspnetcore.jsonpatch.7.0.0.nupkg.sha512",
     "C:\\Users\\VICTUS\\.nuget\\packages\\microsoft.aspnetcore.mvc.newtonsoftjson\\7.0.0\\microsoft.aspnetcore.mvc.newtonsoftjson.7.0.0.nupkg.sha512",
     "C:\\Users\\VICTUS\\.nuget\\packages\\microsoft.aspnetcore.razor.language\\6.0.11\\microsoft.aspnetcore.razor.language.6.0.11.nupkg.sha512",

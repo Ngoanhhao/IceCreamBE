@@ -10,6 +10,7 @@ using IceCreamBE.Models;
 using IceCreamBE.Repository.Irepository;
 using IceCreamBE.DTO.PageList;
 using IceCreamBE.DTO;
+using Microsoft.AspNetCore.Authorization;
 
 namespace IceCreamBE.Controllers
 {
@@ -42,7 +43,7 @@ namespace IceCreamBE.Controllers
         }
 
         // GET: api/Bills/
-        [HttpGet]
+        [HttpGet, Authorize(Roles = "Member, Admin")]
         public async Task<ActionResult<IEnumerable<BillInDTO>>> GetBill([FromQuery] PaginationFilter<BillInDTO>? filter)
         {
             var bill = await _IRepositoryBill.GetAllAsync();

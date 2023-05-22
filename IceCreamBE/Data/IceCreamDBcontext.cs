@@ -12,7 +12,7 @@ namespace IceCreamBE.Data
         }
         protected override void OnModelCreating(ModelBuilder modelBuilder)
         {
-            
+
             // table config
             modelBuilder.Entity<Accounts>(entity =>
             {
@@ -32,6 +32,9 @@ namespace IceCreamBE.Data
                 entity.HasMany<Vouchers>(e => e.vouchers)
                     .WithOne(e => e.Admin)
                     .HasForeignKey(e => e.AdminID);
+                entity.HasMany<RefreshToken>(e => e.RefreshToken)
+                    .WithOne(e => e.user)
+                    .HasForeignKey(e => e.userId);
             });
 
             modelBuilder.Entity<AccountDetail>(entity =>
@@ -149,6 +152,16 @@ namespace IceCreamBE.Data
                     .OnDelete(DeleteBehavior.NoAction);
             });
 
+            modelBuilder.Entity<RefreshToken>(entity =>
+            {
+                entity.ToTable("RefreshToken");
+                entity.HasKey(e => e.id);
+                entity.Property(e => e.id).ValueGeneratedOnAdd();
+                entity.HasOne<Accounts>(e => e.user)
+                    .WithMany(e => e.RefreshToken)
+                    .HasForeignKey(e => e.userId);
+            });
+
 
             base.OnModelCreating(modelBuilder);
             new DbInitializer(modelBuilder).Seed();
@@ -166,6 +179,6 @@ namespace IceCreamBE.Data
         public DbSet<Vouchers> Vouchers { get; set; }
         public DbSet<Feedback> Feedback { get; set; }
         public DbSet<ResponseCode> ResponseCode { get; set; }
-
+        public DbSet<RefreshToken> RefreshToken { get; set; }
     }
 }
