@@ -43,7 +43,8 @@ namespace IceCreamBE.Controllers
         }
 
         // GET: api/Bills/
-        [HttpGet, Authorize(Roles = "Member, Admin")]
+        [HttpGet]
+        //[Authorize(Roles = "Member, Admin")]
         public async Task<ActionResult<IEnumerable<BillInDTO>>> GetBill([FromQuery] PaginationFilter<BillInDTO>? filter)
         {
             var bill = await _IRepositoryBill.GetAllAsync();

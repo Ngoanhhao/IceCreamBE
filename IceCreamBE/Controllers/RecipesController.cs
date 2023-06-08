@@ -150,8 +150,8 @@ namespace IceCreamBE.Controllers
             await _IRepositoryRecipe.UpdateAsync(new Recipe
             {
                 Id = result.Id,
-                Description = result.Description,
-                Status = result.Status,
+                Description = recipe.description,
+                Status = recipe.status,
             });
 
             return NoContent();
