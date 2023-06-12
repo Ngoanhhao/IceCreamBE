@@ -559,3 +559,4 @@ C:\Users\VICTUS\OneDrive - 2yk7xj\Desktop\New folder\IceCreamBE\IceCreamBE\obj\R
 C:\Users\VICTUS\OneDrive - 2yk7xj\Desktop\New folder\IceCreamBE\IceCreamBE\obj\Release\net7.0\IceCreamBE.pdb
 C:\Users\VICTUS\OneDrive - 2yk7xj\Desktop\New folder\IceCreamBE\IceCreamBE\obj\Release\net7.0\IceCreamBE.genruntimeconfig.cache
 C:\Users\VICTUS\OneDrive - 2yk7xj\Desktop\New folder\IceCreamBE\IceCreamBE\obj\Release\net7.0\ref\IceCreamBE.dll
+C:\Users\VICTUS\OneDrive - 2yk7xj\Desktop\New folder\IceCreamBE\IceCreamBE\bin\Release\net7.0\Microsoft.AspNetCore.Authentication.JwtBearer.dll

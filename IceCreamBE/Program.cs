@@ -65,6 +65,19 @@ namespace IceCreamBE
             builder.Services.AddEndpointsApiExplorer();
             builder.Services.AddSwaggerGen();
 
+            builder.Services.AddCors(setup =>
+            {
+                setup.AddDefaultPolicy(e =>
+                {
+                    e.AllowAnyMethod();
+                    e.AllowAnyHeader();
+                    e.SetIsOriginAllowed(origin => true);
+                    //e.WithOrigins("https://localhost:8081/");
+                    e.AllowCredentials();
+                });
+            });
+
+
             var app = builder.Build();
 
             // Configure the HTTP request pipeline.
@@ -77,6 +90,8 @@ namespace IceCreamBE
             app.UseHttpsRedirection();
 
             app.UseAuthentication();
+
+            app.UseCors();
 
             app.UseAuthorization();
 

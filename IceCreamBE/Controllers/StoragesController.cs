@@ -35,21 +35,15 @@ namespace IceCreamBE.Controllers
         {
             var storage = (await _IRepositoryStorage.GetAllAsync()).AsQueryable<Storage>();
             var product = (await _IRepositoryProduct.GetAllAsync()).AsQueryable<Products>();
-            var brand = (await _IRepositoryBrand.GetAllAsync()).AsQueryable<Brands>();
             var result = storage
                 .Join(product,
                     s => s.ProductID,
                     p => p.Id,
                     (s, p) => new { storage = s, product = p })
-                .Join(brand,
-                    s => s.product.BrandID,
-                    b => b.Id,
-                    (s, b) => new { storage = s.storage, product = s.product, brand = b })
                 .Select(e => new StorageOutDTO
                 {
                     Id = e.storage.ProductID,
                     product_name = e.product.Name,
-                    brand = e.brand.BrandName,
                     last_order = e.storage.LastOrder,
                     quantity = e.storage.Quantity,
                 }).ToList();
@@ -74,32 +68,23 @@ namespace IceCreamBE.Controllers
         [HttpGet("{id:int}")]
         public async Task<ActionResult<StorageOutDTO>> GetStorage(int id)
         {
-            var storage = (await _IRepositoryStorage.GetAllAsync()).AsQueryable<Storage>();
-            var product = (await _IRepositoryProduct.GetAllAsync()).AsQueryable<Products>();
-            var brand = (await _IRepositoryBrand.GetAllAsync()).AsQueryable<Brands>();
-            var result = storage
-                .Join(product,
-                    s => s.ProductID,
-                    p => p.Id,
-                    (s, p) => new { storage = s, product = p })
-                .Join(brand,
-                    s => s.product.BrandID,
-                    b => b.Id,
-                    (s, b) => new { storage = s.storage, product = s.product, brand = b })
-                .Where(e => e.storage.ProductID == id)
-                .Select(e => new StorageOutDTO
-                {
-                    Id = e.storage.ProductID,
-                    product_name = e.product.Name,
-                    brand = e.brand.BrandName,
-                    last_order = e.storage.LastOrder,
-                    quantity = e.storage.Quantity,
-                });
-            if (result.Count() == 0)
+            var storage = (await _IRepositoryStorage.GetAsync(e => e.ProductID == id));
+            if (storage == null)
             {
-                return NotFound(new Response<List<StorageOutDTO>> { Message = "not found", Succeeded = false });
+                return NotFound(new Response<StorageOutDTO> { Message = "not found", Succeeded = false });
             }
-            return Ok(new Response<List<StorageOutDTO>> { Data = result.ToList(), Succeeded = true });
+
+            var product = (await _IRepositoryProduct.GetAsync(e => e.Id == storage.ProductID));
+
+            var result = new StorageOutDTO
+            {
+                Id = storage.ProductID,
+                product_name = product.Name,
+                last_order = storage.LastOrder,
+                quantity = storage.Quantity,
+            };
+
+            return Ok(new Response<StorageOutDTO> { Data = result, Succeeded = true });
         }
 
 
@@ -109,22 +94,16 @@ namespace IceCreamBE.Controllers
         {
             var storage = (await _IRepositoryStorage.GetAllAsync()).AsQueryable<Storage>();
             var product = (await _IRepositoryProduct.GetAllAsync()).AsQueryable<Products>();
-            var brand = (await _IRepositoryBrand.GetAllAsync()).AsQueryable<Brands>();
             var result = storage
                 .Join(product,
                     s => s.ProductID,
                     p => p.Id,
                     (s, p) => new { storage = s, product = p })
-                .Join(brand,
-                    s => s.product.BrandID,
-                    b => b.Id,
-                    (s, b) => new { storage = s.storage, product = s.product, brand = b })
-                .Where(e => e.product.Name.Contains(query) || e.brand.BrandName.Contains(query))
+                .Where(e => e.product.Name.Contains(query))
                 .Select(e => new StorageOutDTO
                 {
                     Id = e.storage.ProductID,
                     product_name = e.product.Name,
-                    brand = e.brand.BrandName,
                     last_order = e.storage.LastOrder,
                     quantity = e.storage.Quantity,
                 });

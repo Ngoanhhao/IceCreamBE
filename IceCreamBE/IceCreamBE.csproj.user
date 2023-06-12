@@ -11,7 +11,7 @@
     <WebStackScaffolding_DbContextTypeFullName>IceCreamBE.Data.IceCreamDbcontext</WebStackScaffolding_DbContextTypeFullName>
     <WebStackScaffolding_IsAsyncSelected>False</WebStackScaffolding_IsAsyncSelected>
     <ActiveDebugProfile>IIS Express</ActiveDebugProfile>
-    <NameOfLastUsedPublishProfile>C:\Users\VICTUS\OneDrive - 2yk7xj\Desktop\New folder\IceCreamBE\IceCreamBE\Properties\PublishProfiles\FolderProfile3.pubxml</NameOfLastUsedPublishProfile>
+    <NameOfLastUsedPublishProfile>C:\Users\VICTUS\OneDrive - 2yk7xj\Desktop\New folder\IceCreamBE\IceCreamBE\Properties\PublishProfiles\FolderProfile4.pubxml</NameOfLastUsedPublishProfile>
   </PropertyGroup>
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Debug|AnyCPU'">
     <DebuggerFlavor>ProjectDebugger</DebuggerFlavor>

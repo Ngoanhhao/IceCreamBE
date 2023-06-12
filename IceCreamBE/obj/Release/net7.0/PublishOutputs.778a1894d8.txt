@@ -9,6 +9,7 @@ C:\Users\VICTUS\OneDrive - 2yk7xj\Desktop\New folder\IceCreamBE\IceCreamBE\obj\R
 C:\Users\VICTUS\OneDrive - 2yk7xj\Desktop\New folder\IceCreamBE\IceCreamBE\obj\Release\net7.0\PubTmp\Out\BouncyCastle.Cryptography.dll
 C:\Users\VICTUS\OneDrive - 2yk7xj\Desktop\New folder\IceCreamBE\IceCreamBE\obj\Release\net7.0\PubTmp\Out\Humanizer.dll
 C:\Users\VICTUS\OneDrive - 2yk7xj\Desktop\New folder\IceCreamBE\IceCreamBE\obj\Release\net7.0\PubTmp\Out\MailKit.dll
+C:\Users\VICTUS\OneDrive - 2yk7xj\Desktop\New folder\IceCreamBE\IceCreamBE\obj\Release\net7.0\PubTmp\Out\Microsoft.AspNetCore.Authentication.JwtBearer.dll
 C:\Users\VICTUS\OneDrive - 2yk7xj\Desktop\New folder\IceCreamBE\IceCreamBE\obj\Release\net7.0\PubTmp\Out\Microsoft.AspNetCore.JsonPatch.dll
 C:\Users\VICTUS\OneDrive - 2yk7xj\Desktop\New folder\IceCreamBE\IceCreamBE\obj\Release\net7.0\PubTmp\Out\Microsoft.AspNetCore.Mvc.NewtonsoftJson.dll
 C:\Users\VICTUS\OneDrive - 2yk7xj\Desktop\New folder\IceCreamBE\IceCreamBE\obj\Release\net7.0\PubTmp\Out\Microsoft.AspNetCore.Razor.Language.dll
