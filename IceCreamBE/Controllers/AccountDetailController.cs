@@ -62,6 +62,7 @@ namespace IceCreamBE.Controllers
                     Full_name = e.accountdetail.FullName,
                     UserName = e.account.Username,
                     Phone_number = e.accountdetail.PhoneNumber,
+                    Address = e.accountdetail.Address,
                     Role = e.roles.Role,
                     Create_date = e.accountdetail.CreateDate
                 }).ToList();
@@ -107,6 +108,7 @@ namespace IceCreamBE.Controllers
                             Full_name = result.FullName,
                             UserName = account.Username,
                             Phone_number = result.PhoneNumber,
+                            Address = result.Address,
                             Role = roles.Role,
                             Create_date = result.CreateDate
                         }
@@ -141,6 +143,7 @@ namespace IceCreamBE.Controllers
                         Phone_number = detail.PhoneNumber,
                         Avatar = _IRepositoryFileService.CheckImage(detail.Avatar, "Images") ? url + detail.Avatar : null,
                         Role = roles.Role,
+                        Address = detail.Address,
                         Expiration_date = detail.ExpirationDate,
                         Extension_date = detail.ExtensionDate,
                         Create_date = detail.CreateDate,
@@ -170,6 +173,7 @@ namespace IceCreamBE.Controllers
                 Expiration_date = e.ExpirationDate,
                 Extension_date = e.ExtensionDate,
                 Full_name = e.FullName,
+                Address = e.Address,
                 Phone_number = e.PhoneNumber,
                 RoleID = e.RoleID
             }));
@@ -226,6 +230,7 @@ namespace IceCreamBE.Controllers
                     Email = accounts.Email,
                     Expiration_date = accounts.Expiration_date,
                     Extension_date = accounts.Extension_date,
+                    Address = accounts.Address,
                     Full_name = accounts.Full_name,
                     Phone_number = accounts.Phone_number,
                 });

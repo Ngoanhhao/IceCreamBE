@@ -22,5 +22,22 @@ namespace IceCreamBE.Repository
             result.Total = entity.Total;
             await dbcontext.SaveChangesAsync();
         }
+
+        public async Task UpdateStatusAsync(Bill entity)
+        {
+            var result = await dbcontext.Bill.FirstOrDefaultAsync(e => e.AccountID == entity.AccountID);
+            result.Status = entity.Status;
+            await dbcontext.SaveChangesAsync();
+        }
+
+        public async Task UpdateVoucherAsync(Bill entity)
+        {
+            var result = await dbcontext.Bill.FirstOrDefaultAsync(e => e.AccountID == entity.AccountID && e.Status == "ORDERING");
+            if (result != null)
+            {
+                result.VoucherID = entity.VoucherID;
+                await dbcontext.SaveChangesAsync();
+            }
+        }
     }
 }

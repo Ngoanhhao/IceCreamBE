@@ -25,6 +25,7 @@ namespace IceCreamBE.Repository
             result.PhoneNumber = entity.Phone_number;
             result.Email = entity.Email;
             result.FullName = entity.Full_name;
+            result.Address = entity.Address;
             result.RoleID = entity.RoleID;
             await dbcontext.SaveChangesAsync();
         }

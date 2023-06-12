@@ -37,6 +37,7 @@ namespace IceCreamBE.Data
                     FullName = "Ngô Anh Hào",
                     PhoneNumber = "1234567890",
                     CreateDate = DateTime.Now,
+                    Address = "Hội An",
                     ExpirationDate = DateTime.Now.AddDays(10),
                     ExtensionDate = DateTime.Now,
                     RoleID = 1,
@@ -65,7 +66,7 @@ namespace IceCreamBE.Data
                 Id = 1,
                 AccountID = 1,
                 OrderTime = DateTime.Now,
-                Status = true,
+                Status = "DONE",
                 SubTotal = 30000,
                 Total = 30000,
             });

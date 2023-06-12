@@ -21,10 +21,12 @@ namespace IceCreamBE.Controllers
     public class VouchersController : ControllerBase
     {
         private readonly IRepositoryVourcher _IRepositoryVourcher;
+        private readonly IRepositoryAccounts _IRepositoryAccounts;
 
-        public VouchersController(IRepositoryVourcher IRepositoryVourcher)
+        public VouchersController(IRepositoryVourcher IRepositoryVourcher, IRepositoryAccounts IRepositoryAccounts)
         {
             _IRepositoryVourcher = IRepositoryVourcher;
+            _IRepositoryAccounts = IRepositoryAccounts;
         }
 
         //GET: api/Vouchers
@@ -115,7 +117,7 @@ namespace IceCreamBE.Controllers
         // PUT: api/Vouchers/5
         // To protect from overposting attacks, see https://go.microsoft.com/fwlink/?linkid=2123754
         [HttpPut("{id}")]
-        public async Task<IActionResult> PutVouchers(int id, VouchersDTO vouchers)
+        public async Task<IActionResult> PutVouchers(int id, VoucherInDTO vouchers)
         {
             if (id != vouchers.Id)
             {
@@ -136,24 +138,49 @@ namespace IceCreamBE.Controllers
         // POST: api/Vouchers
         // To protect from overposting attacks, see https://go.microsoft.com/fwlink/?linkid=2123754
         [HttpPost]
-        public async Task<ActionResult<Vouchers>> PostVouchers(VouchersDTO vouchers)
+        public async Task<ActionResult<Vouchers>> PostVouchers(VoucherInDTO vouchers)
         {
             if (!ModelState.IsValid)
             {
                 return BadRequest(new Response<List<VouchersDTO>> { Message = "value incorrect", Succeeded = false });
             }
 
+            if ((vouchers.hourExpiration <= 0 || vouchers.hourExpiration == null) && vouchers.ExpirationDate == null)
+            {
+                return BadRequest(new Response<List<VouchersDTO>> { Message = "hourExpiration or ExpirationDate incorrect", Succeeded = false });
+            }
+
+            var user = await _IRepositoryAccounts.GetAsync(e => e.Id == vouchers.adminID);
+            if (user == null)
+            {
+                return BadRequest(new Response<List<VouchersDTO>> { Message = "user incorrect", Succeeded = false });
+            }
+
             var voucher = Coupon.CouponGenarate(20);
 
-            await _IRepositoryVourcher.CreateAsync(new Vouchers
+            if (vouchers.hourExpiration > 0)
             {
-                AdminID = vouchers.adminID
-                ,
-                Status = vouchers.status,
-                Voucher = voucher,
-                Discount = vouchers.discount_percent,
-                ExpirationDate = DateTime.UtcNow
-            });
+                await _IRepositoryVourcher.CreateAsync(new Vouchers
+                {
+                    AdminID = vouchers.adminID,
+                    Status = vouchers.status,
+                    Voucher = voucher,
+                    Discount = vouchers.discount_percent,
+                    ExpirationDate = DateTime.Now.AddHours((double)vouchers.hourExpiration)
+                });
+            }
+            else if (vouchers.ExpirationDate != null)
+            {
+                await _IRepositoryVourcher.CreateAsync(new Vouchers
+                {
+                    AdminID = vouchers.adminID,
+                    Status = vouchers.status,
+                    Voucher = voucher,
+                    Discount = vouchers.discount_percent,
+                    ExpirationDate = (DateTime)vouchers.ExpirationDate == null ? DateTime.Now.AddHours(1) : (DateTime)vouchers.ExpirationDate
+                });
+            }
+
 
             return NotFound(new Response<string> { Data = voucher, Succeeded = true });
         }

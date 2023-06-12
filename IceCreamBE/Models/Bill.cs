@@ -8,7 +8,7 @@
         public virtual ICollection<BillDetail> BillDetail { get; set; }
         public double SubTotal { get; set; }
         public double Total { get; set; }
-        public bool Status { get; set; }
+        public string Status { get; set; }
         public DateTime OrderTime { get; set; }
         public int? VoucherID { get; set; }
         public virtual Vouchers Vouchers { get; set; }

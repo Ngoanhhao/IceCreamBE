@@ -24,13 +24,15 @@ namespace IceCreamBE.Controllers
         private readonly IRepositoryProduct _IRepositoryProduct;
         private readonly IRepositoryBill _IRepositoryBill;
         private readonly IRepositoryVourcher _IRepositoryVourcher;
+        private readonly IRepositoryAccounts _IRepositoryAccounts;
 
-        public BillDetailsController(IRepositoryBillDetail IRepositoryBillDetail, IRepositoryProduct repositoryProduct, IRepositoryBill repositoryBill, IRepositoryVourcher repositoryVourcher)
+        public BillDetailsController(IRepositoryBillDetail IRepositoryBillDetail, IRepositoryProduct repositoryProduct, IRepositoryBill repositoryBill, IRepositoryVourcher repositoryVourcher, IRepositoryAccounts repositoryAccounts)
         {
             _IRepositoryBillDetail = IRepositoryBillDetail;
             _IRepositoryProduct = repositoryProduct;
             _IRepositoryBill = repositoryBill;
             _IRepositoryVourcher = repositoryVourcher;
+            _IRepositoryAccounts = repositoryAccounts;
         }
 
         // GET: api/BillDetails
@@ -174,7 +176,7 @@ namespace IceCreamBE.Controllers
 
             //update infomation bill
             var bill = await _IRepositoryBill.GetAsync(e => e.Id == BillDetail.BillID);
-            var BillDetails= await _IRepositoryBillDetail.GetAllAsync(e => e.BillID == BillDetail.BillID);
+            var BillDetails = await _IRepositoryBillDetail.GetAllAsync(e => e.BillID == BillDetail.BillID);
             var voucher = await _IRepositoryVourcher.GetAsync(e => e.Id == bill.VoucherID);
             double subTotal = 0;
             BillDetails.ForEach(e => subTotal += e.Total);
@@ -194,48 +196,84 @@ namespace IceCreamBE.Controllers
         // POST: api/BillDetails
         // To protect from overposting attacks, see https://go.microsoft.com/fwlink/?linkid=2123754
         [HttpPost]
-        public async Task<ActionResult<BillDetailOutDTO>> PostBillDetail(BillDetailInDTO billDetail)
+        public async Task<ActionResult<BillDetailOutDTO>> PostBillDetail(int userID, BillDetailInDTO billDetail)
         {
-            var product = await _IRepositoryProduct.GetAsync(e => e.Id == billDetail.productID);
-            var detail = await _IRepositoryBillDetail.GetAsync(e => e.ProductID == billDetail.productID);
             if (!ModelState.IsValid)
             {
-                return BadRequest(new Response<BillDetailInDTO> { Message = "value incorrect", Succeeded = false });
+                return BadRequest(new Response<BillDetailInDTO> { Message = "user not available", Succeeded = false });
             }
 
-            var billCheck = await _IRepositoryBill.GetAsync(e => e.Id == billDetail.billID);
-            if (billCheck == null)
+            if (userID <= 0)
             {
-                return NotFound(new Response<BillDetailOutDTO> { Message="bill not found", Succeeded = false});
-            }
-            if(product == null)
-            {
-                return NotFound(new Response<BillDetailOutDTO> { Message="product not found", Succeeded = false});
-            }
-            if(billDetail.quantity <=0 )
-            {
-                return NotFound(new Response<BillDetailOutDTO> { Message = "quantity not null", Succeeded = false });
+                return BadRequest(new Response<BillDetailInDTO> { Message = "user incorrect", Succeeded = false });
             }
 
-            if (detail != null)
+            var product = await _IRepositoryProduct.GetAsync(e => e.Id == billDetail.productID);
+            if (product == null)
             {
-                await _IRepositoryBillDetail.UpdateAsync(new BillDetail
+                return NotFound(new Response<BillDetailOutDTO> { Message = "product not found", Succeeded = false });
+            }
+
+            var user = await _IRepositoryAccounts.GetAsync(e => e.Id == userID);
+            if (user == null)
+            {
+                return BadRequest(new Response<BillDetailInDTO> { Message = "user not available", Succeeded = false });
+            }
+            // ORDERING
+            // PENDING
+            // SUCCESSED
+            // DONE
+            var billCheck = await _IRepositoryBill.GetAsync(e => e.Status == "ORDERING" && e.AccountID == userID);
+            // check bill cũ chưa thanh toán
+            if (billCheck != null)
+            {
+                // bill có sẵn chưa thanh toán
+                var detail = await _IRepositoryBillDetail.GetAsync(e => e.ProductID == billDetail.productID && e.BillID == billCheck.Id); //check sản phẩm trong bill
+                if (detail != null)
                 {
-                    Id = detail.Id,
-                    ProductID = detail.ProductID,
-                    BillID = detail.BillID,
-                    Quantity = detail.Quantity + billDetail.quantity,
-                    Price = product.Price,
-                    Total = detail.Total + (product.Price * billDetail.quantity),
-                });
+                    // sp đã tồn tại thì +1
+                    await _IRepositoryBillDetail.UpdateAsync(new BillDetail
+                    {
+                        Id = detail.Id,
+                        ProductID = detail.ProductID,
+                        Quantity = detail.Quantity + billDetail.quantity,
+                        Price = product.Price,
+                        Total = detail.Total + (product.Price * billDetail.quantity),
+                    });
+                }
+                else
+                {
+                    // sp chưa tồn tại thì add vào
+                    await _IRepositoryBillDetail.CreateAsync(new BillDetail
+                    {
+                        Id = billDetail.Id,
+                        ProductID = billDetail.productID,
+                        BillID = billCheck.Id,
+                        Quantity = billDetail.quantity,
+                        Price = product.Price,
+                        Total = product.Price * billDetail.quantity,
+                    });
+                }
+
+
+                //return NotFound(new Response<BillDetailOutDTO> { Message = "bill not found", Succeeded = false });
             }
             else
             {
+                // trường hợp tất cả bill đã thanh toán
+                // tạo bill
+                await _IRepositoryBill.CreateAsync(new Bill
+                {
+                    AccountID = userID,
+                    Status = "ORDERING",
+                });
+                var getBill = await _IRepositoryBill.GetAsync(e => e.Status == "ORDERING" && e.AccountID == userID);
+                // add sp
                 await _IRepositoryBillDetail.CreateAsync(new BillDetail
                 {
                     Id = billDetail.Id,
                     ProductID = billDetail.productID,
-                    BillID = billDetail.billID,
+                    BillID = getBill.Id,
                     Quantity = billDetail.quantity,
                     Price = product.Price,
                     Total = product.Price * billDetail.quantity,
@@ -243,9 +281,10 @@ namespace IceCreamBE.Controllers
             }
 
 
-            // update infomation bill
-            var bill = await _IRepositoryBill.GetAsync(e => e.Id == billDetail.billID);
-            var BillDetails = await _IRepositoryBillDetail.GetAllAsync(e => e.BillID == billDetail.billID);
+
+            // update subtotal total bill
+            var bill = await _IRepositoryBill.GetAsync(e => e.Status == "ORDERING" && e.AccountID == userID);
+            var BillDetails = await _IRepositoryBillDetail.GetAllAsync(e => e.BillID == bill.Id);
             var voucher = await _IRepositoryVourcher.GetAsync(e => e.Id == bill.VoucherID);
             double subTotal = 0;
             BillDetails.ForEach(e => subTotal += e.Total);
