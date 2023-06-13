@@ -324,7 +324,7 @@ namespace IceCreamBE.Controllers
         [HttpPut("{userID}")]
         public async Task<IActionResult> PutBill(int userID, string voucher)
         {
-            var getVoucher = await _IRepositoryVourcher.GetAsync(e => e.Voucher == voucher);
+            var getVoucher = await _IRepositoryVourcher.GetAsync(e => e.Voucher == voucher && e.Status == true);
 
             if (getVoucher == null)
             {

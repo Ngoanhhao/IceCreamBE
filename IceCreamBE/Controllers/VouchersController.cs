@@ -22,38 +22,44 @@ namespace IceCreamBE.Controllers
     {
         private readonly IRepositoryVourcher _IRepositoryVourcher;
         private readonly IRepositoryAccounts _IRepositoryAccounts;
+        private readonly IRepositoryAccountDetail _IRepositoryAccountsDetails;
 
-        public VouchersController(IRepositoryVourcher IRepositoryVourcher, IRepositoryAccounts IRepositoryAccounts)
+        public VouchersController(IRepositoryVourcher IRepositoryVourcher, IRepositoryAccounts IRepositoryAccounts, IRepositoryAccountDetail iRepositoryAccountsDetails)
         {
             _IRepositoryVourcher = IRepositoryVourcher;
             _IRepositoryAccounts = IRepositoryAccounts;
+            _IRepositoryAccountsDetails = iRepositoryAccountsDetails;
         }
 
         //GET: api/Vouchers
         [HttpGet]
         public async Task<ActionResult<IEnumerable<VouchersDTO>>> GetVouchers([FromQuery] PaginationFilter<VouchersDTO>? filter)
         {
-            var newResult = new List<VouchersDTO>();
-            var result = await _IRepositoryVourcher.GetAllAsync();
+            var voucher = await _IRepositoryVourcher.GetAllAsync();
+            var account = await _IRepositoryAccounts.GetAllAsync();
 
-            result.ForEach(e => newResult.Add(new VouchersDTO
-            {
-                Id = e.Id,
-                adminID = e.AdminID,
-                discount_percent = e.Discount,
-                expiration_date = e.ExpirationDate,
-                status = e.Status,
-                voucher = e.Voucher,
-            }));
+            var result = voucher.Join(account,
+                e => e.AdminID,
+                q => q.Id,
+                (e, q) => new { voucher = e, account = q })
+                .Select(e => new VoucherOutDTO
+                {
+                    Id = e.voucher.Id,
+                    discount_percent = e.voucher.Discount,
+                    ExpirationDate = e.voucher.ExpirationDate,
+                    status = e.voucher.Status,
+                    user_name = e.account.Username
+                }).ToList();
 
-            var pageFilter = new PaginationFilter<VouchersDTO>(filter.PageNumber, filter.PageSize);
-            var pagedData = pageFilter.GetPageList(newResult);
 
-            return Ok(new PagedResponse<List<VouchersDTO>>
+            var pageFilter = new PaginationFilter<VoucherOutDTO>(filter.PageNumber, filter.PageSize);
+            var pagedData = pageFilter.GetPageList(result);
+
+            return Ok(new PagedResponse<List<VoucherOutDTO>>
             {
                 Data = pagedData,
                 Succeeded = pagedData == null ? false : true,
-                Pagination = new PagedResponseDetail<List<VouchersDTO>>
+                Pagination = new PagedResponseDetail<List<VoucherOutDTO>>
                 {
                     current_page = pagedData == null ? 0 : pageFilter.PageNumber,
                     Page_pize = pagedData == null ? 0 : pageFilter.PageSize,
@@ -65,24 +71,28 @@ namespace IceCreamBE.Controllers
 
         //// GET: api/Vouchers/5
         [HttpGet("{id:int}")]
-        public async Task<ActionResult<VouchersDTO>> GetVouchers(int id)
+        public async Task<ActionResult<VoucherOutDTO>> GetVouchers(int id)
         {
-            var result = await _IRepositoryVourcher.GetAsync(e => e.Id == id);
-            if (result == null)
+            var vouchers = await _IRepositoryVourcher.GetAsync(e => e.Id == id);
+            if (vouchers == null)
             {
-                return NotFound(new Response<List<VouchersDTO>> { Message = "not found", Succeeded = false });
+                return NotFound(new Response<List<VoucherOutDTO>> { Message = "not found", Succeeded = false });
+            }
+            var accounts = await _IRepositoryAccounts.GetAsync(e => e.Id == vouchers.AdminID);
+            if (accounts == null)
+            {
+                return NotFound(new Response<List<VoucherOutDTO>> { Message = "not found", Succeeded = false });
             }
 
-            return Ok(new Response<VouchersDTO>
+            return Ok(new Response<VoucherOutDTO>
             {
-                Data = new VouchersDTO
+                Data = new VoucherOutDTO
                 {
-                    adminID = result.AdminID,
-                    discount_percent = result.Discount,
-                    expiration_date = result.ExpirationDate,
-                    status = result.Status,
-                    Id = result.Id,
-                    voucher = result.Voucher,
+                    Id = vouchers.Id,
+                    discount_percent = vouchers.Discount,
+                    ExpirationDate = vouchers.ExpirationDate,
+                    status = vouchers.Status,
+                    user_name = accounts.Username
                 },
                 Succeeded = true
             });
@@ -90,24 +100,28 @@ namespace IceCreamBE.Controllers
 
         //// GET: api/Vouchers/5
         [HttpGet("{voucher}")]
-        public async Task<ActionResult<VouchersDTO>> GetVouchers(string voucher)
+        public async Task<ActionResult<VoucherOutDTO>> GetVouchers(string voucher)
         {
-            var result = await _IRepositoryVourcher.GetAsync(e => e.Voucher == voucher);
-            if (result == null)
+            var vouchers = await _IRepositoryVourcher.GetAsync(e => e.Voucher == voucher);
+            if (vouchers == null)
             {
-                return NotFound(new Response<List<VouchersDTO>> { Message = "not found", Succeeded = false });
+                return NotFound(new Response<List<VoucherOutDTO>> { Message = "not found", Succeeded = false });
+            }
+            var accounts = await _IRepositoryAccounts.GetAsync(e => e.Id == vouchers.AdminID);
+            if (accounts == null)
+            {
+                return NotFound(new Response<List<VoucherOutDTO>> { Message = "not found", Succeeded = false });
             }
 
-            return Ok(new Response<VouchersDTO>
+            return Ok(new Response<VoucherOutDTO>
             {
-                Data = new VouchersDTO
+                Data = new VoucherOutDTO
                 {
-                    adminID = result.AdminID,
-                    discount_percent = result.Discount,
-                    expiration_date = result.ExpirationDate,
-                    status = result.Status,
-                    Id = result.Id,
-                    voucher = result.Voucher,
+                    Id = vouchers.Id,
+                    discount_percent = vouchers.Discount,
+                    ExpirationDate = vouchers.ExpirationDate,
+                    status = vouchers.Status,
+                    user_name = accounts.Username
                 },
                 Succeeded = true
             });
