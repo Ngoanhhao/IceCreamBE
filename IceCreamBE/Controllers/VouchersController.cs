@@ -48,6 +48,7 @@ namespace IceCreamBE.Controllers
                     discount_percent = e.voucher.Discount,
                     ExpirationDate = e.voucher.ExpirationDate,
                     status = e.voucher.Status,
+                    voucher = e.voucher.Voucher,
                     user_name = e.account.Username
                 }).ToList();
 
@@ -91,6 +92,7 @@ namespace IceCreamBE.Controllers
                     Id = vouchers.Id,
                     discount_percent = vouchers.Discount,
                     ExpirationDate = vouchers.ExpirationDate,
+                    voucher = vouchers.Voucher,
                     status = vouchers.Status,
                     user_name = accounts.Username
                 },
@@ -120,6 +122,7 @@ namespace IceCreamBE.Controllers
                     Id = vouchers.Id,
                     discount_percent = vouchers.Discount,
                     ExpirationDate = vouchers.ExpirationDate,
+                    voucher = vouchers.Voucher,
                     status = vouchers.Status,
                     user_name = accounts.Username
                 },
