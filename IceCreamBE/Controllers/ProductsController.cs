@@ -128,6 +128,8 @@ namespace IceCreamBE.Controllers
                 return BadRequest(new Response<ProductOutDTO> { Message = "brand is valid", Succeeded = false });
             }
 
+            var discount = products.discount_percent >= 0 ? products.discount_percent : 0;
+
             await _IRepositoryProduct.UpdateAsync(new Products
             {
                 Id = products.Id,
@@ -135,9 +137,9 @@ namespace IceCreamBE.Controllers
                 BrandID = products.brandID,
                 Cost = products.cost,
                 Img = products.img,
-                Discount = products.discount_percent,
+                Discount = discount,
                 Price = products.price,
-                Total = products.discount_percent != null ? ((100 - products.discount_percent) * 0.01) * products.price : products.price,
+                Total = (double)((100 - discount) * 0.01) * products.price,
                 Status = products.status,
                 Name = products.name
             });
@@ -160,6 +162,8 @@ namespace IceCreamBE.Controllers
                 return BadRequest(new Response<ProductOutDTO> { Message = "brand is valid", Succeeded = false });
             }
 
+            var discount = products.discount_percent >= 0 ? products.discount_percent : 0;
+
             await _IRepositoryProduct.CreateAsync(new Products
             {
                 Description = products.description,
@@ -167,8 +171,8 @@ namespace IceCreamBE.Controllers
                 Cost = products.cost,
                 Img = products.img,
                 Price = products.price,
-                Discount = products.discount_percent,
-                Total = (double)(((100 - products.discount_percent) * 0.01) * products.price),
+                Discount = discount,
+                Total = (double)(((100 - discount) * 0.01) * products.price),
                 Status = products.status,
                 Name = products.name
             });
