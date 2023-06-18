@@ -61,7 +61,7 @@ namespace IceCreamBE.Controllers
                     phone_number = e.accountDetail.PhoneNumber,
                     feedBack_product = e.feedback.FeedBackProduct,
                     release_date = e.feedback.ReleaseDate,
-                })
+                }).OrderByDescending(e => e.release_date)
                 .ToList();
 
             var pageFilter = new PaginationFilter<FeedbackDetailDTO>(filter.PageNumber, filter.PageSize);

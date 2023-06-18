@@ -50,7 +50,7 @@ namespace IceCreamBE.Controllers
                     status = e.voucher.Status,
                     voucher = e.voucher.Voucher,
                     user_name = e.account.Username
-                }).ToList();
+                }).OrderByDescending(e => e.ExpirationDate).ToList();
 
 
             var pageFilter = new PaginationFilter<VoucherOutDTO>(filter.PageNumber, filter.PageSize);
@@ -198,8 +198,26 @@ namespace IceCreamBE.Controllers
                 });
             }
 
+            var Voucher = await _IRepositoryVourcher.GetAsync(e => e.Voucher == voucher);
+            var currentUser = await _IRepositoryAccounts.GetAsync(e => e.Id == Voucher.AdminID);
+            if (Voucher == null)
+            {
+                return BadRequest(new Response<List<VouchersDTO>> { Message = "error please try again", Succeeded = false });
+            }
 
-            return NotFound(new Response<string> { Data = voucher, Succeeded = true });
+            return Ok(new Response<VoucherOutDTO>
+            {
+                Data = new VoucherOutDTO
+                {
+                    Id = Voucher.Id,
+                    voucher = Voucher.Voucher,
+                    discount_percent = Voucher.Discount,
+                    ExpirationDate = Voucher.ExpirationDate,
+                    status = Voucher.Status,
+                    user_name = currentUser.Username
+                },
+                Succeeded = true
+            });
         }
 
         // DELETE: api/Vouchers/5

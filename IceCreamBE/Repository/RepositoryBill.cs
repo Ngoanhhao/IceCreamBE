@@ -23,11 +23,22 @@ namespace IceCreamBE.Repository
             await dbcontext.SaveChangesAsync();
         }
 
-        public async Task UpdateStatusAsync(Bill entity)
+        public async Task UpdateStatusAsync(Bill entity, string? oldStatus)
         {
-            var result = await dbcontext.Bill.FirstOrDefaultAsync(e => e.AccountID == entity.AccountID);
-            result.Status = entity.Status;
-            await dbcontext.SaveChangesAsync();
+            if (oldStatus != null)
+            {
+                var result = await dbcontext.Bill.FirstOrDefaultAsync(e => e.AccountID == entity.AccountID && e.Status == oldStatus);
+                result.Status = entity.Status;
+                result.OrderTime = entity.OrderTime == DateTime.Parse("0001-01-01T00:00:00") ? result.OrderTime : entity.OrderTime;
+                await dbcontext.SaveChangesAsync();
+            }
+            else
+            {
+                var result = await dbcontext.Bill.FirstOrDefaultAsync(e => e.AccountID == entity.AccountID);
+                result.Status = entity.Status;
+                result.OrderTime = entity.OrderTime == DateTime.Parse("0001-01-01T00:00:00") ? result.OrderTime : entity.OrderTime;
+                await dbcontext.SaveChangesAsync();
+            }
         }
 
         public async Task UpdateVoucherAsync(Bill entity)

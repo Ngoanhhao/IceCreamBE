@@ -40,7 +40,7 @@ namespace IceCreamBE.Controllers
             var result = await _RepositoryAccounts.GetAsync(e => e.Username == user.username && e.Password == user.password);
             if (result == null)
             {
-                return NotFound(new Response<AccountDetailDTO> { Message = "username or password incorrect", Succeeded = false });
+                return Unauthorized(new Response<AccountDetailDTO> { Message = "username or password incorrect", Succeeded = false });
             }
 
             var detail = await _IRepositoryAccountDetail.GetAsync(e => e.Id == result.Id);

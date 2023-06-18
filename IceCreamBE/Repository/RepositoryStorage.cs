@@ -16,7 +16,8 @@ namespace IceCreamBE.Repository
         public async Task UpdateAsync(int id, int quantity)
         {
             var value = await dbcontext.storage.FirstOrDefaultAsync(e => e.ProductID == id);
-            value.Quantity = quantity;
+            value.Quantity = value.Quantity + quantity;
+            value.LastOrder = DateTime.Now;
             await dbcontext.SaveChangesAsync();
         }
     }

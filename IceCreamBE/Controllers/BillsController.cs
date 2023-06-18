@@ -11,6 +11,8 @@ using IceCreamBE.Repository.Irepository;
 using IceCreamBE.DTO.PageList;
 using IceCreamBE.DTO;
 using Microsoft.AspNetCore.Authorization;
+using Microsoft.AspNetCore.Http.HttpResults;
+using static Microsoft.EntityFrameworkCore.DbLoggerCategory;
 
 namespace IceCreamBE.Controllers
 {
@@ -24,6 +26,9 @@ namespace IceCreamBE.Controllers
         private readonly IRepositoryVourcher _IRepositoryVourcher;
         private readonly IRepositoryBillDetail _IRepositoryBillDetail;
         private readonly IRepositoryAccountDetail _IRepositoryAccountDetail;
+        private readonly IRepositoryBrand _IRepositoryBrand;
+        private readonly IRepositoryFileService _IRepositoryFileService;
+
 
         public BillsController(
             IRepositoryBill iRepositoryBill,
@@ -31,7 +36,9 @@ namespace IceCreamBE.Controllers
             IRepositoryAccounts iRepositoryAccounts,
             IRepositoryVourcher iRepositoryVourcher,
             IRepositoryBillDetail iRepositoryBillDetail,
-            IRepositoryAccountDetail iRepositoryAccountDetail
+            IRepositoryAccountDetail iRepositoryAccountDetail,
+            IRepositoryBrand repositoryBrand,
+            IRepositoryFileService iRepositoryFileService
             )
         {
             _IRepositoryBill = iRepositoryBill;
@@ -40,6 +47,8 @@ namespace IceCreamBE.Controllers
             _IRepositoryVourcher = iRepositoryVourcher;
             _IRepositoryBillDetail = iRepositoryBillDetail;
             _IRepositoryAccountDetail = iRepositoryAccountDetail;
+            _IRepositoryBrand = repositoryBrand;
+            _IRepositoryFileService = iRepositoryFileService;
         }
 
         // GET: api/Bills/
@@ -49,6 +58,8 @@ namespace IceCreamBE.Controllers
         {
             var bill = await _IRepositoryBill.GetAllAsync();
             var accountDetail = await _IRepositoryAccountDetail.GetAllAsync();
+            var brand = await _IRepositoryBrand.GetAllAsync();
+            string url = $"{Request.Scheme}://{Request.Host}/api/image/";
 
             // Bill
             var result = bill
@@ -63,6 +74,7 @@ namespace IceCreamBE.Controllers
                         order_Time = e.bill.OrderTime,
                         status = e.bill.Status,
                         total = e.bill.Total,
+                        address = e.accountDetail.Address,
                         voucher = e.bill.VoucherID.ToString(),
                         sub_total = e.bill.SubTotal,
                         email = e.accountDetail.Email,
@@ -81,11 +93,17 @@ namespace IceCreamBE.Controllers
                         e => e.ProductID,
                         q => q.Id,
                         (e, q) => new { billdetail = e, product = q })
+                    .Join(brand,
+                        e => e.product.BrandID,
+                        q => q.Id,
+                        (e, q) => new { e.product, e.billdetail, brand = q })
                     .Select(e => new BillDetailOutDTO
                     {
                         Id = e.billdetail.Id,
                         billID = e.billdetail.BillID,
                         product_name = e.product.Name,
+                        brand_name = e.brand.BrandName,
+                        img = _IRepositoryFileService.CheckImage(e.product.Img, "Images") ? url + e.product.Img : null,
                         quantity = e.billdetail.Quantity,
                         total = e.billdetail.Total,
                         price = e.billdetail.Price,
@@ -123,6 +141,7 @@ namespace IceCreamBE.Controllers
         {
             var bill = await _IRepositoryBill.GetAllAsync();
             var accountDetail = await _IRepositoryAccountDetail.GetAllAsync();
+            string url = $"{Request.Scheme}://{Request.Host}/api/image/";
 
             // Bill
             var result = bill
@@ -137,6 +156,7 @@ namespace IceCreamBE.Controllers
                         full_name = e.accountDetail.FullName,
                         order_Time = e.bill.OrderTime,
                         status = e.bill.Status,
+                        address = e.accountDetail.Address,
                         total = e.bill.Total,
                         voucher = e.bill.VoucherID.ToString(),
                         sub_total = e.bill.SubTotal,
@@ -155,17 +175,24 @@ namespace IceCreamBE.Controllers
                 // get bill detail
                 var billdetail = await _IRepositoryBillDetail.GetAllAsync(q => q.BillID == e.Id);
                 var product = await _IRepositoryProduct.GetAllAsync();
+                var brand = await _IRepositoryBrand.GetAllAsync();
 
                 var billDetailItem = billdetail
                     .Join(product,
                         e => e.ProductID,
                         q => q.Id,
                         (e, q) => new { billdetail = e, product = q })
+                    .Join(brand,
+                        e => e.product.BrandID,
+                        q => q.Id,
+                        (e, q) => new { e.product, e.billdetail, brand = q })
                     .Select(e => new BillDetailOutDTO
                     {
                         Id = e.billdetail.Id,
                         billID = e.billdetail.BillID,
                         product_name = e.product.Name,
+                        brand_name = e.brand.BrandName,
+                        img = _IRepositoryFileService.CheckImage(e.product.Img, "Images") ? url + e.product.Img : null,
                         quantity = e.billdetail.Quantity,
                         total = e.billdetail.Total,
                         price = e.billdetail.Price,
@@ -196,12 +223,14 @@ namespace IceCreamBE.Controllers
             });
         }
 
+
         //GET: api/Bills/id
         [HttpGet("{id:int}")]
         public async Task<ActionResult<IEnumerable<BillOutDTO>>> GetBills(int id)
         {
             var bill = await _IRepositoryBill.GetAllAsync();
             var accountDetail = await _IRepositoryAccountDetail.GetAllAsync();
+            string url = $"{Request.Scheme}://{Request.Host}/api/image/";
 
             // Bill
             var result = bill
@@ -216,6 +245,7 @@ namespace IceCreamBE.Controllers
                         order_Time = e.bill.OrderTime,
                         status = e.bill.Status,
                         total = e.bill.Total,
+                        address = e.accountDetail.Address,
                         voucher = e.bill.VoucherID.ToString(),
                         sub_total = e.bill.SubTotal,
                         email = e.accountDetail.Email,
@@ -230,17 +260,24 @@ namespace IceCreamBE.Controllers
             // get bill detail
             var billdetail = await _IRepositoryBillDetail.GetAllAsync(q => q.BillID == result.Id);
             var product = await _IRepositoryProduct.GetAllAsync();
+            var brand = await _IRepositoryBrand.GetAllAsync();
 
             var billDetailItem = billdetail
                 .Join(product,
                     e => e.ProductID,
                     q => q.Id,
                     (e, q) => new { billdetail = e, product = q })
+                .Join(brand,
+                    e => e.product.BrandID,
+                    e => e.Id,
+                    (e, q) => new { e.product, e.billdetail, brand = q })
                 .Select(e => new BillDetailOutDTO
                 {
                     Id = e.billdetail.Id,
                     billID = e.billdetail.BillID,
                     product_name = e.product.Name,
+                    brand_name = e.brand.BrandName,
+                    img = _IRepositoryFileService.CheckImage(e.product.Img, "Images") ? url + e.product.Img : null,
                     quantity = e.billdetail.Quantity,
                     total = e.billdetail.Total,
                     price = e.billdetail.Price,
@@ -258,69 +295,169 @@ namespace IceCreamBE.Controllers
 
 
         //GET: api/Bills/order/id
-        [HttpGet("/getOrder/{userid:int}")]
-        public async Task<ActionResult<IEnumerable<BillOutDTO>>> GetBill(int userid)
+        [HttpGet("/api/getorders")]
+        public async Task<ActionResult<IEnumerable<BillOutDTO>>> GetBill([FromQuery] PaginationFilter<BillOutDTO>? filter)
         {
             var bill = await _IRepositoryBill.GetAllAsync();
             var accountDetail = await _IRepositoryAccountDetail.GetAllAsync();
+            string url = $"{Request.Scheme}://{Request.Host}/api/image/";
 
             // Bill
-            var result01 = bill
+            var result = bill
                     .Join(accountDetail,
                         e => e.AccountID,
                         q => q.Id,
                         (e, q) => new { bill = e, accountDetail = q })
-                    .FirstOrDefault(e => e.accountDetail.Id == userid && e.bill.Status == "ORDERING");
-            if (result01 == null)
+                    .Where(e => e.bill.Status == "PENDING" || e.bill.Status == "SUCCESSED")
+                    .Select(e => new BillOutDTO
+                    {
+                        Id = e.bill.Id,
+                        full_name = e.accountDetail.FullName,
+                        order_Time = e.bill.OrderTime,
+                        status = e.bill.Status,
+                        address = e.accountDetail.Address,
+                        total = e.bill.Total,
+                        voucher = e.bill.VoucherID.ToString(),
+                        sub_total = e.bill.SubTotal,
+                        email = e.accountDetail.Email,
+                        phone_number = e.accountDetail.PhoneNumber,
+                    }).ToList();
+
+            foreach (var e in result)
             {
-                return NotFound(new Response<BillOutDTO> { Message = "not found", Succeeded = false });
+                var billdetail = await _IRepositoryBillDetail.GetAllAsync(q => q.BillID == e.Id);
+                var product = await _IRepositoryProduct.GetAllAsync();
+                var brand = await _IRepositoryBrand.GetAllAsync();
+
+                var billDetailItem = billdetail
+                    .Join(product,
+                        e => e.ProductID,
+                        q => q.Id,
+                        (e, q) => new { billdetail = e, product = q })
+                    .Join(brand,
+                        e => e.product.BrandID,
+                        e => e.Id,
+                        (e, q) => new { e.product, e.billdetail, brand = q })
+                    .Select(e => new BillDetailOutDTO
+                    {
+                        Id = e.billdetail.Id,
+                        billID = e.billdetail.BillID,
+                        product_name = e.product.Name,
+                        brand_name = e.brand.BrandName,
+                        img = _IRepositoryFileService.CheckImage(e.product.Img, "Images") ? url + e.product.Img : null,
+                        quantity = e.billdetail.Quantity,
+                        total = e.billdetail.Total,
+                        price = e.billdetail.Price,
+                    })
+                    .ToList();
+
+                //get voucher from voucherID
+                var voucherItem = (await _IRepositoryVourcher.GetAsync(v => v.Id == int.Parse(e.voucher.Equals("") ? "0" : e.voucher)));
+                e.voucher = voucherItem == null ? null : voucherItem.Voucher;
+                e.products = billDetailItem;
             }
-            var result = new BillOutDTO
+
+            var pageFilter = new PaginationFilter<BillOutDTO>(filter.PageNumber, filter.PageSize);
+            var pagedData = pageFilter.GetPageList(result);
+
+            return Ok(new PagedResponse<List<BillOutDTO>>
             {
-                Id = result01.bill.Id,
-                full_name = result01.accountDetail.FullName,
-                order_Time = result01.bill.OrderTime,
-                status = result01.bill.Status,
-                total = result01.bill.Total,
-                voucher = result01.bill.VoucherID.ToString(),
-                sub_total = result01.bill.SubTotal,
-                email = result01.accountDetail.Email,
-                phone_number = result01.accountDetail.PhoneNumber,
-            };
-
-
-
-            // get bill detail
-            var billdetail = await _IRepositoryBillDetail.GetAllAsync(q => q.BillID == result.Id);
-            var product = await _IRepositoryProduct.GetAllAsync();
-
-            var billDetailItem = billdetail
-                .Join(product,
-                    e => e.ProductID,
-                    q => q.Id,
-                    (e, q) => new { billdetail = e, product = q })
-                .Select(e => new BillDetailOutDTO
+                Data = pagedData,
+                Succeeded = pagedData == null ? false : true,
+                Pagination = new PagedResponseDetail<List<BillOutDTO>>
                 {
-                    Id = e.billdetail.Id,
-                    billID = e.billdetail.BillID,
-                    product_name = e.product.Name,
-                    quantity = e.billdetail.Quantity,
-                    total = e.billdetail.Total,
-                    price = e.billdetail.Price,
-                })
-                .ToList();
+                    current_page = pagedData == null ? 0 : pageFilter.PageNumber,
+                    Page_pize = pagedData == null ? 0 : pageFilter.PageSize,
+                    total_pages = (int)Math.Ceiling((double)result.Count / (double)filter.PageSize),
+                    total_records = result.Count
+                }
+            });
+        }
 
-            //get voucher from voucherID
-            var voucherItem = (await _IRepositoryVourcher.GetAsync(v => v.Id == int.Parse(result.voucher.Equals("") ? "0" : result.voucher)));
 
-            result.voucher = voucherItem == null ? null : voucherItem.Voucher;
-            result.products = billDetailItem;
+        //GET: api/Bills/order/id
+        [HttpGet("/api/invoices")]
+        public async Task<ActionResult<IEnumerable<BillOutDTO>>> GetInvoices([FromQuery] PaginationFilter<BillOutDTO>? filter)
+        {
+            var bill = await _IRepositoryBill.GetAllAsync();
+            var accountDetail = await _IRepositoryAccountDetail.GetAllAsync();
+            string url = $"{Request.Scheme}://{Request.Host}/api/image/";
 
-            return Ok(new Response<BillOutDTO> { Data = result, Succeeded = true });
+            // Bill
+            var result = bill
+                    .Join(accountDetail,
+                        e => e.AccountID,
+                        q => q.Id,
+                        (e, q) => new { bill = e, accountDetail = q })
+                    .Where(e => e.bill.Status == "DONE")
+                    .Select(e => new BillOutDTO
+                    {
+                        Id = e.bill.Id,
+                        full_name = e.accountDetail.FullName,
+                        order_Time = e.bill.OrderTime,
+                        status = e.bill.Status,
+                        address = e.accountDetail.Address,
+                        total = e.bill.Total,
+                        voucher = e.bill.VoucherID.ToString(),
+                        sub_total = e.bill.SubTotal,
+                        email = e.accountDetail.Email,
+                        phone_number = e.accountDetail.PhoneNumber,
+                    }).ToList();
+
+            foreach (var e in result)
+            {
+                var billdetail = await _IRepositoryBillDetail.GetAllAsync(q => q.BillID == e.Id);
+                var product = await _IRepositoryProduct.GetAllAsync();
+                var brand = await _IRepositoryBrand.GetAllAsync();
+
+                var billDetailItem = billdetail
+                    .Join(product,
+                        e => e.ProductID,
+                        q => q.Id,
+                        (e, q) => new { billdetail = e, product = q })
+                    .Join(brand,
+                        e => e.product.BrandID,
+                        e => e.Id,
+                        (e, q) => new { e.product, e.billdetail, brand = q })
+                    .Select(e => new BillDetailOutDTO
+                    {
+                        Id = e.billdetail.Id,
+                        billID = e.billdetail.BillID,
+                        product_name = e.product.Name,
+                        brand_name = e.brand.BrandName,
+                        img = _IRepositoryFileService.CheckImage(e.product.Img, "Images") ? url + e.product.Img : null,
+                        quantity = e.billdetail.Quantity,
+                        total = e.billdetail.Total,
+                        price = e.billdetail.Price,
+                    })
+                    .ToList();
+
+                //get voucher from voucherID
+                var voucherItem = (await _IRepositoryVourcher.GetAsync(v => v.Id == int.Parse(e.voucher.Equals("") ? "0" : e.voucher)));
+                e.voucher = voucherItem == null ? null : voucherItem.Voucher;
+                e.products = billDetailItem;
+            }
+
+            var pageFilter = new PaginationFilter<BillOutDTO>(filter.PageNumber, filter.PageSize);
+            var pagedData = pageFilter.GetPageList(result);
+
+            return Ok(new PagedResponse<List<BillOutDTO>>
+            {
+                Data = pagedData,
+                Succeeded = pagedData == null ? false : true,
+                Pagination = new PagedResponseDetail<List<BillOutDTO>>
+                {
+                    current_page = pagedData == null ? 0 : pageFilter.PageNumber,
+                    Page_pize = pagedData == null ? 0 : pageFilter.PageSize,
+                    total_pages = (int)Math.Ceiling((double)result.Count / (double)filter.PageSize),
+                    total_records = result.Count
+                }
+            });
         }
 
         // PUT: api/Bills/5
         // To protect from overposting attacks, see https://go.microsoft.com/fwlink/?linkid=2123754
+
         [HttpPut("{userID}")]
         public async Task<IActionResult> PutBill(int userID, string voucher)
         {
@@ -368,68 +505,129 @@ namespace IceCreamBE.Controllers
             return NoContent();
         }
 
-
         // PUT: api/Bills/5
         // To protect from overposting attacks, see https://go.microsoft.com/fwlink/?linkid=2123754
-        [HttpPut]
-        public async Task<IActionResult> PutBills(BillStatusDTO query)
+        [HttpPut("/api/success/{billID:int}")]
+        public async Task<IActionResult> PutSuccess(int billID)
         {
             // ORDERING
             // PENDING
             // SUCCESSED
             // DONE
 
-            var user = await _IRepositoryAccounts.GetAsync(e => e.Id == query.userID);
+            var bill = await _IRepositoryBill.GetAsync(e => e.Id == billID && e.Status == "PENDING");
+            if (bill == null)
+            {
+                return BadRequest(new Response<BillOutDTO> { Message = "bill invalid", Succeeded = false });
+            }
+            var user = await _IRepositoryAccounts.GetAsync(e => e.Id == bill.AccountID);
             if (user == null)
             {
                 return BadRequest(new Response<BillOutDTO> { Message = "user invalid", Succeeded = false });
             }
 
-            switch (query.status)
+            await _IRepositoryBill.UpdateStatusAsync(new Bill { AccountID = user.Id, Status = "SUCCESSED" }, "PENDING");
+            return Ok(new Response<BillDetailInDTO> { Succeeded = true });
+        }
+
+        // PUT: api/Bills/5
+        // To protect from overposting attacks, see https://go.microsoft.com/fwlink/?linkid=2123754
+        [HttpPut("/api/confirm/{billID:int}")]
+        public async Task<IActionResult> PutConfirm(int billID)
+        {
+            // ORDERING
+            // PENDING
+            // SUCCESSED
+            // DONE
+
+            var bill = await _IRepositoryBill.GetAsync(e => e.Id == billID && e.Status == "SUCCESSED");
+            if (bill == null)
             {
-                case "ORDERING":
-                case "PENDING":
-                    {
-                        await _IRepositoryBill.UpdateStatusAsync(new Bill { AccountID = query.userID, Status = query.status });
-                        return Ok(new Response<BillDetailInDTO> { Succeeded = true });
-                    }
-                case "SUCCESSED":
-                    {
-                        await _IRepositoryBill.UpdateStatusAsync(new Bill { AccountID = query.userID, Status = query.status });
-                        return Ok(new Response<BillDetailInDTO> { Succeeded = true });
-                    }
-                case "DONE":
-                    {
-                        await _IRepositoryBill.UpdateStatusAsync(new Bill { AccountID = query.userID, Status = query.status });
-                        return Ok(new Response<BillDetailInDTO> { Succeeded = true });
-                    }
-                default:
-                    {
-                        return BadRequest(new Response<BillDetailInDTO> { Message = "status incorrect please choose 'ORDERING || PENDING || SUCCESSED || DONE'", Succeeded = false });
-                    }
+                return BadRequest(new Response<BillOutDTO> { Message = "bill invalid", Succeeded = false });
+            }
+            var user = await _IRepositoryAccounts.GetAsync(e => e.Id == bill.AccountID);
+            if (user == null)
+            {
+                return BadRequest(new Response<BillOutDTO> { Message = "user invalid", Succeeded = false });
             }
 
+            await _IRepositoryBill.UpdateStatusAsync(new Bill { AccountID = user.Id, Status = "DONE" }, "SUCCESSED");
+            return Ok(new Response<BillDetailInDTO> { Succeeded = true });
         }
 
         // POST: api/Bills
         // To protect from overposting attacks, see https://go.microsoft.com/fwlink/?linkid=2123754
-        //[HttpPost]
-        //public async Task<ActionResult<BillOutDTO>> PostBill(BillInDTO bill)
-        //{
-        //    if (!ModelState.IsValid)
-        //    {
-        //        return BadRequest(new Response<BillOutDTO> { Message = "value incorrect", Succeeded = false });
-        //    }
+        [HttpPut("/api/order/{userID:int}")]
+        public async Task<ActionResult<BillOutDTO>> PutBill(int userID)
+        {
+            if (userID <= 0)
+            {
+                return BadRequest(new Response<BillOutDTO> { Message = "value incorrect", Succeeded = false });
+            }
+            var user = await _IRepositoryAccountDetail.GetAsync(e => e.Id == userID);
+            if (user == null)
+            {
+                return BadRequest(new Response<BillOutDTO> { Message = "user incorrect", Succeeded = false });
+            }
 
-        //    await _IRepositoryBill.CreateAsync(new Bill
-        //    {
-        //        AccountID = bill.accountID,
-        //        VoucherID = bill.voucherID,
-        //        Status = "ORDERING",
-        //    });
+            var bill = await _IRepositoryBill.GetAsync(e => e.AccountID == userID && e.Status == "ORDERING");
+            if (bill == null)
+            {
+                return BadRequest(new Response<BillOutDTO> { Message = "order something please", Succeeded = false });
+            }
 
-        //    return CreatedAtAction("GetBill", new { id = bill.Id }, bill);
-        //}
+            await _IRepositoryBill.UpdateStatusAsync(new Bill { AccountID = userID, Status = "PENDING", OrderTime = DateTime.Now }, "ORDERING");
+
+            var result = new BillOutDTO
+            {
+                Id = bill.Id,
+                full_name = user.FullName,
+                order_Time = bill.OrderTime,
+                status = bill.Status,
+                total = bill.Total,
+                voucher = bill.VoucherID.ToString(),
+                sub_total = bill.SubTotal,
+                email = user.Email,
+                phone_number = user.PhoneNumber,
+            };
+
+            // get bill detail
+            var billdetail = await _IRepositoryBillDetail.GetAllAsync(q => q.BillID == result.Id);
+            var product = await _IRepositoryProduct.GetAllAsync();
+            var brand = await _IRepositoryBrand.GetAllAsync();
+            string url = $"{Request.Scheme}://{Request.Host}/api/image/";
+
+            var billDetailItem = billdetail
+                .Join(product,
+                    e => e.ProductID,
+                    q => q.Id,
+                    (e, q) => new { billdetail = e, product = q })
+                .Join(brand,
+                    e => e.product.BrandID,
+                    e => e.Id,
+                    (e, q) => new { e.product, e.billdetail, brand = q })
+                .Select(e => new BillDetailOutDTO
+                {
+                    Id = e.billdetail.Id,
+                    billID = e.billdetail.BillID,
+                    product_name = e.product.Name,
+                    brand_name = e.brand.BrandName,
+                    img = _IRepositoryFileService.CheckImage(e.product.Img, "Images") ? url + e.product.Img : null,
+                    quantity = e.billdetail.Quantity,
+                    total = e.billdetail.Total,
+                    price = e.billdetail.Price,
+                })
+                .ToList();
+
+            //get voucher from voucherID
+            var voucherItem = (await _IRepositoryVourcher.GetAsync(v => v.Id == int.Parse(result.voucher.Equals("") ? "0" : result.voucher)));
+
+            result.voucher = voucherItem == null ? null : voucherItem.Voucher;
+            result.products = billDetailItem;
+
+            return Ok(new Response<BillOutDTO> { Data = result, Succeeded = true });
+
+        }
 
         //// DELETE: api/Bills/5
         [HttpDelete("{id}")]

@@ -19,10 +19,12 @@ namespace IceCreamBE.Controllers
     public class BrandsController : ControllerBase
     {
         private readonly IRepositoryBrand _IRepositoryBrand;
+        private readonly IRepositoryProduct _IRepositoryProduct;
 
-        public BrandsController(IRepositoryBrand IRepositoryBrand)
+        public BrandsController(IRepositoryBrand IRepositoryBrand, IRepositoryProduct iRepositoryProduct)
         {
             _IRepositoryBrand = IRepositoryBrand;
+            _IRepositoryProduct = iRepositoryProduct;
         }
 
         // GET: api/Brands
@@ -31,15 +33,21 @@ namespace IceCreamBE.Controllers
         {
             var result = await _IRepositoryBrand.GetAllAsync();
             var item = new List<BrandsDTO>();
-            result.ForEach(e => item.Add(new BrandsDTO { Id = e.Id, brand_name = e.BrandName }));
+            var product = await _IRepositoryProduct.GetAllAsync();
+            result.ForEach(e =>
+            {
+                item.Add(new BrandsDTO { Id = e.Id, brand_name = e.BrandName, product_count = product.Where(q => q.BrandID == e.Id).Count() });
+            });
 
             var pageFilter = new PaginationFilter<BrandsDTO>(filter.PageNumber, filter.PageSize);
             var pagedData = pageFilter.GetPageList(item);
 
-            return Ok(new PagedResponse<List<BrandsDTO>> {
+            return Ok(new PagedResponse<List<BrandsDTO>>
+            {
                 Data = pagedData,
                 Succeeded = pagedData == null ? false : true,
-                Pagination = new PagedResponseDetail<List<BrandsDTO>> {
+                Pagination = new PagedResponseDetail<List<BrandsDTO>>
+                {
                     current_page = pageFilter.PageNumber,
                     Page_pize = pageFilter.PageSize,
                     total_pages = (int)Math.Ceiling((double)result.Count / (double)filter.PageSize),
@@ -50,30 +58,56 @@ namespace IceCreamBE.Controllers
 
         // GET: api/Brands/5
         [HttpGet("{id:int}")]
-        public async Task<ActionResult<BrandsDTO>> GetBrands(int id)
+        public async Task<ActionResult<BrandsDTO>> GetBrand(int id)
         {
             var result = await _IRepositoryBrand.GetAsync(e => e.Id == id);
-
             if (result == null)
             {
-                return NotFound(new Response<Brands> { Succeeded = false, Message = "Not found" });
+                return NotFound(new Response<BrandsDTO> { Succeeded = false, Message = "Not found" });
             }
 
-            return Ok(new Response<Brands> { Data = result, Succeeded = true });
+            var product = await _IRepositoryProduct.GetAllAsync(e => e.BrandID == result.Id);
+
+            return Ok(new Response<BrandsDTO>
+            {
+                Data = new BrandsDTO
+                {
+                    Id = result.Id,
+                    brand_name = result.BrandName,
+                    product_count = product.Count()
+                }
+                ,
+                Succeeded = true
+            });
         }
 
         // GET: api/Brands/brandname
         [HttpGet("{query}")]
-        public async Task<ActionResult<BrandsDTO>> GetBrands(string query)
+        public async Task<ActionResult<BrandsDTO>> GetBrands([FromQuery] PaginationFilter<BrandsDTO>? filter, string query)
         {
             var result = await _IRepositoryBrand.GetAllAsync(e => e.BrandName.Contains(query));
-
-            if (result == null)
+            var item = new List<BrandsDTO>();
+            var product = await _IRepositoryProduct.GetAllAsync();
+            result.ForEach(e =>
             {
-                return NotFound(new Response<Brands> { Succeeded = false, Message = "Not found" });
-            }
+                item.Add(new BrandsDTO { Id = e.Id, brand_name = e.BrandName, product_count = product.Where(q => q.BrandID == e.Id).Count() });
+            });
 
-            return Ok(new Response<List<Brands>> { Succeeded = true, Data = result });
+            var pageFilter = new PaginationFilter<BrandsDTO>(filter.PageNumber, filter.PageSize);
+            var pagedData = pageFilter.GetPageList(item);
+
+            return Ok(new PagedResponse<List<BrandsDTO>>
+            {
+                Data = pagedData,
+                Succeeded = pagedData == null ? false : true,
+                Pagination = new PagedResponseDetail<List<BrandsDTO>>
+                {
+                    current_page = pageFilter.PageNumber,
+                    Page_pize = pageFilter.PageSize,
+                    total_pages = (int)Math.Ceiling((double)result.Count / (double)filter.PageSize),
+                    total_records = result.Count
+                }
+            });
         }
 
         // PUT: api/Brands/5

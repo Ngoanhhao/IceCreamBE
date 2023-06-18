@@ -6,5 +6,6 @@ namespace IceCreamBE.DTO
     {
         public int Id { get; set; }
         public string brand_name { get; set; }
+        public int? product_count { get; set; }
     }
 }

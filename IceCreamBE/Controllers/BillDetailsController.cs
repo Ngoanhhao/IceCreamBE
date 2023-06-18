@@ -25,14 +25,18 @@ namespace IceCreamBE.Controllers
         private readonly IRepositoryBill _IRepositoryBill;
         private readonly IRepositoryVourcher _IRepositoryVourcher;
         private readonly IRepositoryAccounts _IRepositoryAccounts;
+        private readonly IRepositoryBrand _IRepositoryBrand;
+        private readonly IRepositoryFileService _IRepositoryFileService;
 
-        public BillDetailsController(IRepositoryBillDetail IRepositoryBillDetail, IRepositoryProduct repositoryProduct, IRepositoryBill repositoryBill, IRepositoryVourcher repositoryVourcher, IRepositoryAccounts repositoryAccounts)
+        public BillDetailsController(IRepositoryBillDetail IRepositoryBillDetail, IRepositoryProduct repositoryProduct, IRepositoryBill repositoryBill, IRepositoryVourcher repositoryVourcher, IRepositoryAccounts repositoryAccounts, IRepositoryBrand iRepositoryBrand, IRepositoryFileService iRepositoryFileService)
         {
             _IRepositoryBillDetail = IRepositoryBillDetail;
             _IRepositoryProduct = repositoryProduct;
             _IRepositoryBill = repositoryBill;
             _IRepositoryVourcher = repositoryVourcher;
             _IRepositoryAccounts = repositoryAccounts;
+            _IRepositoryBrand = iRepositoryBrand;
+            _IRepositoryFileService = iRepositoryFileService;
         }
 
         // GET: api/BillDetails
@@ -42,18 +46,26 @@ namespace IceCreamBE.Controllers
             var bill = await _IRepositoryBill.GetAllAsync();
             var billDetail = await _IRepositoryBillDetail.GetAllAsync();
             var product = await _IRepositoryProduct.GetAllAsync();
+            var brand = await _IRepositoryBrand.GetAllAsync();
+            string url = $"{Request.Scheme}://{Request.Host}/api/image/";
 
             var result = billDetail
                 .Join(product,
                     e => e.ProductID,
                     q => q.Id,
                     (e, q) => new { billDetail = e, product = q })
+                .Join(brand,
+                    e => e.product.BrandID,
+                    q => q.Id,
+                    (e, q) => new { e.product, e.billDetail, brand = q })
                 .Select(e => (new BillDetailOutDTO
                 {
                     Id = e.billDetail.Id,
                     billID = e.billDetail.BillID,
                     product_name = e.product.Name,
+                    brand_name = e.brand.BrandName,
                     quantity = e.billDetail.Quantity,
+                    img = _IRepositoryFileService.CheckImage(e.product.Img, "Images") ? url + e.product.Img : null,
                     total = e.billDetail.Total,
                     price = e.billDetail.Price,
                 }))
@@ -82,18 +94,26 @@ namespace IceCreamBE.Controllers
         {
             var billDetail = await _IRepositoryBillDetail.GetAllAsync();
             var product = await _IRepositoryProduct.GetAllAsync();
+            var brand = await _IRepositoryBrand.GetAllAsync();
+            string url = $"{Request.Scheme}://{Request.Host}/api/image/";
 
             var result = billDetail
                  .Join(product,
                      e => e.ProductID,
                      q => q.Id,
                      (e, q) => new { billDetail = e, product = q })
+                 .Join(brand,
+                    e => e.product.BrandID,
+                    q => q.Id,
+                    (e, q) => new { e.product, e.billDetail, brand = q })
                  .Select(e => (new BillDetailOutDTO
                  {
                      Id = e.billDetail.Id,
                      billID = e.billDetail.BillID,
                      product_name = e.product.Name,
                      quantity = e.billDetail.Quantity,
+                     img = _IRepositoryFileService.CheckImage(e.product.Img, "Images") ? url + e.product.Img : null,
+                     brand_name = e.brand.BrandName,
                      total = e.billDetail.Total,
                      price = e.billDetail.Price,
                  }))
@@ -107,6 +127,46 @@ namespace IceCreamBE.Controllers
             return Ok(new Response<BillDetailOutDTO> { Data = result, Succeeded = true });
         }
 
+        // GET: api/BillDetails/5
+        [HttpGet("/api/cart/{userID:int}")]
+        public async Task<ActionResult<BillDetail>> GetCart(int userID)
+        {
+            var bill = await _IRepositoryBill.GetAsync(e => e.AccountID == userID && e.Status == "ORDERING");
+            var billDetail = await _IRepositoryBillDetail.GetAllAsync(e => e.BillID == bill.Id);
+            var product = await _IRepositoryProduct.GetAllAsync();
+            string url = $"{Request.Scheme}://{Request.Host}/api/image/";
+            var brand = await _IRepositoryBrand.GetAllAsync();
+
+            var result = billDetail
+                .Join(product,
+                    e => e.ProductID,
+                    q => q.Id,
+                    (e, q) => new { billDetail = e, product = q })
+                .Join(brand,
+                    e => e.product.BrandID,
+                    q => q.Id,
+                    (e, q) => new { e.product, e.billDetail, brand = q })
+                .Select(e => (new BillDetailOutDTO
+                {
+                    Id = e.billDetail.Id,
+                    billID = e.billDetail.BillID,
+                    product_name = e.product.Name,
+                    brand_name = e.brand.BrandName,
+                    quantity = e.billDetail.Quantity,
+                    total = e.billDetail.Total,
+                    img = _IRepositoryFileService.CheckImage(e.product.Img, "Images") ? url + e.product.Img : null,
+                    price = e.billDetail.Price,
+                }))
+                .ToList();
+
+            if (result == null)
+            {
+                return NotFound(new Response<List<BillDetailOutDTO>> { Message = "not found", Succeeded = false });
+            }
+
+            return Ok(new Response<List<BillDetailOutDTO>> { Data = result, Succeeded = true });
+        }
+
         // GET: api/BillDetails/productname
         [HttpGet("{product_name}")]
         public async Task<ActionResult<IEnumerable<BillDetail>>> GetBillDetail(string product_name, [FromQuery] PaginationFilter<BillDetailOutDTO>? filter)
@@ -114,21 +174,29 @@ namespace IceCreamBE.Controllers
             var bill = await _IRepositoryBill.GetAllAsync();
             var billDetail = await _IRepositoryBillDetail.GetAllAsync();
             var product = await _IRepositoryProduct.GetAllAsync(e => e.Name.Contains(product_name));
+            var brand = await _IRepositoryBrand.GetAllAsync();
+            string url = $"{Request.Scheme}://{Request.Host}/api/image/";
 
             var result = billDetail
-                 .Join(product,
-                     e => e.ProductID,
-                     q => q.Id,
-                     (e, q) => new { billDetail = e, product = q })
-                 .Select(e => (new BillDetailOutDTO
-                 {
-                     Id = e.billDetail.Id,
-                     billID = e.billDetail.BillID,
-                     product_name = e.product.Name,
-                     quantity = e.billDetail.Quantity,
-                     total = e.billDetail.Total,
-                     price = e.billDetail.Price,
-                 }))
+                .Join(product,
+                    e => e.ProductID,
+                    q => q.Id,
+                    (e, q) => new { billDetail = e, product = q })
+                .Join(brand,
+                    e => e.product.BrandID,
+                    q => q.Id,
+                    (e, q) => new { e.product, e.billDetail, brand = q })
+                .Select(e => (new BillDetailOutDTO
+                {
+                    Id = e.billDetail.Id,
+                    billID = e.billDetail.BillID,
+                    product_name = e.product.Name,
+                    brand_name = e.brand.BrandName,
+                    img = _IRepositoryFileService.CheckImage(e.product.Img, "Images") ? url + e.product.Img : null,
+                    quantity = e.billDetail.Quantity,
+                    total = e.billDetail.Total,
+                    price = e.billDetail.Price,
+                }))
                 .ToList();
 
             var pageFilter = new PaginationFilter<BillDetailOutDTO>(filter.PageNumber, filter.PageSize);
@@ -148,64 +216,14 @@ namespace IceCreamBE.Controllers
             });
         }
 
-        // PUT: api/BillDetails/5
-        // To protect from overposting attacks, see https://go.microsoft.com/fwlink/?linkid=2123754
-        [HttpPut("{Bill_detail_id}")]
-        public async Task<IActionResult> PutBillDetail(int Bill_detail_id, BillDetailInDTO billDetail)
-        {
-            if (Bill_detail_id != billDetail.Id)
-            {
-                return BadRequest(new Response<BillDetailInDTO> { Message = "value incorrect", Succeeded = false });
-            }
-
-            var BillDetail = await _IRepositoryBillDetail.GetAsync(e => e.Id == Bill_detail_id);
-            var product = await _IRepositoryProduct.GetAsync(e => e.Id == BillDetail.ProductID);
-
-            if (BillDetail == null)
-            {
-                return NotFound(new Response<BillDetailInDTO> { Message = "not found", Succeeded = false });
-            }
-
-            await _IRepositoryBillDetail.UpdateAsync(new BillDetail
-            {
-                Id = billDetail.Id,
-                Quantity = billDetail.quantity,
-                Price = product.Price,
-                Total = product.Price * billDetail.quantity,
-            });
-
-            //update infomation bill
-            var bill = await _IRepositoryBill.GetAsync(e => e.Id == BillDetail.BillID);
-            var BillDetails = await _IRepositoryBillDetail.GetAllAsync(e => e.BillID == BillDetail.BillID);
-            var voucher = await _IRepositoryVourcher.GetAsync(e => e.Id == bill.VoucherID);
-            double subTotal = 0;
-            BillDetails.ForEach(e => subTotal += e.Total);
-            var total = voucher != null ? (100 - voucher.Discount) * 0.01 * subTotal : subTotal;
-            await _IRepositoryBill.UpdateAsync(new Bill
-            {
-                Id = bill.Id,
-                VoucherID = bill.VoucherID,
-                Status = bill.Status,
-                SubTotal = subTotal,
-                Total = total,
-            });
-
-            return NoContent();
-        }
-
         // POST: api/BillDetails
         // To protect from overposting attacks, see https://go.microsoft.com/fwlink/?linkid=2123754
-        [HttpPost]
-        public async Task<ActionResult<BillDetailOutDTO>> PostBillDetail(int userID, BillDetailInDTO billDetail)
+        [HttpPost("/api/addtocart")]
+        public async Task<ActionResult<BillDetailOutDTO>> PostBillDetail(BillDetailInDTO billDetail)
         {
             if (!ModelState.IsValid)
             {
                 return BadRequest(new Response<BillDetailInDTO> { Message = "user not available", Succeeded = false });
-            }
-
-            if (userID <= 0)
-            {
-                return BadRequest(new Response<BillDetailInDTO> { Message = "user incorrect", Succeeded = false });
             }
 
             var product = await _IRepositoryProduct.GetAsync(e => e.Id == billDetail.productID);
@@ -214,16 +232,22 @@ namespace IceCreamBE.Controllers
                 return NotFound(new Response<BillDetailOutDTO> { Message = "product not found", Succeeded = false });
             }
 
-            var user = await _IRepositoryAccounts.GetAsync(e => e.Id == userID);
+
+            if (billDetail.userID <= 0)
+            {
+                return BadRequest(new Response<BillDetailInDTO> { Message = "user incorrect", Succeeded = false });
+            }
+            var user = await _IRepositoryAccounts.GetAsync(e => e.Id == billDetail.userID);
             if (user == null)
             {
                 return BadRequest(new Response<BillDetailInDTO> { Message = "user not available", Succeeded = false });
             }
+
             // ORDERING
             // PENDING
             // SUCCESSED
             // DONE
-            var billCheck = await _IRepositoryBill.GetAsync(e => e.Status == "ORDERING" && e.AccountID == userID);
+            var billCheck = await _IRepositoryBill.GetAsync(e => e.Status == "ORDERING" && e.AccountID == billDetail.userID);
             // check bill cũ chưa thanh toán
             if (billCheck != null)
             {
@@ -246,7 +270,6 @@ namespace IceCreamBE.Controllers
                     // sp chưa tồn tại thì add vào
                     await _IRepositoryBillDetail.CreateAsync(new BillDetail
                     {
-                        Id = billDetail.Id,
                         ProductID = billDetail.productID,
                         BillID = billCheck.Id,
                         Quantity = billDetail.quantity,
@@ -264,14 +287,13 @@ namespace IceCreamBE.Controllers
                 // tạo bill
                 await _IRepositoryBill.CreateAsync(new Bill
                 {
-                    AccountID = userID,
+                    AccountID = billDetail.userID,
                     Status = "ORDERING",
                 });
-                var getBill = await _IRepositoryBill.GetAsync(e => e.Status == "ORDERING" && e.AccountID == userID);
+                var getBill = await _IRepositoryBill.GetAsync(e => e.Status == "ORDERING" && e.AccountID == billDetail.userID);
                 // add sp
                 await _IRepositoryBillDetail.CreateAsync(new BillDetail
                 {
-                    Id = billDetail.Id,
                     ProductID = billDetail.productID,
                     BillID = getBill.Id,
                     Quantity = billDetail.quantity,
@@ -283,7 +305,7 @@ namespace IceCreamBE.Controllers
 
 
             // update subtotal total bill
-            var bill = await _IRepositoryBill.GetAsync(e => e.Status == "ORDERING" && e.AccountID == userID);
+            var bill = await _IRepositoryBill.GetAsync(e => e.Status == "ORDERING" && e.AccountID == billDetail.userID);
             var BillDetails = await _IRepositoryBillDetail.GetAllAsync(e => e.BillID == bill.Id);
             var voucher = await _IRepositoryVourcher.GetAsync(e => e.Id == bill.VoucherID);
             double subTotal = 0;

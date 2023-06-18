@@ -23,7 +23,7 @@ namespace IceCreamBE.Repository
             result.Price = entity.Price;
             result.Discount = entity.Discount;
             result.BrandID = entity.BrandID;
-            result.Img = entity.Img;
+            result.Img = entity.Img == null ? result.Img : entity.Img;
             result.Name = entity.Name;
             result.Total = (double)(((100 - entity.Discount) * 0.01) * entity.Price);
             await dbcontext.SaveChangesAsync();

@@ -2,7 +2,7 @@
 {
     public class BillStatusDTO
     {
-        public int userID { get; set; }
+        public int billID { get; set; }
         public string status { get; set; }
     }
 }

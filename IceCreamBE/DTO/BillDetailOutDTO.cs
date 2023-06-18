@@ -7,6 +7,8 @@ namespace IceCreamBE.DTO
         public int Id { get; set; }
         public int billID { get; set; }
         public string product_name { get; set; }
+        public string brand_name { get; set; }
+        public string img { get; set; }
         public double price { get; set; }
         public int quantity { get; set; }
         public double total { get; set; }

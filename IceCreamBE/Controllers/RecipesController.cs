@@ -12,6 +12,7 @@ using IceCreamBE.DTO;
 using IceCreamBE.DTO.PageList;
 using IceCreamBE.Migrations;
 using IceCreamBE.Repository;
+using Microsoft.AspNetCore.Http.HttpResults;
 
 namespace IceCreamBE.Controllers
 {
@@ -173,12 +174,20 @@ namespace IceCreamBE.Controllers
                 return BadRequest(new Response<FeedbackDetailDTO> { Message = "product incorrect", Succeeded = false });
             }
 
-            await _IRepositoryRecipe.CreateAsync(new Recipe
+            var recipeCheck = await _IRepositoryRecipe.GetAsync(e => e.ProductId == product.Id);
+            if (recipeCheck != null)
             {
-                ProductId = recipe.productID,
-                Description = recipe.description,
-                Status = recipe.status,
-            });
+                return BadRequest(new Response<List<StorageOutDTO>> { Message = "product is available", Succeeded = false });
+            }
+            else
+            {
+                await _IRepositoryRecipe.CreateAsync(new Recipe
+                {
+                    ProductId = recipe.productID,
+                    Description = recipe.description,
+                    Status = recipe.status,
+                });
+            }
 
             return CreatedAtAction("GetRecipe", new { id = recipe.Id }, recipe);
         }

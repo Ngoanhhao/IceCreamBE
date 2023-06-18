@@ -146,12 +146,21 @@ namespace IceCreamBE.Controllers
                 return BadRequest(new Response<List<StorageOutDTO>> { Message = "product is available", Succeeded = false });
             }
 
-            await _IRepositoryStorage.CreateAsync(new Storage
+            var storageCheck = await _IRepositoryStorage.GetAsync(e => e.ProductID == storage.ProductId);
+            if (storageCheck != null)
             {
-                ProductID = storage.ProductId,
-                Quantity = storage.quantity,
-                LastOrder = DateTime.UtcNow,
-            });
+                return BadRequest(new Response<List<StorageOutDTO>> { Message = "product is available", Succeeded = false });
+            }
+            else
+            {
+                await _IRepositoryStorage.CreateAsync(new Storage
+                {
+                    ProductID = storage.ProductId,
+                    Quantity = storage.quantity,
+                    LastOrder = DateTime.Now,
+                });
+            }
+
             return Ok(new Response<List<StorageOutDTO>> { Succeeded = true });
         }
     }
