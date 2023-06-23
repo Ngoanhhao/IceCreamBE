@@ -62,6 +62,7 @@ namespace IceCreamBE.Controllers
                 {
                     Id = e.billDetail.Id,
                     billID = e.billDetail.BillID,
+                    productID = e.product.Id,
                     product_name = e.product.Name,
                     brand_name = e.brand.BrandName,
                     quantity = e.billDetail.Quantity,
@@ -89,8 +90,8 @@ namespace IceCreamBE.Controllers
         }
 
         // GET: api/BillDetails/5
-        [HttpGet("{bill_id:int}")]
-        public async Task<ActionResult<BillDetail>> GetBillDetail(int bill_id)
+        [HttpGet("{billID:int}")]
+        public async Task<ActionResult<BillDetail>> GetBillDetail(int billID)
         {
             var billDetail = await _IRepositoryBillDetail.GetAllAsync();
             var product = await _IRepositoryProduct.GetAllAsync();
@@ -110,6 +111,7 @@ namespace IceCreamBE.Controllers
                  {
                      Id = e.billDetail.Id,
                      billID = e.billDetail.BillID,
+                     productID = e.product.Id,
                      product_name = e.product.Name,
                      quantity = e.billDetail.Quantity,
                      img = _IRepositoryFileService.CheckImage(e.product.Img, "Images") ? url + e.product.Img : null,
@@ -117,7 +119,7 @@ namespace IceCreamBE.Controllers
                      total = e.billDetail.Total,
                      price = e.billDetail.Price,
                  }))
-                .FirstOrDefault(e => e.billID == bill_id);
+                .FirstOrDefault(e => e.billID == billID);
 
             if (result == null)
             {
@@ -150,6 +152,7 @@ namespace IceCreamBE.Controllers
                 {
                     Id = e.billDetail.Id,
                     billID = e.billDetail.BillID,
+                    productID = e.product.Id,
                     product_name = e.product.Name,
                     brand_name = e.brand.BrandName,
                     quantity = e.billDetail.Quantity,
@@ -191,6 +194,7 @@ namespace IceCreamBE.Controllers
                     Id = e.billDetail.Id,
                     billID = e.billDetail.BillID,
                     product_name = e.product.Name,
+                    productID = e.product.Id,
                     brand_name = e.brand.BrandName,
                     img = _IRepositoryFileService.CheckImage(e.product.Img, "Images") ? url + e.product.Img : null,
                     quantity = e.billDetail.Quantity,
@@ -223,21 +227,21 @@ namespace IceCreamBE.Controllers
         {
             if (!ModelState.IsValid)
             {
-                return BadRequest(new Response<BillDetailInDTO> { Message = "user not available", Succeeded = false });
+                return BadRequest(new Response<BillDetailInDTO> { Message = "something wrong please try again", Succeeded = false });
             }
 
-            var product = await _IRepositoryProduct.GetAsync(e => e.Id == billDetail.productID);
+            var product = await _IRepositoryProduct.GetAsync(e => e.Id == billDetail.product_id);
             if (product == null)
             {
                 return NotFound(new Response<BillDetailOutDTO> { Message = "product not found", Succeeded = false });
             }
 
 
-            if (billDetail.userID <= 0)
+            if (billDetail.user_id <= 0)
             {
                 return BadRequest(new Response<BillDetailInDTO> { Message = "user incorrect", Succeeded = false });
             }
-            var user = await _IRepositoryAccounts.GetAsync(e => e.Id == billDetail.userID);
+            var user = await _IRepositoryAccounts.GetAsync(e => e.Id == billDetail.user_id);
             if (user == null)
             {
                 return BadRequest(new Response<BillDetailInDTO> { Message = "user not available", Succeeded = false });
@@ -247,12 +251,12 @@ namespace IceCreamBE.Controllers
             // PENDING
             // SUCCESSED
             // DONE
-            var billCheck = await _IRepositoryBill.GetAsync(e => e.Status == "ORDERING" && e.AccountID == billDetail.userID);
+            var billCheck = await _IRepositoryBill.GetAsync(e => e.Status == "ORDERING" && e.AccountID == billDetail.user_id);
             // check bill cũ chưa thanh toán
             if (billCheck != null)
             {
                 // bill có sẵn chưa thanh toán
-                var detail = await _IRepositoryBillDetail.GetAsync(e => e.ProductID == billDetail.productID && e.BillID == billCheck.Id); //check sản phẩm trong bill
+                var detail = await _IRepositoryBillDetail.GetAsync(e => e.ProductID == billDetail.product_id && e.BillID == billCheck.Id); //check sản phẩm trong bill
                 if (detail != null)
                 {
                     // sp đã tồn tại thì +1
@@ -270,7 +274,7 @@ namespace IceCreamBE.Controllers
                     // sp chưa tồn tại thì add vào
                     await _IRepositoryBillDetail.CreateAsync(new BillDetail
                     {
-                        ProductID = billDetail.productID,
+                        ProductID = billDetail.product_id,
                         BillID = billCheck.Id,
                         Quantity = billDetail.quantity,
                         Price = product.Price,
@@ -287,14 +291,14 @@ namespace IceCreamBE.Controllers
                 // tạo bill
                 await _IRepositoryBill.CreateAsync(new Bill
                 {
-                    AccountID = billDetail.userID,
+                    AccountID = billDetail.user_id,
                     Status = "ORDERING",
                 });
-                var getBill = await _IRepositoryBill.GetAsync(e => e.Status == "ORDERING" && e.AccountID == billDetail.userID);
+                var getBill = await _IRepositoryBill.GetAsync(e => e.Status == "ORDERING" && e.AccountID == billDetail.user_id);
                 // add sp
                 await _IRepositoryBillDetail.CreateAsync(new BillDetail
                 {
-                    ProductID = billDetail.productID,
+                    ProductID = billDetail.product_id,
                     BillID = getBill.Id,
                     Quantity = billDetail.quantity,
                     Price = product.Price,
@@ -305,7 +309,7 @@ namespace IceCreamBE.Controllers
 
 
             // update subtotal total bill
-            var bill = await _IRepositoryBill.GetAsync(e => e.Status == "ORDERING" && e.AccountID == billDetail.userID);
+            var bill = await _IRepositoryBill.GetAsync(e => e.Status == "ORDERING" && e.AccountID == billDetail.user_id);
             var BillDetails = await _IRepositoryBillDetail.GetAllAsync(e => e.BillID == bill.Id);
             var voucher = await _IRepositoryVourcher.GetAsync(e => e.Id == bill.VoucherID);
             double subTotal = 0;
@@ -320,7 +324,75 @@ namespace IceCreamBE.Controllers
                 Total = total,
             });
 
-            return CreatedAtAction("GetBillDetail", new { id = billDetail.Id }, billDetail);
+            return CreatedAtAction("GetBillDetail", new { id = billDetail.id }, billDetail);
+        }
+        // DELETE: api/remove bill item
+        [HttpDelete("/api/cartremove")]
+        public async Task<IActionResult> DeleteBillDetail(int userId, int productId)
+        {
+            if (!ModelState.IsValid)
+            {
+                return BadRequest(new Response<BillDetailInDTO> { Message = "something wrong please try again", Succeeded = false });
+            }
+
+            var product = await _IRepositoryProduct.GetAsync(e => e.Id == productId);
+            if (product == null)
+            {
+                return NotFound(new Response<BillDetailOutDTO> { Message = "product not found", Succeeded = false });
+            }
+
+
+            if (userId <= 0)
+            {
+                return BadRequest(new Response<BillDetailInDTO> { Message = "user incorrect", Succeeded = false });
+            }
+            var user = await _IRepositoryAccounts.GetAsync(e => e.Id == userId);
+            if (user == null)
+            {
+                return BadRequest(new Response<BillDetailInDTO> { Message = "user not available", Succeeded = false });
+            }
+
+            // ORDERING
+            // PENDING
+            // SUCCESSED
+            // DONE
+            var billCheck = await _IRepositoryBill.GetAsync(e => e.Status == "ORDERING" && e.AccountID == userId);
+            // check bill cũ chưa thanh toán
+            if (billCheck != null)
+            {
+                // bill có sẵn chưa thanh toán
+                var detail = await _IRepositoryBillDetail.GetAsync(e => e.ProductID == productId && e.BillID == billCheck.Id); //check sản phẩm trong bill
+                if (detail != null)
+                {
+                    // sp đã tồn tại 
+                    await _IRepositoryBillDetail.DeleteAsync(detail);
+                    // update subtotal total bill
+                    var bill = await _IRepositoryBill.GetAsync(e => e.Status == "ORDERING" && e.AccountID == userId);
+                    var BillDetails = await _IRepositoryBillDetail.GetAllAsync(e => e.BillID == bill.Id);
+                    var voucher = await _IRepositoryVourcher.GetAsync(e => e.Id == bill.VoucherID);
+                    double subTotal = 0;
+                    BillDetails.ForEach(e => subTotal += e.Total);
+                    var total = voucher != null ? (100 - voucher.Discount) * 0.01 * subTotal : subTotal;
+                    await _IRepositoryBill.UpdateAsync(new Bill
+                    {
+                        Id = bill.Id,
+                        VoucherID = bill.VoucherID,
+                        Status = bill.Status,
+                        SubTotal = subTotal,
+                        Total = total,
+                    });
+                }
+                else
+                {
+                    //sp chưa tồn tại
+                    return BadRequest(new Response<BillDetailInDTO> { Message = "product not available in your cart", Succeeded = false });
+                }
+            }
+            else
+            {
+                return BadRequest(new Response<BillDetailInDTO> { Message = "your cart is empty please order something", Succeeded = false });
+            }
+            return NoContent();
         }
 
         // DELETE: api/BillDetails/5

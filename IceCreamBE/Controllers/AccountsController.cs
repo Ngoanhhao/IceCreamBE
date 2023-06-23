@@ -10,6 +10,9 @@ using IceCreamBE.Models;
 using IceCreamBE.Repository;
 using IceCreamBE.DTO;
 using IceCreamBE.Repository.Irepository;
+using IceCreamBE.Modules;
+using Microsoft.AspNetCore.Http.HttpResults;
+using System.Security.Policy;
 
 namespace IceCreamBE.Controllers
 {
@@ -22,12 +25,14 @@ namespace IceCreamBE.Controllers
         private readonly IRepositoryRoles _IRepositoryRoles;
         private readonly IHandleResponseCode _HandleResponseCode;
         private readonly IRepositoryFileService _IRepositoryFileService;
+        private readonly IMailHandle _IMailHandle;
 
         public AccountsController(
             IRepositoryAccounts RepositoryAccounts,
             IRepositoryAccountDetail repositoryAccountDetail,
             IRepositoryRoles repositoryRoles, IHandleResponseCode handleResponseCode,
-            IRepositoryFileService iRepositoryFileService
+            IRepositoryFileService iRepositoryFileService,
+            IMailHandle iMailHandle
             )
         {
             _RepositoryAccounts = RepositoryAccounts;
@@ -35,19 +40,17 @@ namespace IceCreamBE.Controllers
             _IRepositoryRoles = repositoryRoles;
             _HandleResponseCode = handleResponseCode;
             _IRepositoryFileService = iRepositoryFileService;
+            _IMailHandle = iMailHandle;
         }
 
         // PUT: api/Accounts/5
         // To protect from overposting attacks, see https://go.microsoft.com/fwlink/?linkid=2123754
-        [HttpPut("{id}")]
-        public async Task<IActionResult> PutAccounts(int id, AccountDTO accounts)
+        [HttpPut("/api/ResetPassword/{userId}")]
+        public async Task<IActionResult> ResetPassword(int userId)
         {
-            if (id != accounts.Id)
-            {
-                return BadRequest();
-            }
 
-            var result = await _RepositoryAccounts.GetAsync(e => e.Id == id);
+
+            var result = await _RepositoryAccountDetail.GetAsync(e => e.Id == userId);
             if (result == null)
             {
                 return NotFound(new Response<List<AccountDetailDTO>>
@@ -56,15 +59,56 @@ namespace IceCreamBE.Controllers
                     Message = "not found"
                 });
             }
+            var random = Coupon.CouponGenarate(10);
 
-            await _RepositoryAccounts.UpdateAsync(accounts);
+            await _RepositoryAccounts.UpdateAsync(new AccountDTO { Password = MD5Generator.MD5Encryption(random), Id = result.Id });
+
+            _IMailHandle.send("Reset Password", "<h3 style='font-weight: 100; color: black'>" +
+                "We received a request to reset your password. " +
+                "Don’t worry, we are here to help you. <br>" +
+                "Here your new password, please change new password if you see this mail </h3>" +
+                "<h2 style='color: black'>New password: " + random + "</h2>" +
+                "<button style='padding: 10px 50px;font-size: 1.5rem;border-radius: 50px;color: white;background: #ed7399;border: 0;'>Login</button>",
+                result.Email);
+
+            return NoContent();
+        }
+
+
+        // PUT: api/Accounts/5
+        // To protect from overposting attacks, see https://go.microsoft.com/fwlink/?linkid=2123754
+        [HttpPut("/api/ChangePassword/{userId}")]
+        public async Task<IActionResult> ChangePassword(int userId, string oldPassword, string newPassword)
+        {
+
+
+            var result = await _RepositoryAccounts.GetAsync(e => e.Id == userId);
+            if (result == null)
+            {
+                return NotFound(new Response<List<AccountDetailDTO>>
+                {
+                    Succeeded = false,
+                    Message = "not found"
+                });
+            }
+            if (result.Password != MD5Generator.MD5Encryption(oldPassword))
+            {
+                return NotFound(new Response<List<AccountDetailDTO>>
+                {
+                    Succeeded = false,
+                    Message = "old password not correct please try again"
+                });
+            }
+
+            await _RepositoryAccounts.UpdateAsync(new AccountDTO { Password = MD5Generator.MD5Encryption(newPassword), Id = result.Id });
+
 
             return NoContent();
         }
 
         // POST: api/Accounts
         // To protect from overposting attacks, see https://go.microsoft.com/fwlink/?linkid=2123754
-        [HttpPost]
+        [HttpPost("/api/register")]
         public async Task<ActionResult<Accounts>> PostAccounts(RegisterDTO entity)
         {
             if (!ModelState.IsValid)
@@ -97,78 +141,110 @@ namespace IceCreamBE.Controllers
                 });
             }
 
-            var role = await _IRepositoryRoles.GetAsync(e => e.Id == entity.roleID);
-            if (role == null)
-            {
-                return BadRequest(new Response<List<AccountDetailDTO>>
-                {
-                    Succeeded = false,
-                    Message = "role incorrect"
-                });
-            }
 
-            var code = await _HandleResponseCode.GetAsync(e => e.Email.Equals(entity.email) && e.Code.Equals(entity.code));
-            if (code == null || code.Status == true)
-            {
-                return BadRequest(new Response<List<AccountDetailDTO>>
-                {
-                    Succeeded = false,
-                    Message = "code incorrect"
-                });
-            }
 
-            if (code.ExpirationDate < DateTime.UtcNow)
-            {
-                return BadRequest(new Response<List<AccountDetailDTO>>
-                {
-                    Succeeded = false,
-                    Message = "code has expired, please re-create it"
-                });
-            }
+            //var code = await _HandleResponseCode.GetAsync(e => e.Email.Equals(entity.email) && e.Code.Equals(entity.code));
+            //if (code == null || code.Status == true)
+            //{
+            //    return BadRequest(new Response<List<AccountDetailDTO>>
+            //    {
+            //        Succeeded = false,
+            //        Message = "code incorrect"
+            //    });
+            //}
+
+            //if (code.ExpirationDate < DateTime.UtcNow)
+            //{
+            //    return BadRequest(new Response<List<AccountDetailDTO>>
+            //    {
+            //        Succeeded = false,
+            //        Message = "code has expired, please re-create it"
+            //    });
+            //}
 
             await _RepositoryAccounts.CreateAsync(new Accounts
             {
                 Username = entity.username,
-                Password = entity.password
+                Password = MD5Generator.MD5Encryption(entity.password)
             });
-
-            var result2 = await _RepositoryAccounts.GetAsync(e => e.Username == entity.username && e.Password == entity.password);
-            string url = $"{Request.Scheme}://{Request.Host}/api/image/";
+            var user = await _RepositoryAccounts.GetAsync(e => e.Username.ToLower() == entity.username.ToLower());
 
             await _RepositoryAccountDetail.CreateAsync(new AccountDetail
             {
-                Id = result2.Id,
-                Avatar = _IRepositoryFileService.CheckImage(entity.avatar, "Images") ? url + entity.avatar : null,
+                Id = user.Id,
+                Avatar = null,
                 Email = entity.email,
-                ExpirationDate = entity.expiration_date,
-                ExtensionDate = entity.extension_date,
-                FullName = entity.full_name,
-                PhoneNumber = entity.phone_number,
-                RoleID = entity.roleID,
+                FullName = entity.username,
+                PhoneNumber = null,
+                RoleID = 3,
                 CreateDate = DateTime.UtcNow,
             });
 
-            await _HandleResponseCode.UpdateAsync(new ResponseCode
-            {
-                Email = entity.email,
-                Code = entity.code
-            });
+            var userdetail = await _RepositoryAccountDetail.GetAsync(e => e.Id == user.Id);
 
             return Ok(new Response<AccountDetailDTO>
             {
                 Succeeded = true,
                 Data = new AccountDetailDTO
                 {
-                    Id = result2.Id,
-                    Avatar = _IRepositoryFileService.CheckImage(entity.avatar, "Images") ? url + entity.avatar : null,
-                    Email = entity.email,
-                    Expiration_date = entity.expiration_date,
-                    Extension_date = entity.extension_date,
-                    Full_name = entity.full_name,
-                    Phone_number = entity.phone_number,
-                    RoleID = entity.roleID,
+                    Id = user.Id,
+                    Avatar = null,
+                    Full_name = userdetail.FullName,
+                    Phone_number = userdetail.PhoneNumber,
+                    Address = userdetail.Address,
+
+                    RoleID = userdetail.RoleID,
+                    Expiration_date = null,
+                    Extension_date = null,
+                    Email = userdetail.Email,
+                    Create_date = userdetail.CreateDate
                 }
             });
+        }
+
+        [HttpPut("/api/updateaccount")]
+        public async Task<ActionResult<Accounts>> UpdateInfo(AccountDetailDTO entity)
+        {
+            var userdetail = await _RepositoryAccountDetail.GetAsync(e => e.Id == entity.Id);
+
+            if (userdetail == null)
+            {
+                return NotFound(new Response<List<AccountDetailDTO>>
+                {
+                    Succeeded = false,
+                    Message = "user incorrect"
+                });
+            }
+
+            await _RepositoryAccountDetail.UpdateAsync(new AccountDetailDTO
+            {
+                Id = userdetail.Id,
+                Avatar = entity.Avatar,
+                Full_name = entity.Full_name,
+                Phone_number = entity.Phone_number,
+                Address = entity.Address,
+            });
+
+            return NoContent();
+        }
+
+        [HttpPut("/api/updatepremium")]
+        public async Task<ActionResult<Accounts>> UpdatePremium(int userID, int month)
+        {
+            var userdetail = await _RepositoryAccountDetail.GetAsync(e => e.Id == userID);
+
+            if (userdetail == null)
+            {
+                return NotFound(new Response<List<AccountDetailDTO>>
+                {
+                    Succeeded = false,
+                    Message = "user incorrect"
+                });
+            }
+
+            await _RepositoryAccountDetail.UpdatePremium(userID, month);
+
+            return NoContent();
         }
     }
 }

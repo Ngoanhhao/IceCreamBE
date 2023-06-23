@@ -38,7 +38,8 @@ namespace IceCreamBE.Migrations
                     FeedBackProduct = table.Column<string>(type: "nvarchar(max)", nullable: false),
                     AccountID = table.Column<int>(type: "int", nullable: false),
                     ReleaseDate = table.Column<DateTime>(type: "datetime2", nullable: false)
-                },
+                }
+                ,
                 constraints: table =>
                 {
                     table.PrimaryKey("PK_Feedback", x => x.Id);

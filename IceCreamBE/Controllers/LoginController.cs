@@ -1,6 +1,7 @@
 ﻿using IceCreamBE.DTO;
 using IceCreamBE.Migrations;
 using IceCreamBE.Models;
+using IceCreamBE.Modules;
 using IceCreamBE.Repository.Irepository;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Http.HttpResults;
@@ -9,6 +10,7 @@ using Microsoft.EntityFrameworkCore;
 using Microsoft.IdentityModel.Tokens;
 using MimeKit.Utils;
 using System.IdentityModel.Tokens.Jwt;
+using System.Security.Policy;
 using System.Text;
 
 namespace IceCreamBE.Controllers
@@ -23,8 +25,10 @@ namespace IceCreamBE.Controllers
         private readonly IToken _Token;
         private readonly IRepositoryRefreshtoken _IRepositoryRefreshtoken;
         private readonly IConfiguration _Configuration;
+        private readonly IRepositoryFileService _IRepositoryFileService;
 
-        public LoginController(IRepositoryAccounts RepositoryAccounts, IRepositoryAccountDetail IRepositoryAccountDetail, IRepositoryRoles IRepositoryRoles, IToken token, IRepositoryRefreshtoken iRepositoryRefreshtoken, IConfiguration configuration)
+
+        public LoginController(IRepositoryAccounts RepositoryAccounts, IRepositoryAccountDetail IRepositoryAccountDetail, IRepositoryRoles IRepositoryRoles, IToken token, IRepositoryRefreshtoken iRepositoryRefreshtoken, IConfiguration configuration, IRepositoryFileService iRepositoryFileService)
         {
             _RepositoryAccounts = RepositoryAccounts;
             _IRepositoryAccountDetail = IRepositoryAccountDetail;
@@ -32,12 +36,13 @@ namespace IceCreamBE.Controllers
             _Token = token;
             _IRepositoryRefreshtoken = iRepositoryRefreshtoken;
             _Configuration = configuration;
+            _IRepositoryFileService = iRepositoryFileService;
         }
 
         [HttpPost]
         public async Task<IActionResult> Login(LoginDTO user)
         {
-            var result = await _RepositoryAccounts.GetAsync(e => e.Username == user.username && e.Password == user.password);
+            var result = await _RepositoryAccounts.GetAsync(e => e.Username == user.username && e.Password == MD5Generator.MD5Encryption(user.password));
             if (result == null)
             {
                 return Unauthorized(new Response<AccountDetailDTO> { Message = "username or password incorrect", Succeeded = false });
@@ -45,6 +50,7 @@ namespace IceCreamBE.Controllers
 
             var detail = await _IRepositoryAccountDetail.GetAsync(e => e.Id == result.Id);
             var roles = await _IRepositoryRoles.GetAsync(e => e.Id == detail.RoleID);
+            string url = $"{Request.Scheme}://{Request.Host}/api/image/";
             // account info
             var data = new AccountDetailOutDTO
             {
@@ -53,7 +59,7 @@ namespace IceCreamBE.Controllers
                 Full_name = detail.FullName,
                 Email = detail.Email,
                 Phone_number = detail.PhoneNumber,
-                Avatar = detail.Avatar,
+                Avatar = _IRepositoryFileService.CheckImage(detail.Avatar, "Images") ? url + detail.Avatar : null,
                 Role = roles.Role,
                 Expiration_date = detail.ExpirationDate,
                 Extension_date = detail.ExtensionDate
@@ -171,6 +177,7 @@ namespace IceCreamBE.Controllers
                 var user = await _RepositoryAccounts.GetAsync(nd => nd.Id == storedToken.userId);
                 var userDetail = await _IRepositoryAccountDetail.GetAsync(e => e.Id == storedToken.userId);
                 var role = await _IRepositoryRoles.GetAsync(e => e.Id == userDetail.RoleID);
+                string url = $"{Request.Scheme}://{Request.Host}/api/image/";
                 var data = new AccountDetailOutDTO
                 {
                     Id = user.Id,
@@ -178,7 +185,7 @@ namespace IceCreamBE.Controllers
                     Full_name = userDetail.FullName,
                     Email = userDetail.Email,
                     Phone_number = userDetail.PhoneNumber,
-                    Avatar = userDetail.Avatar,
+                    Avatar = _IRepositoryFileService.CheckImage(userDetail.Avatar, "Images") ? url + userDetail.Avatar : null,
                     Role = role.Role,
                     Expiration_date = userDetail.ExpirationDate,
                     Extension_date = userDetail.ExtensionDate

@@ -19,14 +19,19 @@ namespace IceCreamBE.Repository
         {
             var result = await dbcontext.AccountDetail.FirstOrDefaultAsync(e => e.Id == entity.Id);
 
-            result.ExtensionDate = entity.Extension_date ?? result.ExtensionDate;
-            result.ExpirationDate = entity.Expiration_date ?? result.ExpirationDate;
             result.Avatar = entity.Avatar == null ? result.Avatar : entity.Avatar;
             result.PhoneNumber = entity.Phone_number;
-            result.Email = entity.Email;
             result.FullName = entity.Full_name;
             result.Address = entity.Address;
-            result.RoleID = entity.RoleID ?? result.RoleID;
+            await dbcontext.SaveChangesAsync();
+        }
+
+        public async Task UpdatePremium(int userID, int month)
+        {
+            var result = await dbcontext.AccountDetail.FirstOrDefaultAsync(e => e.Id == userID);
+            result.RoleID = 2;
+            result.ExtensionDate = DateTime.Now;
+            result.ExpirationDate = DateTime.Now.AddMonths(month);
             await dbcontext.SaveChangesAsync();
         }
     }

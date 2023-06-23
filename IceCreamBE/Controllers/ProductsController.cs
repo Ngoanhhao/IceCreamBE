@@ -62,7 +62,7 @@ namespace IceCreamBE.Controllers
 
             return Ok(new PagedResponse<List<ProductOutDTO>>
             {
-                Data = result,
+                Data = pagedData,
                 Succeeded = pagedData == null ? false : true,
                 Pagination = new PagedResponseDetail<List<ProductOutDTO>>
                 {

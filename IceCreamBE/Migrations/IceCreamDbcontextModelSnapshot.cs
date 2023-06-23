@@ -28,7 +28,6 @@ namespace IceCreamBE.Migrations
                         .HasColumnType("int");
 
                     b.Property<string>("Address")
-                        .IsRequired()
                         .HasColumnType("nvarchar(max)");
 
                     b.Property<string>("Avatar")
@@ -53,7 +52,6 @@ namespace IceCreamBE.Migrations
                         .HasColumnType("nvarchar(max)");
 
                     b.Property<string>("PhoneNumber")
-                        .IsRequired()
                         .HasMaxLength(11)
                         .HasColumnType("nvarchar(11)");
 
@@ -71,10 +69,10 @@ namespace IceCreamBE.Migrations
                         {
                             Id = 1,
                             Address = "Hội An",
-                            CreateDate = new DateTime(2023, 6, 12, 22, 47, 31, 765, DateTimeKind.Local).AddTicks(667),
+                            CreateDate = new DateTime(2023, 6, 23, 21, 22, 0, 435, DateTimeKind.Local).AddTicks(4434),
                             Email = "ngoanhhao24@gmail.com",
-                            ExpirationDate = new DateTime(2023, 6, 22, 22, 47, 31, 765, DateTimeKind.Local).AddTicks(678),
-                            ExtensionDate = new DateTime(2023, 6, 12, 22, 47, 31, 765, DateTimeKind.Local).AddTicks(693),
+                            ExpirationDate = new DateTime(2023, 7, 3, 21, 22, 0, 435, DateTimeKind.Local).AddTicks(4446),
+                            ExtensionDate = new DateTime(2023, 6, 23, 21, 22, 0, 435, DateTimeKind.Local).AddTicks(4459),
                             FullName = "Ngô Anh Hào",
                             PhoneNumber = "1234567890",
                             RoleID = 1
@@ -151,7 +149,7 @@ namespace IceCreamBE.Migrations
                         {
                             Id = 1,
                             AccountID = 1,
-                            OrderTime = new DateTime(2023, 6, 12, 22, 47, 31, 765, DateTimeKind.Local).AddTicks(755),
+                            OrderTime = new DateTime(2023, 6, 23, 21, 22, 0, 435, DateTimeKind.Local).AddTicks(4517),
                             Status = "DONE",
                             SubTotal = 30000.0,
                             Total = 30000.0
