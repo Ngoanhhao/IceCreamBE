@@ -55,6 +55,7 @@ namespace IceCreamBE.Controllers
             var data = new AccountDetailOutDTO
             {
                 Id = result.Id,
+                ProtectID = detail.ProtectID,
                 UserName = user.username,
                 Full_name = detail.FullName,
                 Email = detail.Email,

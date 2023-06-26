@@ -137,10 +137,10 @@ namespace IceCreamBE.Controllers
 
 
         //GET: api/Bills/name, email, phone number
-        [HttpGet("{query}")]
-        public async Task<ActionResult<IEnumerable<BillOutDTO>>> GetBill(string query, [FromQuery] PaginationFilter<BillOutDTO>? filter)
+        [HttpGet("/api/getbill/{user_id}")]
+        public async Task<ActionResult<IEnumerable<BillOutDTO>>> GetBill(int user_id, [FromQuery] PaginationFilter<BillOutDTO>? filter)
         {
-            var bill = await _IRepositoryBill.GetAllAsync();
+            var bill = await _IRepositoryBill.GetAllAsync(e => e.AccountID == user_id);
             var accountDetail = await _IRepositoryAccountDetail.GetAllAsync();
             string url = $"{Request.Scheme}://{Request.Host}/api/image/";
 
@@ -150,7 +150,6 @@ namespace IceCreamBE.Controllers
                         e => e.AccountID,
                         q => q.Id,
                         (e, q) => new { bill = e, accountDetail = q })
-                    .Where(e => e.accountDetail.FullName.Contains(query) || e.accountDetail.Email.Contains(query) || e.accountDetail.PhoneNumber.Contains(query))
                     .Select(e => new BillOutDTO
                     {
                         Id = e.bill.Id,

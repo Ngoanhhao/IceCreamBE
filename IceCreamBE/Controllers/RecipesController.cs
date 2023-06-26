@@ -13,6 +13,7 @@ using IceCreamBE.DTO.PageList;
 using IceCreamBE.Migrations;
 using IceCreamBE.Repository;
 using Microsoft.AspNetCore.Http.HttpResults;
+using System.Security.Policy;
 
 namespace IceCreamBE.Controllers
 {
@@ -22,11 +23,13 @@ namespace IceCreamBE.Controllers
     {
         private readonly IRepositoryRecipe _IRepositoryRecipe;
         private readonly IRepositoryProduct _IRepositoryProduct;
+        private readonly IRepositoryFileService _IRepositoryFileService;
 
-        public RecipesController(IRepositoryRecipe IRepositoryRecipe, IRepositoryProduct iRepositoryProduct)
+        public RecipesController(IRepositoryRecipe IRepositoryRecipe, IRepositoryProduct iRepositoryProduct, IRepositoryFileService iRepositoryFileService)
         {
             _IRepositoryRecipe = IRepositoryRecipe;
             _IRepositoryProduct = iRepositoryProduct;
+            _IRepositoryFileService = iRepositoryFileService;
         }
 
         // GET: api/Recipes
@@ -35,6 +38,7 @@ namespace IceCreamBE.Controllers
         {
             var recipe = (await _IRepositoryRecipe.GetAllAsync());
             var product = (await _IRepositoryProduct.GetAllAsync());
+            string url = $"{Request.Scheme}://{Request.Host}/api/image/";
 
             var result = recipe.Join(product,
                         r => r.ProductId,
@@ -45,7 +49,8 @@ namespace IceCreamBE.Controllers
                             Id = e.recipe.Id,
                             product_name = e.product.Name,
                             description = e.recipe.Description,
-                            status = e.recipe.Status
+                            status = e.recipe.Status,
+                            img = _IRepositoryFileService.CheckImage(e.product.Img, "Images") ? url + e.product.Img : null,
                         }).ToList();
 
             var pageFilter = new PaginationFilter<RecipeOutDTO>(filter.PageNumber, filter.PageSize);
@@ -71,6 +76,8 @@ namespace IceCreamBE.Controllers
         {
             var result = await _IRepositoryRecipe.GetAsync(e => e.Id == id);
             var product = await _IRepositoryProduct.GetAsync(e => e.Id == result.ProductId);
+            string url = $"{Request.Scheme}://{Request.Host}/api/image/";
+
             if (result == null)
             {
                 return NotFound(new Response<RecipeOutDTO> { Message = "not found", Succeeded = false });
@@ -84,7 +91,8 @@ namespace IceCreamBE.Controllers
                     Id = result.Id,
                     description = result.Description,
                     product_name = product.Name,
-                    status = result.Status
+                    status = result.Status,
+                    img = _IRepositoryFileService.CheckImage(product.Img, "Images") ? url + product.Img : null,
                 }
             });
         }

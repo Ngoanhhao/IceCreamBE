@@ -23,9 +23,9 @@ namespace IceCreamBE.Data
                 entity.HasOne<AccountDetail>(x => x.AccountDetail)
                     .WithOne(e => e.Accounts)
                     .HasForeignKey<AccountDetail>(e => e.Id);
-                entity.HasMany<Feedback>(e => e.Feedback)
-                    .WithOne(e => e.Account)
-                    .HasForeignKey(e => e.AccountID);
+                //entity.HasMany<Feedback>(e => e.Feedback)
+                //    .WithOne(e => e.Account)
+                //    .HasForeignKey(e => e.AccountID);
                 entity.HasMany<Bill>(e => e.Bill)
                     .WithOne(e => e.Account)
                     .HasForeignKey(e => e.AccountID);
@@ -68,9 +68,9 @@ namespace IceCreamBE.Data
                 entity.ToTable("Feedback");
                 entity.HasKey(e => e.Id);
                 entity.Property(e => e.Id).ValueGeneratedOnAdd();
-                entity.HasOne<Accounts>(e => e.Account)
-                    .WithMany(e => e.Feedback)
-                    .HasForeignKey(e => e.AccountID);
+                //entity.HasOne<Accounts>(e => e.Account)
+                //    .WithMany(e => e.Feedback)
+                //    .HasForeignKey(e => e.AccountID);
             });
 
             modelBuilder.Entity<Products>(entity =>

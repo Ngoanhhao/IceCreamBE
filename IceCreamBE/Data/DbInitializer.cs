@@ -25,7 +25,7 @@ namespace IceCreamBE.Data
                 {
                     Id = 1,
                     Username = "Admin",
-                    Password = "Admin"
+                    Password = "e3afed0047b08059d0fada10f400c1e5"
                 }
             );
 

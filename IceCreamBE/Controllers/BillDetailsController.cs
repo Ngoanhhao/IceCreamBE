@@ -13,6 +13,7 @@ using IceCreamBE.DTO;
 using IceCreamBE.Repository;
 using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 using IceCreamBE.Migrations;
+using IceCreamBE.Modules;
 
 namespace IceCreamBE.Controllers
 {
@@ -25,16 +26,18 @@ namespace IceCreamBE.Controllers
         private readonly IRepositoryBill _IRepositoryBill;
         private readonly IRepositoryVourcher _IRepositoryVourcher;
         private readonly IRepositoryAccounts _IRepositoryAccounts;
+        private readonly IRepositoryAccountDetail _IRepositoryAccountDetail;
         private readonly IRepositoryBrand _IRepositoryBrand;
         private readonly IRepositoryFileService _IRepositoryFileService;
 
-        public BillDetailsController(IRepositoryBillDetail IRepositoryBillDetail, IRepositoryProduct repositoryProduct, IRepositoryBill repositoryBill, IRepositoryVourcher repositoryVourcher, IRepositoryAccounts repositoryAccounts, IRepositoryBrand iRepositoryBrand, IRepositoryFileService iRepositoryFileService)
+        public BillDetailsController(IRepositoryBillDetail IRepositoryBillDetail, IRepositoryProduct repositoryProduct, IRepositoryBill repositoryBill, IRepositoryVourcher repositoryVourcher, IRepositoryAccounts repositoryAccounts, IRepositoryBrand iRepositoryBrand, IRepositoryFileService iRepositoryFileService, IRepositoryAccountDetail iRepositoryAccountDetail)
         {
             _IRepositoryBillDetail = IRepositoryBillDetail;
             _IRepositoryProduct = repositoryProduct;
             _IRepositoryBill = repositoryBill;
             _IRepositoryVourcher = repositoryVourcher;
             _IRepositoryAccounts = repositoryAccounts;
+            _IRepositoryAccountDetail = iRepositoryAccountDetail;
             _IRepositoryBrand = iRepositoryBrand;
             _IRepositoryFileService = iRepositoryFileService;
         }
@@ -129,11 +132,16 @@ namespace IceCreamBE.Controllers
             return Ok(new Response<BillDetailOutDTO> { Data = result, Succeeded = true });
         }
 
+
         // GET: api/BillDetails/5
         [HttpGet("/api/cart/{userID:int}")]
         public async Task<ActionResult<BillDetail>> GetCart(int userID)
         {
             var bill = await _IRepositoryBill.GetAsync(e => e.AccountID == userID && e.Status == "ORDERING");
+            if (bill == null)
+            {
+                return Ok(new Response<List<BillDetailOutDTO>> { Message = "Your cart is empty, let's order something", Succeeded = false });
+            }
             var billDetail = await _IRepositoryBillDetail.GetAllAsync(e => e.BillID == bill.Id);
             var product = await _IRepositoryProduct.GetAllAsync();
             string url = $"{Request.Scheme}://{Request.Host}/api/image/";
@@ -326,6 +334,103 @@ namespace IceCreamBE.Controllers
 
             return CreatedAtAction("GetBillDetail", new { id = billDetail.id }, billDetail);
         }
+
+        // POST: api/BillDetails
+        // To protect from overposting attacks, see https://go.microsoft.com/fwlink/?linkid=2123754
+        [HttpPost("/api/guest/addtocart")]
+        public async Task<ActionResult<BillDetailOutDTO>> PostBillDetailGuest(CartGuestDTO item)
+        {
+            if (!ModelState.IsValid)
+            {
+                return BadRequest(new Response<BillDetailInDTO> { Message = "something wrong please try again", Succeeded = false });
+            }
+
+            foreach (var i in item.cart)
+            {
+                var product = await _IRepositoryProduct.GetAsync(e => e.Id == i.product_id);
+                if (product == null)
+                {
+                    return BadRequest(new Response<BillDetailOutDTO> { Message = "product not found", Succeeded = false });
+                }
+            }
+
+            var user = await _IRepositoryAccountDetail.GetAsync(e => e.PhoneNumber == item.phone_number);
+            if (user == null)
+            {
+                var random = Coupon.CouponGenarate(10);
+                await _IRepositoryAccounts.CreateAsync(new Accounts
+                {
+                    Password = random,
+                    Username = random,
+                });
+                var account = await _IRepositoryAccounts.GetAsync(e => e.Username == random && e.Password == random);
+                await _IRepositoryAccountDetail.CreateAsync(new AccountDetail
+                {
+                    Id = account.Id,
+                    FullName = item.full_name,
+                    PhoneNumber = item.phone_number,
+                    Email = "guest@gmail.com",
+                    Address = item.address,
+                    Avatar = null,
+                    CreateDate = DateTime.Now,
+                    ExpirationDate = DateTime.Now,
+                    ExtensionDate = DateTime.Now,
+                    RoleID = 3,
+                });
+                user = await _IRepositoryAccountDetail.GetAsync(e => e.Id == account.Id);
+            }
+
+
+
+            // ORDERING
+            // PENDING
+            // SUCCESSED
+            // DONE
+            // tạo bill
+            await _IRepositoryBill.CreateAsync(new Bill
+            {
+                AccountID = user.Id,
+                Status = "ORDERING",
+                OrderTime = DateTime.Now,
+            });
+            var getBill = await _IRepositoryBill.GetAsync(e => e.Status == "ORDERING" && e.AccountID == user.Id);
+            // add sp
+            foreach (var i in item.cart)
+            {
+                int quantity = i.quantity;
+                var product = await _IRepositoryProduct.GetAsync(e => e.Id == i.product_id);
+                await _IRepositoryBillDetail.CreateAsync(new BillDetail
+                {
+                    ProductID = product.Id,
+                    BillID = getBill.Id,
+                    Quantity = quantity,
+                    Price = product.Price,
+                    Total = product.Price * quantity,
+                });
+            }
+
+
+
+            // update subtotal total bill
+            var bill = await _IRepositoryBill.GetAsync(e => e.Status == "ORDERING" && e.AccountID == user.Id);
+            var BillDetails = await _IRepositoryBillDetail.GetAllAsync(e => e.BillID == bill.Id);
+            var voucher = await _IRepositoryVourcher.GetAsync(e => e.Id == bill.VoucherID);
+            double subTotal = 0;
+            BillDetails.ForEach(e => subTotal += e.Total);
+            var total = voucher != null ? (100 - voucher.Discount) * 0.01 * subTotal : subTotal;
+            await _IRepositoryBill.UpdateAsync(new Bill
+            {
+                Id = bill.Id,
+                VoucherID = bill.VoucherID,
+                Status = "PENDING",
+                SubTotal = subTotal,
+                Total = total,
+            });
+
+            return CreatedAtAction("GetBillDetail", new { id = bill.Id }, BillDetails);
+        }
+
+
         // DELETE: api/remove bill item
         [HttpDelete("/api/cartremove")]
         public async Task<IActionResult> DeleteBillDetail(int userId, int productId)

@@ -53,7 +53,7 @@ namespace IceCreamBE.Controllers
             var result = await _RepositoryAccountDetail.GetAsync(e => e.Id == userId);
             if (result == null)
             {
-                return NotFound(new Response<List<AccountDetailDTO>>
+                return BadRequest(new Response<List<AccountDetailDTO>>
                 {
                     Succeeded = false,
                     Message = "not found"
@@ -78,29 +78,29 @@ namespace IceCreamBE.Controllers
         // PUT: api/Accounts/5
         // To protect from overposting attacks, see https://go.microsoft.com/fwlink/?linkid=2123754
         [HttpPut("/api/ChangePassword/{userId}")]
-        public async Task<IActionResult> ChangePassword(int userId, string oldPassword, string newPassword)
+        public async Task<IActionResult> ChangePassword(int userId, string old_password, string new_password)
         {
 
 
             var result = await _RepositoryAccounts.GetAsync(e => e.Id == userId);
             if (result == null)
             {
-                return NotFound(new Response<List<AccountDetailDTO>>
+                return BadRequest(new Response<List<AccountDetailDTO>>
                 {
                     Succeeded = false,
                     Message = "not found"
                 });
             }
-            if (result.Password != MD5Generator.MD5Encryption(oldPassword))
+            if (result.Password != MD5Generator.MD5Encryption(old_password))
             {
-                return NotFound(new Response<List<AccountDetailDTO>>
+                return BadRequest(new Response<List<AccountDetailDTO>>
                 {
                     Succeeded = false,
                     Message = "old password not correct please try again"
                 });
             }
 
-            await _RepositoryAccounts.UpdateAsync(new AccountDTO { Password = MD5Generator.MD5Encryption(newPassword), Id = result.Id });
+            await _RepositoryAccounts.UpdateAsync(new AccountDTO { Password = MD5Generator.MD5Encryption(new_password), Id = result.Id });
 
 
             return NoContent();
@@ -172,12 +172,13 @@ namespace IceCreamBE.Controllers
             await _RepositoryAccountDetail.CreateAsync(new AccountDetail
             {
                 Id = user.Id,
+                ProtectID = Guid.NewGuid(),
                 Avatar = null,
                 Email = entity.email,
                 FullName = entity.username,
                 PhoneNumber = null,
                 RoleID = 3,
-                CreateDate = DateTime.UtcNow,
+                CreateDate = DateTime.Now,
             });
 
             var userdetail = await _RepositoryAccountDetail.GetAsync(e => e.Id == user.Id);

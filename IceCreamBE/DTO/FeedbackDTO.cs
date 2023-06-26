@@ -4,7 +4,7 @@
     {
         public int Id { get; set; }
         public string feedBack_product { get; set; }
-        public int accountID { get; set; }
+        public string full_name { get; set; }
         public DateTime release_date { get; set; }
     }
 }

@@ -122,14 +122,14 @@ namespace IceCreamBE.Controllers
             });
         }
 
-        [HttpGet("getme/{username}")]
-        public async Task<ActionResult<AccountDetailDTO>> GetAccountss(string username)
+        [HttpGet("/api/getme/{protectID}")]
+        public async Task<ActionResult<AccountDetailDTO>> GetAccountss(Guid protectID)
         {
-            var user = await _IRepositoryAccounts.GetAsync(e => e.Username == username);
+            var detail = await _IRepositoryAccountDetail.GetAsync(e => e.ProtectID == protectID);
 
-            if (user != null)
+            if (detail != null)
             {
-                var detail = await _IRepositoryAccountDetail.GetAsync(e => e.Id == user.Id);
+                var user = await _IRepositoryAccounts.GetAsync(e => e.Id == detail.Id);
                 var roles = await _IRepositoryRoles.GetAsync(e => e.Id == detail.RoleID);
                 string url = $"{Request.Scheme}://{Request.Host}/api/image/";
                 return Ok(new Response<AccountDetailOutDTO>
@@ -139,6 +139,7 @@ namespace IceCreamBE.Controllers
                         Id = user.Id,
                         UserName = user.Username,
                         Full_name = detail.FullName,
+                        ProtectID = detail.ProtectID,
                         Email = detail.Email,
                         Phone_number = detail.PhoneNumber,
                         Avatar = _IRepositoryFileService.CheckImage(detail.Avatar, "Images") ? url + detail.Avatar : null,
@@ -225,11 +226,7 @@ namespace IceCreamBE.Controllers
                 await _IRepositoryAccountDetail.UpdateAsync(new AccountDetailDTO
                 {
                     Id = accounts.Id,
-                    RoleID = accounts.RoleID,
                     Avatar = accounts.Avatar,
-                    Email = accounts.Email,
-                    Expiration_date = accounts.Expiration_date,
-                    Extension_date = accounts.Extension_date,
                     Address = accounts.Address,
                     Full_name = accounts.Full_name,
                     Phone_number = accounts.Phone_number,

@@ -41,28 +41,13 @@ namespace IceCreamBE.Controllers
         public async Task<ActionResult<IEnumerable<FeedbackDetailDTO>>> GetFeedback([FromQuery] PaginationFilter<FeedbackDetailDTO>? filter)
         {
             var feedback = (await _IRepositoryFeedback.GetAllAsync()).AsQueryable<Feedback>();
-            var account = (await _IRepositoryAccounts.GetAllAsync()).AsQueryable<Accounts>();
-            var accountDetail = (await _IRepositoryAccountDetail.GetAllAsync()).AsQueryable<AccountDetail>();
-            var result = feedback
-                .Join(accountDetail,
-                    e => e.AccountID,
-                    q => q.Id,
-                    (e, q) => new { feedback = e, accountDetail = q })
-                .Join(account,
-                    k => k.feedback.AccountID,
-                    t => t.Id,
-                    (k, t) => new { feedback = k.feedback, accountDetail = k.accountDetail, account = t })
-                .Select(e => new FeedbackDetailDTO
-                {
-                    Id = e.feedback.Id,
-                    full_name = e.accountDetail.FullName,
-                    username = e.feedback.Account.Username,
-                    email = e.accountDetail.Email,
-                    phone_number = e.accountDetail.PhoneNumber,
-                    feedBack_product = e.feedback.FeedBackProduct,
-                    release_date = e.feedback.ReleaseDate,
-                }).OrderByDescending(e => e.release_date)
-                .ToList();
+            var result = feedback.Select(e => new FeedbackDetailDTO
+            {
+                Id = e.Id,
+                feedBack_product = e.FeedBackProduct,
+                full_name = e.FullName,
+                release_date = e.ReleaseDate,
+            }).ToList();
 
             var pageFilter = new PaginationFilter<FeedbackDetailDTO>(filter.PageNumber, filter.PageSize);
             var pagedData = pageFilter.GetPageList(result);
@@ -85,29 +70,14 @@ namespace IceCreamBE.Controllers
         [HttpGet("{id:int}")]
         public async Task<ActionResult<FeedbackDTO>> GetFeedback(int id)
         {
-            var feedback = (await _IRepositoryFeedback.GetAllAsync());
-            var account = (await _IRepositoryAccounts.GetAllAsync());
-            var accountDetail = (await _IRepositoryAccountDetail.GetAllAsync());
-            var result = feedback
-                .Join(accountDetail,
-                    e => e.AccountID,
-                    q => q.Id,
-                    (e, q) => new { feedback = e, accountDetail = q })
-                .Join(account,
-                    k => k.feedback.AccountID,
-                    t => t.Id,
-                    (k, t) => new { feedback = k.feedback, accountDetail = k.accountDetail, account = t })
-                .Select(e => new FeedbackDetailDTO
-                {
-                    Id = e.feedback.Id,
-                    full_name = e.accountDetail.FullName,
-                    username = e.feedback.Account.Username,
-                    email = e.accountDetail.Email,
-                    phone_number = e.accountDetail.PhoneNumber,
-                    feedBack_product = e.feedback.FeedBackProduct,
-                    release_date = e.feedback.ReleaseDate,
-                })
-                .FirstOrDefault(e => e.Id == id);
+            var feedback = (await _IRepositoryFeedback.GetAsync(e => e.Id == id));
+            var result = new FeedbackDetailDTO
+            {
+                Id = feedback.Id,
+                feedBack_product = feedback.FeedBackProduct,
+                full_name = feedback.FullName,
+                release_date = feedback.ReleaseDate,
+            };
 
             if (result == null)
             {
@@ -121,58 +91,20 @@ namespace IceCreamBE.Controllers
         public async Task<ActionResult<IEnumerable<FeedbackDetailDTO>>> GetFeedbacks(string query)
         {
             var feedback = (await _IRepositoryFeedback.GetAllAsync()).AsQueryable<Feedback>();
-            var account = (await _IRepositoryAccounts.GetAllAsync()).AsQueryable<Accounts>();
-            var accountDetail = (await _IRepositoryAccountDetail.GetAllAsync()).AsQueryable<AccountDetail>();
-            var result = feedback
-                .Join(accountDetail,
-                    e => e.AccountID,
-                    q => q.Id,
-                    (e, q) => new { feedback = e, accountDetail = q })
-                .Join(account,
-                    k => k.feedback.AccountID,
-                    t => t.Id,
-                    (k, t) => new { feedback = k.feedback, accountDetail = k.accountDetail, t = account })
-                .Select(e => new FeedbackDetailDTO
-                {
-                    Id = e.feedback.Id,
-                    full_name = e.accountDetail.FullName,
-                    username = e.feedback.Account.Username,
-                    email = e.accountDetail.Email,
-                    phone_number = e.accountDetail.PhoneNumber,
-                    feedBack_product = e.feedback.FeedBackProduct,
-                    release_date = e.feedback.ReleaseDate,
-                })
-                .Where(e => e.full_name.Contains(query))
-                .ToList();
+            var result = feedback.Select(e => new FeedbackDetailDTO
+            {
+                Id = e.Id,
+                feedBack_product = e.FeedBackProduct,
+                full_name = e.FullName,
+                release_date = e.ReleaseDate,
+            }).Where(e => e.full_name.Contains(query)).ToList();
+
 
             if (result.Count == 0)
             {
                 return NotFound(new Response<FeedbackDetailDTO> { Message = "not found", Succeeded = false });
             }
             return Ok(new Response<List<FeedbackDetailDTO>> { Data = result, Succeeded = true });
-        }
-
-        // PUT: api/Feedbacks/5
-        // To protect from overposting attacks, see https://go.microsoft.com/fwlink/?linkid=2123754
-        [HttpPut("{id}")]
-        public async Task<IActionResult> PutFeedback(int id, FeedbackDTO feedback)
-        {
-            if (id != feedback.Id || !ModelState.IsValid)
-            {
-                return BadRequest(new Response<FeedbackDetailDTO> { Message = "value incorrect", Succeeded = false });
-            }
-
-            var result = await _IRepositoryFeedback.GetAsync(e => e.Id == feedback.Id);
-
-            await _IRepositoryFeedback.UpdateAsync(new Feedback
-            {
-                Id = feedback.Id,
-                FeedBackProduct = feedback.feedBack_product,
-                AccountID = feedback.accountID,
-                ReleaseDate = feedback.release_date
-            });
-
-            return NoContent();
         }
 
         // POST: api/Feedbacks
@@ -187,9 +119,9 @@ namespace IceCreamBE.Controllers
 
             await _IRepositoryFeedback.CreateAsync(new Feedback
             {
-                AccountID = feedback.accountID,
+                FullName = feedback.full_name,
                 FeedBackProduct = feedback.feedBack_product,
-                ReleaseDate = DateTime.UtcNow,
+                ReleaseDate = DateTime.Now,
             });
 
             return CreatedAtAction("GetFeedback", new { id = feedback.Id }, feedback);
