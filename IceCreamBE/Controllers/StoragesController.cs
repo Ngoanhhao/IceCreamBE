@@ -89,8 +89,8 @@ namespace IceCreamBE.Controllers
 
 
         // GET: api/Storages/productname
-        [HttpGet("{query}")]
-        public async Task<ActionResult<StorageOutDTO>> GetStorage(string query)
+        [HttpGet("/api/search/storage")]
+        public async Task<ActionResult<StorageOutDTO>> GetStorage(string? query)
         {
             var storage = (await _IRepositoryStorage.GetAllAsync()).AsQueryable<Storage>();
             var product = (await _IRepositoryProduct.GetAllAsync()).AsQueryable<Products>();
@@ -99,7 +99,7 @@ namespace IceCreamBE.Controllers
                     s => s.ProductID,
                     p => p.Id,
                     (s, p) => new { storage = s, product = p })
-                .Where(e => e.product.Name.Contains(query))
+                .Where(e => e.product.Name.ToLower().Contains(query != null ? query.ToLower() : ""))
                 .Select(e => new StorageOutDTO
                 {
                     Id = e.storage.ProductID,
@@ -109,7 +109,7 @@ namespace IceCreamBE.Controllers
                 });
             if (result.Count() == 0)
             {
-                return NotFound(new Response<List<StorageOutDTO>> { Message = "not found", Succeeded = false });
+                return BadRequest(new Response<List<StorageOutDTO>> { Message = "not found", Succeeded = false });
             }
             return Ok(new Response<List<StorageOutDTO>> { Data = result.ToList(), Succeeded = true });
         }

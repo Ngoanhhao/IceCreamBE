@@ -80,7 +80,7 @@ namespace IceCreamBE.Controllers
 
             if (result == null)
             {
-                return NotFound(new Response<RecipeOutDTO> { Message = "not found", Succeeded = false });
+                return BadRequest(new Response<RecipeOutDTO> { Message = "not found", Succeeded = false });
             }
 
             return Ok(new Response<RecipeOutDTO>
@@ -99,11 +99,12 @@ namespace IceCreamBE.Controllers
 
 
         // GET: api/Recipes/product_name
-        [HttpGet("{query}")]
-        public async Task<ActionResult<RecipeOutDTO>> GetRecipe(string query, [FromQuery] PaginationFilter<RecipeOutDTO>? filter)
+        [HttpGet("/api/search/recipes")]
+        public async Task<ActionResult<RecipeOutDTO>> SearchRecipe([FromQuery] PaginationFilter<RecipeOutDTO>? filter, [FromQuery] string? query)
         {
             var recipe = (await _IRepositoryRecipe.GetAllAsync());
             var product = (await _IRepositoryProduct.GetAllAsync());
+            string url = $"{Request.Scheme}://{Request.Host}/api/image/";
 
             var result = recipe.Join(product,
                         r => r.ProductId,
@@ -114,16 +115,20 @@ namespace IceCreamBE.Controllers
                             Id = e.recipe.Id,
                             product_name = e.product.Name,
                             description = e.recipe.Description,
+                            img = _IRepositoryFileService.CheckImage(e.product.Img, "Images") ? url + e.product.Img : null,
                             status = e.recipe.Status
-                        })
-                        .Where(e => e.product_name.Contains(query)).ToList();
-            if (result.Count == 0)
+                        });
+            if (query != null)
             {
-                return NotFound(new Response<RecipeInDTO> { Message = "not found", Succeeded = false });
+                result = result.Where(e => e.product_name.ToLower().Contains(query.ToLower()));
+            }
+            if (result.ToList().Count == 0)
+            {
+                return BadRequest(new Response<RecipeInDTO> { Message = "not found", Succeeded = false });
             }
 
             var pageFilter = new PaginationFilter<RecipeOutDTO>(filter.PageNumber, filter.PageSize);
-            var pagedData = pageFilter.GetPageList(result);
+            var pagedData = pageFilter.GetPageList(result.ToList());
 
             return Ok(new PagedResponse<List<RecipeOutDTO>>
             {
@@ -133,8 +138,8 @@ namespace IceCreamBE.Controllers
                 {
                     current_page = pagedData == null ? 0 : pageFilter.PageNumber,
                     Page_pize = pagedData == null ? 0 : pageFilter.PageSize,
-                    total_pages = (int)Math.Ceiling((double)result.Count / (double)filter.PageSize),
-                    total_records = result.Count
+                    total_pages = (int)Math.Ceiling((double)result.ToList().Count / (double)filter.PageSize),
+                    total_records = result.ToList().Count
                 }
             });
         }
@@ -153,7 +158,7 @@ namespace IceCreamBE.Controllers
             var result = await _IRepositoryRecipe.GetAsync(e => e.Id == id);
             if (result == null)
             {
-                return NotFound(new Response<RecipeInDTO> { Message = "not found", Succeeded = false });
+                return BadRequest(new Response<RecipeInDTO> { Message = "not found", Succeeded = false });
             }
 
             await _IRepositoryRecipe.UpdateAsync(new Recipe
@@ -207,7 +212,7 @@ namespace IceCreamBE.Controllers
             var result = await _IRepositoryRecipe.GetAsync(e => e.Id == id);
             if (result == null)
             {
-                return NotFound(new Response<RecipeOutDTO> { Message = "not found", Succeeded = false });
+                return BadRequest(new Response<RecipeOutDTO> { Message = "not found", Succeeded = false });
             }
 
             await _IRepositoryRecipe.DeleteAsync(result);

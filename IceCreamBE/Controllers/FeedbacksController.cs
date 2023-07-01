@@ -81,28 +81,28 @@ namespace IceCreamBE.Controllers
 
             if (result == null)
             {
-                return NotFound(new Response<FeedbackDetailDTO> { Message = "not found", Succeeded = false });
+                return BadRequest(new Response<FeedbackDetailDTO> { Message = "not found", Succeeded = false });
             }
             return Ok(new Response<FeedbackDetailDTO> { Data = result, Succeeded = true });
         }
 
         //GET: api/Feedbacks/fullname
-        [HttpGet("{query}")]
-        public async Task<ActionResult<IEnumerable<FeedbackDetailDTO>>> GetFeedbacks(string query)
+        [HttpGet("/api/search/feedback")]
+        public async Task<ActionResult<IEnumerable<FeedbackDetailDTO>>> GetFeedbacks(string? query)
         {
-            var feedback = (await _IRepositoryFeedback.GetAllAsync()).AsQueryable<Feedback>();
+            var feedback = (await _IRepositoryFeedback.GetAllAsync(e => e.FullName.ToLower().Contains(query != null ? query.ToLower() : "")));
             var result = feedback.Select(e => new FeedbackDetailDTO
             {
                 Id = e.Id,
                 feedBack_product = e.FeedBackProduct,
                 full_name = e.FullName,
                 release_date = e.ReleaseDate,
-            }).Where(e => e.full_name.Contains(query)).ToList();
+            }).ToList();
 
 
             if (result.Count == 0)
             {
-                return NotFound(new Response<FeedbackDetailDTO> { Message = "not found", Succeeded = false });
+                return BadRequest(new Response<FeedbackDetailDTO> { Message = "not found", Succeeded = false });
             }
             return Ok(new Response<List<FeedbackDetailDTO>> { Data = result, Succeeded = true });
         }
@@ -135,7 +135,7 @@ namespace IceCreamBE.Controllers
 
             if (result == null)
             {
-                return NotFound(new Response<FeedbackDetailDTO> { Message = "not found", Succeeded = false });
+                return BadRequest(new Response<FeedbackDetailDTO> { Message = "not found", Succeeded = false });
             }
 
             await _IRepositoryFeedback.DeleteAsync(result);

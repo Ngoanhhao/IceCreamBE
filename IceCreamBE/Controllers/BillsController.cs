@@ -377,6 +377,86 @@ namespace IceCreamBE.Controllers
             });
         }
 
+        //GET: api/Bills/order/id
+        [HttpGet("/api/search/order")]
+        public async Task<ActionResult<IEnumerable<BillOutDTO>>> SeachBill([FromQuery] PaginationFilter<BillOutDTO>? filter, string? query)
+        {
+            var bill = await _IRepositoryBill.GetAllAsync();
+            var accountDetail = await _IRepositoryAccountDetail.GetAllAsync();
+            string url = $"{Request.Scheme}://{Request.Host}/api/image/";
+
+            // Bill
+            var result = bill
+                    .Join(accountDetail,
+                        e => e.AccountID,
+                        q => q.Id,
+                        (e, q) => new { bill = e, accountDetail = q })
+                    .Where(e => (e.bill.Status == "PENDING" || e.bill.Status == "SUCCESSED") && e.accountDetail.FullName.ToLower().Contains(query != null ? query.ToLower() : ""))
+                    .Select(e => new BillOutDTO
+                    {
+                        Id = e.bill.Id,
+                        full_name = e.accountDetail.FullName,
+                        order_Time = e.bill.OrderTime,
+                        status = e.bill.Status,
+                        address = e.accountDetail.Address,
+                        total = e.bill.Total,
+                        voucher = e.bill.VoucherID.ToString(),
+                        sub_total = e.bill.SubTotal,
+                        email = e.accountDetail.Email,
+                        phone_number = e.accountDetail.PhoneNumber,
+                    }).OrderByDescending(e => e.order_Time).ToList();
+
+            foreach (var e in result)
+            {
+                var billdetail = await _IRepositoryBillDetail.GetAllAsync(q => q.BillID == e.Id);
+                var product = await _IRepositoryProduct.GetAllAsync();
+                var brand = await _IRepositoryBrand.GetAllAsync();
+
+                var billDetailItem = billdetail
+                    .Join(product,
+                        e => e.ProductID,
+                        q => q.Id,
+                        (e, q) => new { billdetail = e, product = q })
+                    .Join(brand,
+                        e => e.product.BrandID,
+                        e => e.Id,
+                        (e, q) => new { e.product, e.billdetail, brand = q })
+                    .Select(e => new BillDetailOutDTO
+                    {
+                        Id = e.billdetail.Id,
+                        billID = e.billdetail.BillID,
+                        product_name = e.product.Name,
+                        productID = e.product.Id,
+                        brand_name = e.brand.BrandName,
+                        img = _IRepositoryFileService.CheckImage(e.product.Img, "Images") ? url + e.product.Img : null,
+                        quantity = e.billdetail.Quantity,
+                        total = e.billdetail.Total,
+                        price = e.billdetail.Price,
+                    })
+                    .ToList();
+
+                //get voucher from voucherID
+                var voucherItem = (await _IRepositoryVourcher.GetAsync(v => v.Id == int.Parse(e.voucher.Equals("") ? "0" : e.voucher)));
+                e.voucher = voucherItem == null ? null : voucherItem.Voucher;
+                e.products = billDetailItem;
+            }
+
+            var pageFilter = new PaginationFilter<BillOutDTO>(filter.PageNumber, filter.PageSize);
+            var pagedData = pageFilter.GetPageList(result);
+
+            return Ok(new PagedResponse<List<BillOutDTO>>
+            {
+                Data = pagedData,
+                Succeeded = pagedData == null ? false : true,
+                Pagination = new PagedResponseDetail<List<BillOutDTO>>
+                {
+                    current_page = pagedData == null ? 0 : pageFilter.PageNumber,
+                    Page_pize = pagedData == null ? 0 : pageFilter.PageSize,
+                    total_pages = (int)Math.Ceiling((double)result.Count / (double)filter.PageSize),
+                    total_records = result.Count
+                }
+            });
+        }
 
         //GET: api/Bills/order/id
         [HttpGet("/api/invoices")]
@@ -458,6 +538,89 @@ namespace IceCreamBE.Controllers
                 }
             });
         }
+
+
+        //GET: api/Bills/order/id
+        [HttpGet("/api/search/invoice")]
+        public async Task<ActionResult<IEnumerable<BillOutDTO>>> SearchInvoices([FromQuery] PaginationFilter<BillOutDTO>? filter, string? query)
+        {
+            var bill = await _IRepositoryBill.GetAllAsync();
+            var accountDetail = await _IRepositoryAccountDetail.GetAllAsync();
+            string url = $"{Request.Scheme}://{Request.Host}/api/image/";
+
+            // Bill
+            var result = bill
+                    .Join(accountDetail,
+                        e => e.AccountID,
+                        q => q.Id,
+                        (e, q) => new { bill = e, accountDetail = q })
+                    .Where(e => e.bill.Status == "DONE" && e.accountDetail.FullName.ToLower().Contains(query != null ? query.ToLower() : ""))
+                    .Select(e => new BillOutDTO
+                    {
+                        Id = e.bill.Id,
+                        full_name = e.accountDetail.FullName,
+                        order_Time = e.bill.OrderTime,
+                        status = e.bill.Status,
+                        address = e.accountDetail.Address,
+                        total = e.bill.Total,
+                        voucher = e.bill.VoucherID.ToString(),
+                        sub_total = e.bill.SubTotal,
+                        email = e.accountDetail.Email,
+                        phone_number = e.accountDetail.PhoneNumber,
+                    }).ToList();
+
+            foreach (var e in result)
+            {
+                var billdetail = await _IRepositoryBillDetail.GetAllAsync(q => q.BillID == e.Id);
+                var product = await _IRepositoryProduct.GetAllAsync();
+                var brand = await _IRepositoryBrand.GetAllAsync();
+
+                var billDetailItem = billdetail
+                    .Join(product,
+                        e => e.ProductID,
+                        q => q.Id,
+                        (e, q) => new { billdetail = e, product = q })
+                    .Join(brand,
+                        e => e.product.BrandID,
+                        e => e.Id,
+                        (e, q) => new { e.product, e.billdetail, brand = q })
+                    .Select(e => new BillDetailOutDTO
+                    {
+                        Id = e.billdetail.Id,
+                        billID = e.billdetail.BillID,
+                        product_name = e.product.Name,
+                        productID = e.product.Id,
+                        brand_name = e.brand.BrandName,
+                        img = _IRepositoryFileService.CheckImage(e.product.Img, "Images") ? url + e.product.Img : null,
+                        quantity = e.billdetail.Quantity,
+                        total = e.billdetail.Total,
+                        price = e.billdetail.Price,
+                    })
+                    .ToList();
+
+                //get voucher from voucherID
+                var voucherItem = (await _IRepositoryVourcher.GetAsync(v => v.Id == int.Parse(e.voucher.Equals("") ? "0" : e.voucher)));
+                e.voucher = voucherItem == null ? null : voucherItem.Voucher;
+                e.products = billDetailItem;
+            }
+
+            var pageFilter = new PaginationFilter<BillOutDTO>(filter.PageNumber, filter.PageSize);
+            var pagedData = pageFilter.GetPageList(result);
+
+            return Ok(new PagedResponse<List<BillOutDTO>>
+            {
+                Data = pagedData,
+                Succeeded = pagedData == null ? false : true,
+                Pagination = new PagedResponseDetail<List<BillOutDTO>>
+                {
+                    current_page = pagedData == null ? 0 : pageFilter.PageNumber,
+                    Page_pize = pagedData == null ? 0 : pageFilter.PageSize,
+                    total_pages = (int)Math.Ceiling((double)result.Count / (double)filter.PageSize),
+                    total_records = result.Count
+                }
+            });
+        }
+
 
         // PUT: api/Bills/5
         // To protect from overposting attacks, see https://go.microsoft.com/fwlink/?linkid=2123754

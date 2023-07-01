@@ -74,6 +74,53 @@ namespace IceCreamBE.Controllers
             });
         }
 
+        // GET: api/ProductName
+        [HttpGet("/api/search/product")]
+        public async Task<ActionResult<IEnumerable<ProductOutDTO>>> GetProduct([FromQuery] PaginationFilter<ProductsInDTO>? filter, [FromQuery] string? query)
+        {
+            var brand = (await _IRepositoryBrand.GetAllAsync());
+            var product = (await _IRepositoryProduct.GetAllAsync());
+            string url = $"{Request.Scheme}://{Request.Host}/api/image/";
+
+            var result = product.Join(brand,
+                        r => r.BrandID,
+                        p => p.Id,
+                        (r, p) => new { product = r, brand = p })
+                        .Select(e => new ProductOutDTO
+                        {
+                            Id = e.product.Id,
+                            brand_name = e.brand.BrandName,
+                            cost = e.product.Cost,
+                            description = e.product.Description,
+                            price = e.product.Price,
+                            discount_percent = e.product.Discount,
+                            img = _IRepositoryFileService.CheckImage(e.product.Img, "Images") ? url + e.product.Img : null,
+                            name = e.product.Name,
+                            status = e.product.Status,
+                            total = e.product.Total
+                        });
+            if (query != null)
+            {
+                result = result.Where(e => e.name.ToLower().Contains(query.ToLower()));
+            }
+
+            var pageFilter = new PaginationFilter<ProductOutDTO>(filter.PageNumber, filter.PageSize);
+            var pagedData = pageFilter.GetPageList(result.ToList());
+
+            return Ok(new PagedResponse<List<ProductOutDTO>>
+            {
+                Data = pagedData,
+                Succeeded = pagedData == null ? false : true,
+                Pagination = new PagedResponseDetail<List<ProductOutDTO>>
+                {
+                    current_page = pagedData == null ? 0 : pageFilter.PageNumber,
+                    Page_pize = pagedData == null ? 0 : pageFilter.PageSize,
+                    total_pages = (int)Math.Ceiling((double)result.ToList().Count / (double)filter.PageSize),
+                    total_records = result.ToList().Count
+                }
+            });
+        }
+
         // GET: api/Products/5
         [HttpGet("{id}")]
         public async Task<ActionResult<ProductOutDTO>> GetProducts(int id)

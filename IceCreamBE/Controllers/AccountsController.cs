@@ -106,6 +106,29 @@ namespace IceCreamBE.Controllers
             return NoContent();
         }
 
+        // PUT: api/Accounts/5
+        // To protect from overposting attacks, see https://go.microsoft.com/fwlink/?linkid=2123754
+        [HttpPut("/api/ForgotPassword/{userId}")]
+        public async Task<IActionResult> ForgotPassword(int userId, string new_password)
+        {
+
+
+            var result = await _RepositoryAccounts.GetAsync(e => e.Id == userId);
+            if (result == null)
+            {
+                return BadRequest(new Response<List<AccountDetailDTO>>
+                {
+                    Succeeded = false,
+                    Message = "not found"
+                });
+            }
+
+            await _RepositoryAccounts.UpdateAsync(new AccountDTO { Password = MD5Generator.MD5Encryption(new_password), Id = result.Id });
+
+
+            return NoContent();
+        }
+
         // POST: api/Accounts
         // To protect from overposting attacks, see https://go.microsoft.com/fwlink/?linkid=2123754
         [HttpPost("/api/register")]
@@ -141,26 +164,6 @@ namespace IceCreamBE.Controllers
                 });
             }
 
-
-
-            //var code = await _HandleResponseCode.GetAsync(e => e.Email.Equals(entity.email) && e.Code.Equals(entity.code));
-            //if (code == null || code.Status == true)
-            //{
-            //    return BadRequest(new Response<List<AccountDetailDTO>>
-            //    {
-            //        Succeeded = false,
-            //        Message = "code incorrect"
-            //    });
-            //}
-
-            //if (code.ExpirationDate < DateTime.UtcNow)
-            //{
-            //    return BadRequest(new Response<List<AccountDetailDTO>>
-            //    {
-            //        Succeeded = false,
-            //        Message = "code has expired, please re-create it"
-            //    });
-            //}
 
             await _RepositoryAccounts.CreateAsync(new Accounts
             {

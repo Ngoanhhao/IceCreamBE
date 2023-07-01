@@ -82,10 +82,10 @@ namespace IceCreamBE.Controllers
         }
 
         // GET: api/Brands/brandname
-        [HttpGet("{query}")]
-        public async Task<ActionResult<BrandsDTO>> GetBrands([FromQuery] PaginationFilter<BrandsDTO>? filter, string query)
+        [HttpGet("/api/search/brand")]
+        public async Task<ActionResult<BrandsDTO>> GetBrands([FromQuery] PaginationFilter<BrandsDTO>? filter, string? query)
         {
-            var result = await _IRepositoryBrand.GetAllAsync(e => e.BrandName.Contains(query));
+            var result = await _IRepositoryBrand.GetAllAsync(e => e.BrandName.ToLower().Contains(query != null ? query.ToLower() : ""));
             var item = new List<BrandsDTO>();
             var product = await _IRepositoryProduct.GetAllAsync();
             result.ForEach(e =>

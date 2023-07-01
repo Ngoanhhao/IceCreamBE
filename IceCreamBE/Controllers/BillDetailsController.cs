@@ -140,7 +140,7 @@ namespace IceCreamBE.Controllers
             var bill = await _IRepositoryBill.GetAsync(e => e.AccountID == userID && e.Status == "ORDERING");
             if (bill == null)
             {
-                return Ok(new Response<List<BillDetailOutDTO>> { Message = "Your cart is empty, let's order something", Succeeded = false });
+                return BadRequest(new Response<List<BillDetailOutDTO>> { Message = "Your cart is empty, let's order something", Succeeded = false });
             }
             var billDetail = await _IRepositoryBillDetail.GetAllAsync(e => e.BillID == bill.Id);
             var product = await _IRepositoryProduct.GetAllAsync();
@@ -172,7 +172,7 @@ namespace IceCreamBE.Controllers
 
             if (result == null)
             {
-                return NotFound(new Response<List<BillDetailOutDTO>> { Message = "not found", Succeeded = false });
+                return BadRequest(new Response<List<BillDetailOutDTO>> { Message = "not found", Succeeded = false });
             }
 
             return Ok(new Response<List<BillDetailOutDTO>> { Data = result, Succeeded = true });

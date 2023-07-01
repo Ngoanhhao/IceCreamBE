@@ -115,7 +115,7 @@ namespace IceCreamBE.Controllers
                     }
                     );
             }
-            return NotFound(new Response<AccountDetailDTO>
+            return BadRequest(new Response<AccountDetailDTO>
             {
                 Succeeded = false,
                 Message = "not found"
@@ -152,7 +152,7 @@ namespace IceCreamBE.Controllers
                     Succeeded = true
                 });
             }
-            return NotFound(new Response<AccountDetailDTO>
+            return BadRequest(new Response<AccountDetailDTO>
             {
                 Succeeded = false,
                 Message = "not found"
@@ -160,11 +160,11 @@ namespace IceCreamBE.Controllers
         }
 
         //GET: api/Accounts/query
-        [HttpGet("{query}")]
-        public async Task<ActionResult<List<AccountDetailDTO>>> GetAccounts(string query, [FromQuery] PaginationFilter<BrandsDTO>? filter)
+        [HttpGet("/api/search/user")]
+        public async Task<ActionResult<List<AccountDetailDTO>>> GetAccounts(string? query, [FromQuery] PaginationFilter<BrandsDTO>? filter)
         {
             var value = new List<AccountDetailDTO>();
-            var result = (await _IRepositoryAccountDetail.GetAllAsync(e => e.FullName.Contains(query) || e.Email == query));
+            var result = (await _IRepositoryAccountDetail.GetAllAsync(e => e.FullName.ToLower().Contains(query != null ? query.ToLower() : "")));
             string url = $"{Request.Scheme}://{Request.Host}/api/image/";
             result.ForEach(e => value.Add(new AccountDetailDTO
             {
@@ -181,7 +181,7 @@ namespace IceCreamBE.Controllers
 
             if (result.Count == 0)
             {
-                return NotFound(new Response<List<AccountDetailDTO>>
+                return BadRequest(new Response<List<AccountDetailDTO>>
                 {
                     Succeeded = false,
                     Message = "not found"
@@ -234,7 +234,7 @@ namespace IceCreamBE.Controllers
 
                 return NoContent();
             }
-            return NotFound(new Response<List<AccountDetailDTO>>
+            return BadRequest(new Response<List<AccountDetailDTO>>
             {
                 Succeeded = false,
                 Message = "not found"
