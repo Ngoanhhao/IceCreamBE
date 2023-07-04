@@ -7,6 +7,6 @@ namespace IceCreamBE.Models
         public int Id { get; set; }
         [Required]
         [StringLength(100)]
-        public string BrandName { get; set; }
+        public string Name { get; set; }
     }
 }

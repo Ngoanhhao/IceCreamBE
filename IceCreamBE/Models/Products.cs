@@ -17,6 +17,5 @@ namespace IceCreamBE.Models
         public double Total { get; set; }
         public bool Status { get; set; }
         public virtual ICollection<BillDetail> Details { get; set; }
-        public virtual ICollection<Recipe> Recipe { get; set; }
     }
 }

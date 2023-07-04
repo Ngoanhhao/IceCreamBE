@@ -85,9 +85,6 @@ namespace IceCreamBE.Data
                 entity.HasMany<BillDetail>(e => e.Details)
                     .WithOne(e => e.Product)
                     .HasForeignKey(e => e.ProductID);
-                entity.HasMany<Recipe>(e => e.Recipe)
-                    .WithOne(e => e.Product)
-                    .HasForeignKey(e => e.ProductId);
             });
 
             modelBuilder.Entity<Storage>(entity =>
@@ -133,9 +130,7 @@ namespace IceCreamBE.Data
             {
                 entity.ToTable("Recipe");
                 entity.HasKey(e => e.Id);
-                entity.HasOne<Products>(e => e.Product)
-                    .WithMany(e => e.Recipe)
-                    .HasForeignKey(e => e.ProductId);
+                entity.Property(e => e.Id).ValueGeneratedOnAdd();
             });
 
             modelBuilder.Entity<Vouchers>(entity =>
@@ -160,6 +155,13 @@ namespace IceCreamBE.Data
                 entity.HasOne<Accounts>(e => e.user)
                     .WithMany(e => e.RefreshToken)
                     .HasForeignKey(e => e.userId);
+            });
+
+            modelBuilder.Entity<Brands>(entity =>
+            {
+                entity.ToTable("Categories");
+                entity.HasKey(e => e.Id);
+                entity.Property(e => e.Id).ValueGeneratedOnAdd();
             });
 
 

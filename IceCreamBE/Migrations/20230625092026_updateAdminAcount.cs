@@ -23,7 +23,7 @@ namespace IceCreamBE.Migrations
                 keyColumn: "Id",
                 keyValue: 1,
                 column: "Password",
-                value: "e3afed0047b08059d0fada10f400c1e5");
+                value: "21232f297a57a5a743894a0e4a801fc3");
 
             migrationBuilder.UpdateData(
                 table: "Bill",

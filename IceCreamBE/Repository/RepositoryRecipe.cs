@@ -15,9 +15,11 @@ namespace IceCreamBE.Repository
 
         public async Task UpdateAsync(Recipe entity)
         {
-            var result = await dbcontext.Recipe.FirstOrDefaultAsync(e => e.Id == entity.Id);    
+            var result = await dbcontext.Recipe.FirstOrDefaultAsync(e => e.Id == entity.Id);
+            result.Name = entity.Name;
             result.Description = entity.Description;
             result.Status = entity.Status;
+            result.img = entity.img == null ? result.img : entity.img;
             await dbcontext.SaveChangesAsync();
         }
     }

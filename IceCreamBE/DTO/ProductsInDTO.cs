@@ -6,7 +6,7 @@ namespace IceCreamBE.DTO
     {
         public int Id { get; set; }
         public string name { get; set; }
-        public int brandID { get; set; }
+        public int categories_id { get; set; }
         public double cost { get; set; }
         public double price { get; set; }
         public int? discount_percent { get; set; } // percent

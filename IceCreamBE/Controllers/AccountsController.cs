@@ -155,7 +155,7 @@ namespace IceCreamBE.Controllers
                 return BadRequest(new Response<List<AccountDetailDTO>>
                 {
                     Succeeded = false,
-                    Message = "username is valid"
+                    Message = "Username is available"
                 });
             }
 
@@ -165,7 +165,7 @@ namespace IceCreamBE.Controllers
                 return BadRequest(new Response<List<AccountDetailDTO>>
                 {
                     Succeeded = false,
-                    Message = "email is valid"
+                    Message = "Email is available"
                 });
             }
 

@@ -57,7 +57,7 @@ namespace IceCreamBE.Controllers
                     .Where(e => e.bill.Status == "DONE"
                                     && e.bill.OrderTime.Month == (month != null ? month : DateTime.Now.Month)
                                     && e.bill.OrderTime.Year == (year != null ? year : DateTime.Now.Year))
-                    .GroupBy(e => e.brand.BrandName)
+                    .GroupBy(e => e.brand.Name)
                     .Select(e => new BrandReportDTO
                     {
                         brand_name = e.Key,
@@ -115,7 +115,7 @@ namespace IceCreamBE.Controllers
                     .Where(e => e.bill.Status == "DONE"
                                     && e.bill.OrderTime.Month == (month != null ? month : DateTime.Now.Month)
                                     && e.bill.OrderTime.Year == (year != null ? year : DateTime.Now.Year))
-                    .GroupBy(e => e.brand.BrandName)
+                    .GroupBy(e => e.brand.Name)
                     .Select(e => new BrandReportDTO
                     {
                         brand_name = e.Key,

@@ -72,7 +72,7 @@ namespace IceCreamBE.Controllers
                     billID = e.billDetail.BillID,
                     productID = e.product.Id,
                     product_name = e.product.Name,
-                    brand_name = e.brand.BrandName,
+                    brand_name = e.brand.Name,
                     quantity = e.billDetail.Quantity,
                     img = _IRepositoryFileService.CheckImage(e.product.Img, "Images") ? url + e.product.Img : null,
                     total = e.billDetail.Total,
@@ -124,7 +124,7 @@ namespace IceCreamBE.Controllers
                      product_name = e.product.Name,
                      quantity = e.billDetail.Quantity,
                      img = _IRepositoryFileService.CheckImage(e.product.Img, "Images") ? url + e.product.Img : null,
-                     brand_name = e.brand.BrandName,
+                     brand_name = e.brand.Name,
                      total = e.billDetail.Total,
                      price = e.billDetail.Price,
                  }))
@@ -141,6 +141,7 @@ namespace IceCreamBE.Controllers
 
         // GET: api/BillDetails/5
         [HttpGet("/api/cart/{userID:int}")]
+        [Authorize]
         public async Task<ActionResult<BillDetail>> GetCart(int userID)
         {
             var bill = await _IRepositoryBill.GetAsync(e => e.AccountID == userID && e.Status == "ORDERING");
@@ -168,7 +169,7 @@ namespace IceCreamBE.Controllers
                     billID = e.billDetail.BillID,
                     productID = e.product.Id,
                     product_name = e.product.Name,
-                    brand_name = e.brand.BrandName,
+                    brand_name = e.brand.Name,
                     quantity = e.billDetail.Quantity,
                     total = e.billDetail.Total,
                     img = _IRepositoryFileService.CheckImage(e.product.Img, "Images") ? url + e.product.Img : null,
@@ -210,7 +211,7 @@ namespace IceCreamBE.Controllers
                     billID = e.billDetail.BillID,
                     product_name = e.product.Name,
                     productID = e.product.Id,
-                    brand_name = e.brand.BrandName,
+                    brand_name = e.brand.Name,
                     img = _IRepositoryFileService.CheckImage(e.product.Img, "Images") ? url + e.product.Img : null,
                     quantity = e.billDetail.Quantity,
                     total = e.billDetail.Total,

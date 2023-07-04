@@ -50,6 +50,7 @@ namespace IceCreamBE.Controllers
                 email = e.Email,
                 full_name = e.FullName,
                 release_date = e.ReleaseDate,
+                status = e.status
             }).OrderByDescending(e => e.release_date).ToList();
 
             var pageFilter = new PaginationFilter<FeedbackDetailDTO>(filter.PageNumber, filter.PageSize);
@@ -82,6 +83,7 @@ namespace IceCreamBE.Controllers
                 email = feedback.Email,
                 full_name = feedback.FullName,
                 release_date = feedback.ReleaseDate,
+                status = feedback.status
             };
 
             if (result == null)
@@ -103,6 +105,7 @@ namespace IceCreamBE.Controllers
                 message = e.Message,
                 email = e.Email,
                 full_name = e.FullName,
+                status = e.status,
                 release_date = e.ReleaseDate,
             }).OrderByDescending(e => e.release_date).ToList();
 
@@ -117,7 +120,6 @@ namespace IceCreamBE.Controllers
         // POST: api/Feedbacks
         // To protect from overposting attacks, see https://go.microsoft.com/fwlink/?linkid=2123754
         [HttpPost]
-        [Authorize(Roles = "Admin")]
         public async Task<ActionResult<Feedback>> PostFeedback(FeedbackDTO feedback)
         {
             if (!ModelState.IsValid)
@@ -131,6 +133,32 @@ namespace IceCreamBE.Controllers
                 Email = feedback.email,
                 Message = feedback.message,
                 ReleaseDate = DateTime.Now,
+                status = false,
+            });
+
+            return CreatedAtAction("GetFeedback", new { id = feedback.Id }, feedback);
+        }
+
+        // POST: api/Feedbacks
+        // To protect from overposting attacks, see https://go.microsoft.com/fwlink/?linkid=2123754
+        [HttpPut]
+        [Authorize(Roles = "Admin")]
+        public async Task<ActionResult<Feedback>> PutFeedback(int id)
+        {
+            if (!ModelState.IsValid)
+            {
+                return BadRequest(new Response<FeedbackDetailDTO> { Message = "value incorrect", Succeeded = false });
+            }
+
+            var feedback = await _IRepositoryFeedback.GetAsync(e => e.Id == id);
+            if (feedback == null)
+            {
+                return BadRequest(new Response<FeedbackDetailDTO> { Message = "not found", Succeeded = false });
+            }
+
+            await _IRepositoryFeedback.UpdateAsync(new Feedback
+            {
+                Id = id
             });
 
             return CreatedAtAction("GetFeedback", new { id = feedback.Id }, feedback);

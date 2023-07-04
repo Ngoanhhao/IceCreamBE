@@ -11,13 +11,6 @@ namespace IceCreamBE.Migrations
         /// <inheritdoc />
         protected override void Up(MigrationBuilder migrationBuilder)
         {
-            migrationBuilder.AddColumn<bool>(
-                name: "Status",
-                table: "Recipe",
-                type: "float",
-                nullable: false,
-                defaultValue: 0.0);
-
             migrationBuilder.AddColumn<int>(
                 name: "VoucherID",
                 table: "Bill",
@@ -48,12 +41,6 @@ namespace IceCreamBE.Migrations
                         principalTable: "Accounts",
                         principalColumn: "Id",
                         onDelete: ReferentialAction.Cascade);
-                    //table.ForeignKey(
-                    //    name: "FK_Voucher_Roles_RoleID",
-                    //    column: x => x.RoleID,
-                    //    principalTable: "Roles",
-                    //    principalColumn: "Id",
-                    //    onDelete: ReferentialAction.Cascade);
                 });
 
             migrationBuilder.CreateIndex(
@@ -65,11 +52,6 @@ namespace IceCreamBE.Migrations
                 name: "IX_Voucher_AdminID",
                 table: "Voucher",
                 column: "AdminID");
-
-            //migrationBuilder.CreateIndex(
-            //    name: "IX_Voucher_RoleID",
-            //    table: "Voucher",
-            //    column: "RoleID");
 
             migrationBuilder.AddForeignKey(
                 name: "FK_Bill_Voucher_VoucherID",
@@ -93,10 +75,6 @@ namespace IceCreamBE.Migrations
             migrationBuilder.DropIndex(
                 name: "IX_Bill_VoucherID",
                 table: "Bill");
-
-            migrationBuilder.DropColumn(
-                name: "Status",
-                table: "Recipe");
 
             migrationBuilder.DropColumn(
                 name: "VoucherID",

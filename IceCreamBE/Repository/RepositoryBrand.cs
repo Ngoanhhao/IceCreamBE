@@ -16,7 +16,7 @@ namespace IceCreamBE.Repository
         public async Task UpdateAsync(Brands entity)
         {
             var result = await dbcontext.Brands.FirstOrDefaultAsync(e => e.Id == entity.Id);
-            result.BrandName = entity.BrandName;
+            result.Name = entity.Name;
             await dbcontext.SaveChangesAsync();
         }
     }

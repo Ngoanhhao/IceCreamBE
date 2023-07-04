@@ -25,7 +25,7 @@ namespace IceCreamBE.Data
                 {
                     Id = 1,
                     Username = "Admin",
-                    Password = "e3afed0047b08059d0fada10f400c1e5"
+                    Password = "21232f297a57a5a743894a0e4a801fc3"
                 }
             );
 
@@ -47,7 +47,7 @@ namespace IceCreamBE.Data
             modelBuilder.Entity<Brands>().HasData(new Brands
             {
                 Id = 1,
-                BrandName = "Pepsi"
+                Name = "Pepsi"
             });
 
             modelBuilder.Entity<Products>().HasData(new Products

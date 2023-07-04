@@ -17,7 +17,7 @@ namespace IceCreamBE.Repository
         public async Task UpdateAsync(Feedback entity)
         {
             var result = await dbcontext.Feedback.FirstOrDefaultAsync(e => e.Id == entity.Id);
-            result.Message = entity.Message;
+            result.status = result.status ? false : true;
             await dbcontext.SaveChangesAsync();
         }
     }

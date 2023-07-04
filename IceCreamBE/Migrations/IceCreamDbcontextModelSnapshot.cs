@@ -72,10 +72,10 @@ namespace IceCreamBE.Migrations
                         {
                             Id = 1,
                             Address = "Hội An",
-                            CreateDate = new DateTime(2023, 7, 2, 17, 11, 14, 846, DateTimeKind.Local).AddTicks(690),
+                            CreateDate = new DateTime(2023, 7, 4, 20, 1, 38, 119, DateTimeKind.Local).AddTicks(4812),
                             Email = "ngoanhhao24@gmail.com",
-                            ExpirationDate = new DateTime(2023, 7, 12, 17, 11, 14, 846, DateTimeKind.Local).AddTicks(702),
-                            ExtensionDate = new DateTime(2023, 7, 2, 17, 11, 14, 846, DateTimeKind.Local).AddTicks(723),
+                            ExpirationDate = new DateTime(2023, 7, 14, 20, 1, 38, 119, DateTimeKind.Local).AddTicks(4825),
+                            ExtensionDate = new DateTime(2023, 7, 4, 20, 1, 38, 119, DateTimeKind.Local).AddTicks(4847),
                             FullName = "Ngô Anh Hào",
                             PhoneNumber = "1234567890",
                             ProtectID = new Guid("00000000-0000-0000-0000-000000000000"),
@@ -108,7 +108,7 @@ namespace IceCreamBE.Migrations
                         new
                         {
                             Id = 1,
-                            Password = "e3afed0047b08059d0fada10f400c1e5",
+                            Password = "21232f297a57a5a743894a0e4a801fc3",
                             Username = "Admin"
                         });
                 });
@@ -124,7 +124,7 @@ namespace IceCreamBE.Migrations
                     b.Property<int>("AccountID")
                         .HasColumnType("int");
 
-                    b.Property<int>("Discount")
+                    b.Property<int?>("Discount")
                         .HasColumnType("int");
 
                     b.Property<DateTime>("OrderTime")
@@ -156,8 +156,7 @@ namespace IceCreamBE.Migrations
                         {
                             Id = 1,
                             AccountID = 1,
-                            Discount = 0,
-                            OrderTime = new DateTime(2023, 7, 2, 17, 11, 14, 846, DateTimeKind.Local).AddTicks(796),
+                            OrderTime = new DateTime(2023, 7, 4, 20, 1, 38, 119, DateTimeKind.Local).AddTicks(4973),
                             Status = "DONE",
                             SubTotal = 30000.0,
                             Total = 30000.0
@@ -215,20 +214,20 @@ namespace IceCreamBE.Migrations
 
                     SqlServerPropertyBuilderExtensions.UseIdentityColumn(b.Property<int>("Id"));
 
-                    b.Property<string>("BrandName")
+                    b.Property<string>("Name")
                         .IsRequired()
                         .HasMaxLength(100)
                         .HasColumnType("nvarchar(100)");
 
                     b.HasKey("Id");
 
-                    b.ToTable("Brands");
+                    b.ToTable("Categories", (string)null);
 
                     b.HasData(
                         new
                         {
                             Id = 1,
-                            BrandName = "Pepsi"
+                            Name = "Pepsi"
                         });
                 });
 
@@ -254,6 +253,9 @@ namespace IceCreamBE.Migrations
 
                     b.Property<DateTime>("ReleaseDate")
                         .HasColumnType("datetime2");
+
+                    b.Property<bool>("status")
+                        .HasColumnType("bit");
 
                     b.HasKey("Id");
 
@@ -328,15 +330,17 @@ namespace IceCreamBE.Migrations
                         .IsRequired()
                         .HasColumnType("nvarchar(max)");
 
-                    b.Property<int>("ProductId")
-                        .HasColumnType("int");
+                    b.Property<string>("Name")
+                        .IsRequired()
+                        .HasColumnType("nvarchar(max)");
 
                     b.Property<bool>("Status")
                         .HasColumnType("bit");
 
-                    b.HasKey("Id");
+                    b.Property<string>("img")
+                        .HasColumnType("nvarchar(max)");
 
-                    b.HasIndex("ProductId");
+                    b.HasKey("Id");
 
                     b.ToTable("Recipe", (string)null);
                 });
@@ -552,17 +556,6 @@ namespace IceCreamBE.Migrations
                     b.Navigation("Brand");
                 });
 
-            modelBuilder.Entity("IceCreamBE.Models.Recipe", b =>
-                {
-                    b.HasOne("IceCreamBE.Models.Products", "Product")
-                        .WithMany("Recipe")
-                        .HasForeignKey("ProductId")
-                        .OnDelete(DeleteBehavior.Cascade)
-                        .IsRequired();
-
-                    b.Navigation("Product");
-                });
-
             modelBuilder.Entity("IceCreamBE.Models.RefreshToken", b =>
                 {
                     b.HasOne("IceCreamBE.Models.Accounts", "user")
@@ -616,8 +609,6 @@ namespace IceCreamBE.Migrations
             modelBuilder.Entity("IceCreamBE.Models.Products", b =>
                 {
                     b.Navigation("Details");
-
-                    b.Navigation("Recipe");
 
                     b.Navigation("Storage")
                         .IsRequired();

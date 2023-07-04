@@ -39,21 +39,18 @@ namespace IceCreamBE.Controllers
         public async Task<ActionResult<IEnumerable<RecipeOutDTO>>> GetRecipe([FromQuery] PaginationFilter<RecipeOutDTO>? filter)
         {
             var recipe = (await _IRepositoryRecipe.GetAllAsync());
-            var product = (await _IRepositoryProduct.GetAllAsync());
+
             string url = $"{Request.Scheme}://{Request.Host}/api/image/";
 
-            var result = recipe.Join(product,
-                        r => r.ProductId,
-                        p => p.Id,
-                        (r, p) => new { product = p, recipe = r })
-                        .Select(e => new RecipeOutDTO
-                        {
-                            Id = e.recipe.Id,
-                            product_name = e.product.Name,
-                            description = e.recipe.Description,
-                            status = e.recipe.Status,
-                            img = _IRepositoryFileService.CheckImage(e.product.Img, "Images") ? url + e.product.Img : null,
-                        }).ToList();
+            var result = recipe.Select(e => new RecipeOutDTO
+            {
+                Id = e.Id,
+                description = e.Description,
+                img = _IRepositoryFileService.CheckImage(e.img, "Images") ? url + e.img : null,
+                name = e.Name,
+                status = e.Status,
+            }).ToList();
+
 
             var pageFilter = new PaginationFilter<RecipeOutDTO>(filter.PageNumber, filter.PageSize);
             var pagedData = pageFilter.GetPageList(result);
@@ -78,7 +75,6 @@ namespace IceCreamBE.Controllers
         public async Task<ActionResult<RecipeOutDTO>> GetRecipe(int id)
         {
             var result = await _IRepositoryRecipe.GetAsync(e => e.Id == id);
-            var product = await _IRepositoryProduct.GetAsync(e => e.Id == result.ProductId);
             string url = $"{Request.Scheme}://{Request.Host}/api/image/";
 
             if (result == null)
@@ -93,9 +89,9 @@ namespace IceCreamBE.Controllers
                 {
                     Id = result.Id,
                     description = result.Description,
-                    product_name = product.Name,
+                    name = result.Name,
                     status = result.Status,
-                    img = _IRepositoryFileService.CheckImage(product.Img, "Images") ? url + product.Img : null,
+                    img = _IRepositoryFileService.CheckImage(result.img, "Images") ? url + result.img : null,
                 }
             });
         }
@@ -106,33 +102,26 @@ namespace IceCreamBE.Controllers
         [Authorize(Roles = "Admin")]
         public async Task<ActionResult<RecipeOutDTO>> SearchRecipe([FromQuery] PaginationFilter<RecipeOutDTO>? filter, [FromQuery] string? query)
         {
-            var recipe = (await _IRepositoryRecipe.GetAllAsync());
-            var product = (await _IRepositoryProduct.GetAllAsync());
+            var recipe = await _IRepositoryRecipe.GetAllAsync(e => e.Name.ToLower().Contains(query != null ? query.ToLower() : ""));
+
             string url = $"{Request.Scheme}://{Request.Host}/api/image/";
 
-            var result = recipe.Join(product,
-                        r => r.ProductId,
-                        p => p.Id,
-                        (r, p) => new { product = p, recipe = r })
-                        .Select(e => new RecipeOutDTO
-                        {
-                            Id = e.recipe.Id,
-                            product_name = e.product.Name,
-                            description = e.recipe.Description,
-                            img = _IRepositoryFileService.CheckImage(e.product.Img, "Images") ? url + e.product.Img : null,
-                            status = e.recipe.Status
-                        });
-            if (query != null)
+            var result = recipe.Select(e => new RecipeOutDTO
             {
-                result = result.Where(e => e.product_name.ToLower().Contains(query.ToLower()));
-            }
-            if (result.ToList().Count == 0)
+                Id = e.Id,
+                description = e.Description,
+                img = _IRepositoryFileService.CheckImage(e.img, "Images") ? url + e.img : null,
+                name = e.Name,
+                status = e.Status,
+            }).ToList();
+
+            if (result == null)
             {
                 return BadRequest(new Response<RecipeInDTO> { Message = "not found", Succeeded = false });
             }
 
             var pageFilter = new PaginationFilter<RecipeOutDTO>(filter.PageNumber, filter.PageSize);
-            var pagedData = pageFilter.GetPageList(result.ToList());
+            var pagedData = pageFilter.GetPageList(result);
 
             return Ok(new PagedResponse<List<RecipeOutDTO>>
             {
@@ -170,6 +159,8 @@ namespace IceCreamBE.Controllers
             {
                 Id = result.Id,
                 Description = recipe.description,
+                img = recipe.img,
+                Name = recipe.name,
                 Status = recipe.status,
             });
 
@@ -187,26 +178,15 @@ namespace IceCreamBE.Controllers
                 return BadRequest(new Response<FeedbackDetailDTO> { Message = "value incorrect", Succeeded = false });
             }
 
-            var product = await _IRepositoryProduct.GetAsync(e => e.Id == recipe.productID);
-            if (product == null)
-            {
-                return BadRequest(new Response<FeedbackDetailDTO> { Message = "product incorrect", Succeeded = false });
-            }
 
-            var recipeCheck = await _IRepositoryRecipe.GetAsync(e => e.ProductId == product.Id);
-            if (recipeCheck != null)
+            await _IRepositoryRecipe.CreateAsync(new Recipe
             {
-                return BadRequest(new Response<List<StorageOutDTO>> { Message = "product is available", Succeeded = false });
-            }
-            else
-            {
-                await _IRepositoryRecipe.CreateAsync(new Recipe
-                {
-                    ProductId = recipe.productID,
-                    Description = recipe.description,
-                    Status = recipe.status,
-                });
-            }
+                Name = recipe.name,
+                Description = recipe.description,
+                Status = recipe.status,
+                img = recipe.img,
+            });
+
 
             return CreatedAtAction("GetRecipe", new { id = recipe.Id }, recipe);
         }

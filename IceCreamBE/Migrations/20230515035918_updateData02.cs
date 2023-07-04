@@ -11,20 +11,12 @@ namespace IceCreamBE.Migrations
         /// <inheritdoc />
         protected override void Up(MigrationBuilder migrationBuilder)
         {
-            migrationBuilder.AlterColumn<bool>(
-                name: "Status",
-                table: "Recipe",
-                type: "bit",
-                nullable: false,
-                oldClrType: typeof(double),
-                oldType: "float");
-
             migrationBuilder.AddColumn<DateTime>(
-                name: "CreateDate",
-                table: "AccountDetail",
-                type: "datetime2",
-                nullable: false,
-                defaultValue: new DateTime(1, 1, 1, 0, 0, 0, 0, DateTimeKind.Unspecified));
+            name: "CreateDate",
+            table: "AccountDetail",
+            type: "datetime2",
+            nullable: false,
+            defaultValue: new DateTime(1, 1, 1, 0, 0, 0, 0, DateTimeKind.Unspecified));
 
             migrationBuilder.UpdateData(
                 table: "AccountDetail",
@@ -47,14 +39,6 @@ namespace IceCreamBE.Migrations
             migrationBuilder.DropColumn(
                 name: "CreateDate",
                 table: "AccountDetail");
-
-            migrationBuilder.AlterColumn<double>(
-                name: "Status",
-                table: "Recipe",
-                type: "float",
-                nullable: false,
-                oldClrType: typeof(bool),
-                oldType: "bit");
 
             migrationBuilder.UpdateData(
                 table: "AccountDetail",

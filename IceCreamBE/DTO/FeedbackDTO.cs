@@ -6,6 +6,7 @@
         public string message { get; set; }
         public string full_name { get; set; }
         public string email { get; set; }
+        public bool status { get; set; }
         public DateTime release_date { get; set; }
     }
 }

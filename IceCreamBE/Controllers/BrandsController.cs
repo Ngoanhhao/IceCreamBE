@@ -39,7 +39,7 @@ namespace IceCreamBE.Controllers
             var product = await _IRepositoryProduct.GetAllAsync();
             result.ForEach(e =>
             {
-                item.Add(new BrandsDTO { Id = e.Id, brand_name = e.BrandName, product_count = product.Where(q => q.BrandID == e.Id).Count() });
+                item.Add(new BrandsDTO { Id = e.Id, name = e.Name, product_count = product.Where(q => q.BrandID == e.Id).Count() });
             });
 
             var pageFilter = new PaginationFilter<BrandsDTO>(filter.PageNumber, filter.PageSize);
@@ -77,7 +77,7 @@ namespace IceCreamBE.Controllers
                 Data = new BrandsDTO
                 {
                     Id = result.Id,
-                    brand_name = result.BrandName,
+                    name = result.Name,
                     product_count = product.Count()
                 }
                 ,
@@ -85,17 +85,17 @@ namespace IceCreamBE.Controllers
             });
         }
 
-        // GET: api/Brands/brandname
+        // GET: api/Brands/Name
         [HttpGet("/api/search/brand")]
         [Authorize(Roles = "Admin")]
         public async Task<ActionResult<BrandsDTO>> GetBrands([FromQuery] PaginationFilter<BrandsDTO>? filter, string? query)
         {
-            var result = await _IRepositoryBrand.GetAllAsync(e => e.BrandName.ToLower().Contains(query != null ? query.ToLower() : ""));
+            var result = await _IRepositoryBrand.GetAllAsync(e => e.Name.ToLower().Contains(query != null ? query.ToLower() : ""));
             var item = new List<BrandsDTO>();
             var product = await _IRepositoryProduct.GetAllAsync();
             result.ForEach(e =>
             {
-                item.Add(new BrandsDTO { Id = e.Id, brand_name = e.BrandName, product_count = product.Where(q => q.BrandID == e.Id).Count() });
+                item.Add(new BrandsDTO { Id = e.Id, name = e.Name, product_count = product.Where(q => q.BrandID == e.Id).Count() });
             });
 
             var pageFilter = new PaginationFilter<BrandsDTO>(filter.PageNumber, filter.PageSize);
@@ -136,7 +136,7 @@ namespace IceCreamBE.Controllers
             await _IRepositoryBrand.UpdateAsync(new Brands
             {
                 Id = brands.Id,
-                BrandName = brands.brand_name
+                Name = brands.name
             });
 
             return NoContent();
@@ -148,16 +148,16 @@ namespace IceCreamBE.Controllers
         [Authorize(Roles = "Admin")]
         public async Task<ActionResult<BrandsDTO>> PostBrands(BrandsDTO brands)
         {
-            var result = await _IRepositoryBrand.GetAsync(e => e.BrandName == brands.brand_name);
+            var result = await _IRepositoryBrand.GetAsync(e => e.Name == brands.name);
 
             if (result != null)
             {
-                return BadRequest(new Response<Brands> { Succeeded = false, Message = brands.brand_name + " is valid" });
+                return BadRequest(new Response<Brands> { Succeeded = false, Message = brands.name + " is valid" });
             }
 
             await _IRepositoryBrand.CreateAsync(new Brands
             {
-                BrandName = brands.brand_name
+                Name = brands.name
             });
 
             return CreatedAtAction("GetBrands", new { id = brands.Id }, brands);

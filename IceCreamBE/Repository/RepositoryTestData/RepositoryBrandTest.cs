@@ -16,7 +16,7 @@ namespace IceCreamBE.Repository.RepositoryTest
 
             for (int i = 1; i <= 24; i++)
             {
-                brandList.Add(new Brands { Id = i, BrandName = Guid.NewGuid().ToString() });
+                brandList.Add(new Brands { Id = i, Name = Guid.NewGuid().ToString() });
             }
 
         }
@@ -56,7 +56,7 @@ namespace IceCreamBE.Repository.RepositoryTest
         public async Task UpdateAsync(Brands entity)
         {
             var result = await dbcontext.Brands.FirstOrDefaultAsync(e => e.Id == entity.Id);
-            result.BrandName = entity.BrandName;
+            result.Name = entity.Name;
             await dbcontext.SaveChangesAsync();
         }
     }

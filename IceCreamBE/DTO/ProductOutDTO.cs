@@ -4,7 +4,7 @@
     {
         public int Id { get; set; }
         public string name { get; set; }
-        public string brand_name { get; set; }
+        public string categories_name { get; set; }
         public double cost { get; set; }
         public double price { get; set; }
         public double? total { get; set; }

@@ -50,7 +50,7 @@ namespace IceCreamBE.Controllers
                         .Select(e => new ProductOutDTO
                         {
                             Id = e.product.Id,
-                            brand_name = e.brand.BrandName,
+                            categories_name = e.brand.Name,
                             cost = e.product.Cost,
                             description = e.product.Description,
                             price = e.product.Price,
@@ -98,7 +98,7 @@ namespace IceCreamBE.Controllers
                         .Select(e => new ProductOutDTO
                         {
                             Id = e.product.Id,
-                            brand_name = e.brand.BrandName,
+                            categories_name = e.brand.Name,
                             cost = e.product.Cost,
                             description = e.product.Description,
                             price = e.product.Price,
@@ -159,7 +159,7 @@ namespace IceCreamBE.Controllers
                     name = product.Name,
                     quantity = quantity == null ? 0 : quantity.Quantity,
                     img = _IRepositoryFileService.CheckImage(product.Img, "Images") ? url + product.Img : null,
-                    brand_name = brand.BrandName,
+                    categories_name = brand.Name,
                     cost = product.Cost,
                     description = product.Description,
                     price = product.Price,
@@ -184,7 +184,7 @@ namespace IceCreamBE.Controllers
             {
                 return NotFound(new Response<ProductOutDTO> { Message = "not found", Succeeded = false });
             }
-            var brand = await _IRepositoryBrand.GetAsync(e => e.Id == products.brandID);
+            var brand = await _IRepositoryBrand.GetAsync(e => e.Id == products.categories_id);
             if (brand == null)
             {
                 return BadRequest(new Response<ProductOutDTO> { Message = "brand is valid", Succeeded = false });
@@ -196,7 +196,7 @@ namespace IceCreamBE.Controllers
             {
                 Id = products.Id,
                 Description = products.description,
-                BrandID = products.brandID,
+                BrandID = products.categories_id,
                 Cost = products.cost,
                 Img = products.img,
                 Discount = discount,
@@ -219,7 +219,7 @@ namespace IceCreamBE.Controllers
             {
                 return BadRequest(new Response<ProductOutDTO> { Message = "value incorrect", Succeeded = false });
             }
-            var brand = await _IRepositoryBrand.GetAsync(e => e.Id == products.brandID);
+            var brand = await _IRepositoryBrand.GetAsync(e => e.Id == products.categories_id);
             if (brand == null)
             {
                 return BadRequest(new Response<ProductOutDTO> { Message = "brand is valid", Succeeded = false });
@@ -230,7 +230,7 @@ namespace IceCreamBE.Controllers
             await _IRepositoryProduct.CreateAsync(new Products
             {
                 Description = products.description,
-                BrandID = products.brandID,
+                BrandID = products.categories_id,
                 Cost = products.cost,
                 Img = products.img,
                 Price = products.price,
