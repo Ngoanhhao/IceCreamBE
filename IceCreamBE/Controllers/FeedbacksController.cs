@@ -13,6 +13,8 @@ using IceCreamBE.Migrations;
 using Newtonsoft.Json.Linq;
 using static Microsoft.EntityFrameworkCore.DbLoggerCategory;
 using IceCreamBE.DTO.PageList;
+using Microsoft.AspNetCore.Authorization;
+using System.Data;
 
 namespace IceCreamBE.Controllers
 {
@@ -44,10 +46,11 @@ namespace IceCreamBE.Controllers
             var result = feedback.Select(e => new FeedbackDetailDTO
             {
                 Id = e.Id,
-                feedBack_product = e.FeedBackProduct,
+                message = e.Message,
+                email = e.Email,
                 full_name = e.FullName,
                 release_date = e.ReleaseDate,
-            }).ToList();
+            }).OrderByDescending(e => e.release_date).ToList();
 
             var pageFilter = new PaginationFilter<FeedbackDetailDTO>(filter.PageNumber, filter.PageSize);
             var pagedData = pageFilter.GetPageList(result);
@@ -68,13 +71,15 @@ namespace IceCreamBE.Controllers
 
         // GET: api/Feedbacks/5
         [HttpGet("{id:int}")]
+        [Authorize(Roles = "Admin")]
         public async Task<ActionResult<FeedbackDTO>> GetFeedback(int id)
         {
             var feedback = (await _IRepositoryFeedback.GetAsync(e => e.Id == id));
             var result = new FeedbackDetailDTO
             {
                 Id = feedback.Id,
-                feedBack_product = feedback.FeedBackProduct,
+                message = feedback.Message,
+                email = feedback.Email,
                 full_name = feedback.FullName,
                 release_date = feedback.ReleaseDate,
             };
@@ -88,16 +93,18 @@ namespace IceCreamBE.Controllers
 
         //GET: api/Feedbacks/fullname
         [HttpGet("/api/search/feedback")]
+        [Authorize(Roles = "Admin")]
         public async Task<ActionResult<IEnumerable<FeedbackDetailDTO>>> GetFeedbacks(string? query)
         {
             var feedback = (await _IRepositoryFeedback.GetAllAsync(e => e.FullName.ToLower().Contains(query != null ? query.ToLower() : "")));
             var result = feedback.Select(e => new FeedbackDetailDTO
             {
                 Id = e.Id,
-                feedBack_product = e.FeedBackProduct,
+                message = e.Message,
+                email = e.Email,
                 full_name = e.FullName,
                 release_date = e.ReleaseDate,
-            }).ToList();
+            }).OrderByDescending(e => e.release_date).ToList();
 
 
             if (result.Count == 0)
@@ -110,6 +117,7 @@ namespace IceCreamBE.Controllers
         // POST: api/Feedbacks
         // To protect from overposting attacks, see https://go.microsoft.com/fwlink/?linkid=2123754
         [HttpPost]
+        [Authorize(Roles = "Admin")]
         public async Task<ActionResult<Feedback>> PostFeedback(FeedbackDTO feedback)
         {
             if (!ModelState.IsValid)
@@ -120,7 +128,8 @@ namespace IceCreamBE.Controllers
             await _IRepositoryFeedback.CreateAsync(new Feedback
             {
                 FullName = feedback.full_name,
-                FeedBackProduct = feedback.feedBack_product,
+                Email = feedback.email,
+                Message = feedback.message,
                 ReleaseDate = DateTime.Now,
             });
 
@@ -129,6 +138,7 @@ namespace IceCreamBE.Controllers
 
         // DELETE: api/Feedbacks/5
         [HttpDelete("{id}")]
+        [Authorize(Roles = "Admin")]
         public async Task<IActionResult> DeleteFeedback(int id)
         {
             var result = await _IRepositoryFeedback.GetAsync(e => e.Id == id);

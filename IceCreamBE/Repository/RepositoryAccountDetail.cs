@@ -34,5 +34,12 @@ namespace IceCreamBE.Repository
             result.ExpirationDate = DateTime.Now.AddMonths(month);
             await dbcontext.SaveChangesAsync();
         }
+
+        public async Task UpdateRole(int userID, int roleID)
+        {
+            var result = await dbcontext.AccountDetail.FirstOrDefaultAsync(e => e.Id == userID);
+            result.RoleID = roleID;
+            await dbcontext.SaveChangesAsync();
+        }
     }
 }

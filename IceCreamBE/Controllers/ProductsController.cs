@@ -13,6 +13,8 @@ using IceCreamBE.DTO;
 using IceCreamBE.Repository;
 using Microsoft.CodeAnalysis;
 using IceCreamBE.Migrations;
+using Microsoft.AspNetCore.Http.HttpResults;
+using Microsoft.AspNetCore.Authorization;
 
 namespace IceCreamBE.Controllers
 {
@@ -23,12 +25,14 @@ namespace IceCreamBE.Controllers
         private readonly IRepositoryProduct _IRepositoryProduct;
         private readonly IRepositoryBrand _IRepositoryBrand;
         private readonly IRepositoryFileService _IRepositoryFileService;
+        private readonly IRepositoryStorage _IRepositoryStorage;
 
-        public ProductsController(IRepositoryProduct repositoryProduct, IRepositoryBrand iRepositoryBrand, IRepositoryFileService iRepositoryFileService)
+        public ProductsController(IRepositoryProduct repositoryProduct, IRepositoryBrand iRepositoryBrand, IRepositoryFileService iRepositoryFileService, IRepositoryStorage iRepositoryStorage)
         {
             _IRepositoryProduct = repositoryProduct;
             _IRepositoryBrand = iRepositoryBrand;
             _IRepositoryFileService = iRepositoryFileService;
+            _IRepositoryStorage = iRepositoryStorage;
         }
 
         // GET: api/Products
@@ -56,6 +60,11 @@ namespace IceCreamBE.Controllers
                             status = e.product.Status,
                             total = e.product.Total
                         }).ToList();
+            foreach (var item in result)
+            {
+                var quantity = await _IRepositoryStorage.GetAsync(e => e.ProductID == item.Id);
+                item.quantity = quantity == null ? 0 : quantity.Quantity;
+            }
 
             var pageFilter = new PaginationFilter<ProductOutDTO>(filter.PageNumber, filter.PageSize);
             var pagedData = pageFilter.GetPageList(result);
@@ -98,14 +107,16 @@ namespace IceCreamBE.Controllers
                             name = e.product.Name,
                             status = e.product.Status,
                             total = e.product.Total
-                        });
-            if (query != null)
+                        }).Where(e => e.name.ToLower().Contains(query != null ? query.ToLower() : "")).ToList();
+
+            foreach (var item in result)
             {
-                result = result.Where(e => e.name.ToLower().Contains(query.ToLower()));
+                var quantity = await _IRepositoryStorage.GetAsync(e => e.ProductID == item.Id);
+                item.quantity = quantity == null ? 0 : quantity.Quantity;
             }
 
             var pageFilter = new PaginationFilter<ProductOutDTO>(filter.PageNumber, filter.PageSize);
-            var pagedData = pageFilter.GetPageList(result.ToList());
+            var pagedData = pageFilter.GetPageList(result);
 
             return Ok(new PagedResponse<List<ProductOutDTO>>
             {
@@ -115,8 +126,8 @@ namespace IceCreamBE.Controllers
                 {
                     current_page = pagedData == null ? 0 : pageFilter.PageNumber,
                     Page_pize = pagedData == null ? 0 : pageFilter.PageSize,
-                    total_pages = (int)Math.Ceiling((double)result.ToList().Count / (double)filter.PageSize),
-                    total_records = result.ToList().Count
+                    total_pages = (int)Math.Ceiling((double)result.Count / (double)filter.PageSize),
+                    total_records = result.Count
                 }
             });
         }
@@ -133,6 +144,9 @@ namespace IceCreamBE.Controllers
             {
                 return NotFound(new Response<ProductOutDTO> { Message = "not found", Succeeded = false });
             }
+            var quantity = await _IRepositoryStorage.GetAsync(e => e.ProductID == product.Id);
+
+
 
             return Ok(new Response<ProductOutDTO>
             {
@@ -143,6 +157,7 @@ namespace IceCreamBE.Controllers
                     total = product.Total,
                     status = product.Status,
                     name = product.Name,
+                    quantity = quantity == null ? 0 : quantity.Quantity,
                     img = _IRepositoryFileService.CheckImage(product.Img, "Images") ? url + product.Img : null,
                     brand_name = brand.BrandName,
                     cost = product.Cost,
@@ -156,6 +171,7 @@ namespace IceCreamBE.Controllers
         // PUT: api/Products/5
         // To protect from overposting attacks, see https://go.microsoft.com/fwlink/?linkid=2123754
         [HttpPut("{id}")]
+        [Authorize(Roles = "Admin")]
         public async Task<IActionResult> PutProducts(int id, ProductsInDTO products)
         {
             if (id != products.Id)
@@ -196,6 +212,7 @@ namespace IceCreamBE.Controllers
         // POST: api/Products
         // To protect from overposting attacks, see https://go.microsoft.com/fwlink/?linkid=2123754
         [HttpPost]
+        [Authorize(Roles = "Admin")]
         public async Task<ActionResult<Products>> PostProducts(ProductsInDTO products)
         {
             if (!ModelState.IsValid)
@@ -231,6 +248,7 @@ namespace IceCreamBE.Controllers
 
         // DELETE: api/Products/5
         [HttpDelete("{id}")]
+        [Authorize(Roles = "Admin")]
         public async Task<IActionResult> DeleteProducts(int id)
         {
             var result = await _IRepositoryProduct.GetAsync(e => e.Id == id);

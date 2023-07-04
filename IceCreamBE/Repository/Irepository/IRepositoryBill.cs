@@ -6,6 +6,7 @@ namespace IceCreamBE.Repository.Irepository
     {
         Task UpdateAsync(Bill entity);
         Task UpdateVoucherAsync(Bill entity);
+        Task UpdateDiscountAsync(Bill entity, int discount);
         Task UpdateStatusAsync(Bill entity, string? oldStatus);
     }
 }

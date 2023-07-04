@@ -11,6 +11,8 @@ using IceCreamBE.Repository.Irepository;
 using IceCreamBE.DTO;
 using IceCreamBE.DTO.PageList;
 using System.Drawing.Printing;
+using Microsoft.AspNetCore.Authorization;
+using System.Data;
 
 namespace IceCreamBE.Controllers
 {
@@ -29,6 +31,7 @@ namespace IceCreamBE.Controllers
 
         // GET: api/Brands
         [HttpGet]
+        [Authorize(Roles = "Admin")]
         public async Task<ActionResult<IEnumerable<BrandsDTO>>> GetBrands([FromQuery] PaginationFilter<BrandsDTO>? filter)
         {
             var result = await _IRepositoryBrand.GetAllAsync();
@@ -58,6 +61,7 @@ namespace IceCreamBE.Controllers
 
         // GET: api/Brands/5
         [HttpGet("{id:int}")]
+        [Authorize(Roles = "Admin")]
         public async Task<ActionResult<BrandsDTO>> GetBrand(int id)
         {
             var result = await _IRepositoryBrand.GetAsync(e => e.Id == id);
@@ -83,6 +87,7 @@ namespace IceCreamBE.Controllers
 
         // GET: api/Brands/brandname
         [HttpGet("/api/search/brand")]
+        [Authorize(Roles = "Admin")]
         public async Task<ActionResult<BrandsDTO>> GetBrands([FromQuery] PaginationFilter<BrandsDTO>? filter, string? query)
         {
             var result = await _IRepositoryBrand.GetAllAsync(e => e.BrandName.ToLower().Contains(query != null ? query.ToLower() : ""));
@@ -113,6 +118,7 @@ namespace IceCreamBE.Controllers
         // PUT: api/Brands/5
         // To protect from overposting attacks, see https://go.microsoft.com/fwlink/?linkid=2123754
         [HttpPut("{id}")]
+        [Authorize(Roles = "Admin")]
         public async Task<IActionResult> PutBrands(int id, BrandsDTO brands)
         {
             if (id != brands.Id)
@@ -139,6 +145,7 @@ namespace IceCreamBE.Controllers
         // POST: api/Brands
         // To protect from overposting attacks, see https://go.microsoft.com/fwlink/?linkid=2123754
         [HttpPost]
+        [Authorize(Roles = "Admin")]
         public async Task<ActionResult<BrandsDTO>> PostBrands(BrandsDTO brands)
         {
             var result = await _IRepositoryBrand.GetAsync(e => e.BrandName == brands.brand_name);
@@ -158,6 +165,7 @@ namespace IceCreamBE.Controllers
 
         // DELETE: api/Brands/5
         [HttpDelete("{id}")]
+        [Authorize(Roles = "Admin")]
         public async Task<IActionResult> DeleteBrands(int id)
         {
             var result = await _IRepositoryBrand.GetAsync(e => e.Id == id);

@@ -8,6 +8,7 @@
         public double cost { get; set; }
         public double price { get; set; }
         public double? total { get; set; }
+        public int quantity { get; set; }
         public string description { get; set; }
         public string img { get; set; }
         public int? discount_percent { get; set; } // percent

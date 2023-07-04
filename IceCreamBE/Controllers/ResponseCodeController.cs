@@ -1,5 +1,7 @@
 ﻿using IceCreamBE.DTO;
+using IceCreamBE.Migrations;
 using IceCreamBE.Modules;
+using IceCreamBE.Repository;
 using IceCreamBE.Repository.Irepository;
 using Microsoft.AspNetCore.Mvc;
 using NuGet.Protocol.Plugins;
@@ -14,11 +16,13 @@ namespace IceCreamBE.Controllers
     {
         private IMailHandle _IMailHandle;
         private IHandleResponseCode _HandleResponseCode;
+        private readonly IToken _Token;
 
-        public ResponseCodeController(IMailHandle MailHandle, IHandleResponseCode IResponseHandler)
+        public ResponseCodeController(IMailHandle MailHandle, IHandleResponseCode IResponseHandler, IToken token)
         {
             _IMailHandle = MailHandle;
             _HandleResponseCode = IResponseHandler;
+            _Token = token;
         }
         // POST api/<ResponCodeController>
         [HttpPost]
@@ -74,9 +78,19 @@ namespace IceCreamBE.Controllers
 
             await _HandleResponseCode.UpdateAsync(new Models.ResponseCode { Code = Code.Code, Email = email });
 
+
+            // token
+            var token = _Token.getToken(new AccountDetailOutDTO
+            {
+                Id = -1,
+                UserName = email,
+                Role = "Guest",
+            });
+
             return Ok(new Response<string>
             {
-                Succeeded = true
+                Succeeded = true,
+                Token = new TokenOutDTO { Token = token }
             });
         }
     }

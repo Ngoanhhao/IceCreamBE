@@ -13,6 +13,8 @@ using IceCreamBE.DTO;
 using Microsoft.AspNetCore.Http.HttpResults;
 using IceCreamBE.Modules;
 using IceCreamBE.Migrations;
+using Microsoft.AspNetCore.Authorization;
+using System.Data;
 
 namespace IceCreamBE.Controllers
 {
@@ -33,6 +35,7 @@ namespace IceCreamBE.Controllers
 
         //GET: api/Vouchers
         [HttpGet]
+        [Authorize(Roles = "Admin")]
         public async Task<ActionResult<IEnumerable<VouchersDTO>>> GetVouchers([FromQuery] PaginationFilter<VouchersDTO>? filter)
         {
             var voucher = await _IRepositoryVourcher.GetAllAsync();
@@ -72,17 +75,18 @@ namespace IceCreamBE.Controllers
 
         //// GET: api/Vouchers/5
         [HttpGet("{id:int}")]
+        [Authorize(Roles = "Admin")]
         public async Task<ActionResult<VoucherOutDTO>> GetVouchers(int id)
         {
             var vouchers = await _IRepositoryVourcher.GetAsync(e => e.Id == id);
             if (vouchers == null)
             {
-                return NotFound(new Response<List<VoucherOutDTO>> { Message = "not found", Succeeded = false });
+                return BadRequest(new Response<List<VoucherOutDTO>> { Message = "not found", Succeeded = false });
             }
             var accounts = await _IRepositoryAccounts.GetAsync(e => e.Id == vouchers.AdminID);
             if (accounts == null)
             {
-                return NotFound(new Response<List<VoucherOutDTO>> { Message = "not found", Succeeded = false });
+                return BadRequest(new Response<List<VoucherOutDTO>> { Message = "not found", Succeeded = false });
             }
 
             return Ok(new Response<VoucherOutDTO>
@@ -107,12 +111,22 @@ namespace IceCreamBE.Controllers
             var vouchers = await _IRepositoryVourcher.GetAsync(e => e.Voucher == voucher);
             if (vouchers == null)
             {
-                return NotFound(new Response<List<VoucherOutDTO>> { Message = "not found", Succeeded = false });
+                return BadRequest(new Response<List<VoucherOutDTO>> { Message = "not found", Succeeded = false });
             }
             var accounts = await _IRepositoryAccounts.GetAsync(e => e.Id == vouchers.AdminID);
             if (accounts == null)
             {
-                return NotFound(new Response<List<VoucherOutDTO>> { Message = "not found", Succeeded = false });
+                return BadRequest(new Response<List<VoucherOutDTO>> { Message = "not found", Succeeded = false });
+            }
+
+            if (vouchers.ExpirationDate < DateTime.Now)
+            {
+                return BadRequest(new Response<List<VoucherOutDTO>> { Message = "The voucher has expired", Succeeded = false });
+            }
+
+            if (!vouchers.Status)
+            {
+                return BadRequest(new Response<List<VoucherOutDTO>> { Message = "The voucher not available", Succeeded = false });
             }
 
             return Ok(new Response<VoucherOutDTO>
@@ -134,6 +148,7 @@ namespace IceCreamBE.Controllers
         // PUT: api/Vouchers/5
         // To protect from overposting attacks, see https://go.microsoft.com/fwlink/?linkid=2123754
         [HttpPut("{id}")]
+        [Authorize(Roles = "Admin")]
         public async Task<IActionResult> PutVouchers(int id, VoucherInDTO vouchers)
         {
             if (id != vouchers.Id)
@@ -144,7 +159,7 @@ namespace IceCreamBE.Controllers
             var result = await _IRepositoryVourcher.GetAsync(e => e.Id == id);
             if (result == null)
             {
-                return NotFound(new Response<List<VouchersDTO>> { Message = "not found", Succeeded = false });
+                return BadRequest(new Response<List<VouchersDTO>> { Message = "not found", Succeeded = false });
             }
 
             await _IRepositoryVourcher.UpdateAsync(new Vouchers { Id = vouchers.Id, Status = vouchers.status });
@@ -155,6 +170,7 @@ namespace IceCreamBE.Controllers
         // POST: api/Vouchers
         // To protect from overposting attacks, see https://go.microsoft.com/fwlink/?linkid=2123754
         [HttpPost]
+        [Authorize(Roles = "Admin")]
         public async Task<ActionResult<Vouchers>> PostVouchers(VoucherInDTO vouchers)
         {
             if (!ModelState.IsValid)
@@ -222,12 +238,13 @@ namespace IceCreamBE.Controllers
 
         // DELETE: api/Vouchers/5
         [HttpDelete("{id}")]
+        [Authorize(Roles = "Admin")]
         public async Task<IActionResult> DeleteVouchers(int id)
         {
             var result = await _IRepositoryVourcher.GetAsync(e => e.Id == id);
             if (result == null)
             {
-                return NotFound(new Response<List<VouchersDTO>> { Message = "not found", Succeeded = false });
+                return BadRequest(new Response<List<VouchersDTO>> { Message = "not found", Succeeded = false });
             }
 
             await _IRepositoryVourcher.DeleteAsync(result);

@@ -13,6 +13,7 @@
         public double total { get; set; }
         public string status { get; set; }
         public string? voucher { get; set; }
+        public int? discount { get; set; }
         public DateTime order_Time { get; set; }
     }
 }

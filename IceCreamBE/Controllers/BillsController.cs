@@ -13,6 +13,7 @@ using IceCreamBE.DTO;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Http.HttpResults;
 using static Microsoft.EntityFrameworkCore.DbLoggerCategory;
+using static Org.BouncyCastle.Asn1.Cmp.Challenge;
 
 namespace IceCreamBE.Controllers
 {
@@ -27,7 +28,9 @@ namespace IceCreamBE.Controllers
         private readonly IRepositoryBillDetail _IRepositoryBillDetail;
         private readonly IRepositoryAccountDetail _IRepositoryAccountDetail;
         private readonly IRepositoryBrand _IRepositoryBrand;
+        private readonly IRepositoryStorage _IRepositoryStorage;
         private readonly IRepositoryFileService _IRepositoryFileService;
+        private readonly IMailHandle _IMailHandle;
 
 
         public BillsController(
@@ -38,7 +41,9 @@ namespace IceCreamBE.Controllers
             IRepositoryBillDetail iRepositoryBillDetail,
             IRepositoryAccountDetail iRepositoryAccountDetail,
             IRepositoryBrand repositoryBrand,
-            IRepositoryFileService iRepositoryFileService
+            IRepositoryFileService iRepositoryFileService,
+            IMailHandle iMailHandle,
+            IRepositoryStorage iRepositoryStorage
             )
         {
             _IRepositoryBill = iRepositoryBill;
@@ -49,11 +54,13 @@ namespace IceCreamBE.Controllers
             _IRepositoryAccountDetail = iRepositoryAccountDetail;
             _IRepositoryBrand = repositoryBrand;
             _IRepositoryFileService = iRepositoryFileService;
+            _IMailHandle = iMailHandle;
+            _IRepositoryStorage = iRepositoryStorage;
         }
 
         // GET: api/Bills/
         [HttpGet]
-        //[Authorize(Roles = "Member, Admin")]
+        [Authorize(Roles = "Admin")]
         public async Task<ActionResult<IEnumerable<BillInDTO>>> GetBill([FromQuery] PaginationFilter<BillInDTO>? filter)
         {
             var bill = await _IRepositoryBill.GetAllAsync();
@@ -72,6 +79,7 @@ namespace IceCreamBE.Controllers
                         Id = e.bill.Id,
                         full_name = e.accountDetail.FullName,
                         order_Time = e.bill.OrderTime,
+                        discount = e.bill.Discount,
                         status = e.bill.Status,
                         total = e.bill.Total,
                         address = e.accountDetail.Address,
@@ -138,6 +146,7 @@ namespace IceCreamBE.Controllers
 
         //GET: api/Bills/name, email, phone number
         [HttpGet("/api/getbill/{user_id}")]
+        [Authorize]
         public async Task<ActionResult<IEnumerable<BillOutDTO>>> GetBill(int user_id, [FromQuery] PaginationFilter<BillOutDTO>? filter)
         {
             var bill = await _IRepositoryBill.GetAllAsync(e => e.AccountID == user_id);
@@ -157,17 +166,18 @@ namespace IceCreamBE.Controllers
                         order_Time = e.bill.OrderTime,
                         status = e.bill.Status,
                         address = e.accountDetail.Address,
+                        discount = e.bill.Discount,
                         total = e.bill.Total,
                         voucher = e.bill.VoucherID.ToString(),
                         sub_total = e.bill.SubTotal,
                         email = e.accountDetail.Email,
                         phone_number = e.accountDetail.PhoneNumber,
-                    })
+                    }).OrderByDescending(e => e.status)
                     .ToList();
 
             if (result.Count == 0)
             {
-                return NotFound(new Response<BillOutDTO> { Message = "not found", Succeeded = false });
+                return BadRequest(new Response<BillOutDTO> { Message = "not found", Succeeded = false });
             }
 
             foreach (var e in result)
@@ -227,6 +237,7 @@ namespace IceCreamBE.Controllers
 
         //GET: api/Bills/id
         [HttpGet("{id:int}")]
+        [Authorize]
         public async Task<ActionResult<IEnumerable<BillOutDTO>>> GetBills(int id)
         {
             var bill = await _IRepositoryBill.GetAllAsync();
@@ -246,6 +257,7 @@ namespace IceCreamBE.Controllers
                         order_Time = e.bill.OrderTime,
                         status = e.bill.Status,
                         total = e.bill.Total,
+                        discount = e.bill.Discount,
                         address = e.accountDetail.Address,
                         voucher = e.bill.VoucherID.ToString(),
                         sub_total = e.bill.SubTotal,
@@ -255,7 +267,7 @@ namespace IceCreamBE.Controllers
 
             if (result == null)
             {
-                return NotFound(new Response<BillOutDTO> { Message = "not found", Succeeded = false });
+                return BadRequest(new Response<BillOutDTO> { Message = "not found", Succeeded = false });
             }
 
             // get bill detail
@@ -298,6 +310,7 @@ namespace IceCreamBE.Controllers
 
         //GET: api/Bills/order/id
         [HttpGet("/api/getorders")]
+        [Authorize(Roles = "Admin")]
         public async Task<ActionResult<IEnumerable<BillOutDTO>>> GetBill([FromQuery] PaginationFilter<BillOutDTO>? filter)
         {
             var bill = await _IRepositoryBill.GetAllAsync();
@@ -317,13 +330,14 @@ namespace IceCreamBE.Controllers
                         full_name = e.accountDetail.FullName,
                         order_Time = e.bill.OrderTime,
                         status = e.bill.Status,
+                        discount = e.bill.Discount,
                         address = e.accountDetail.Address,
                         total = e.bill.Total,
                         voucher = e.bill.VoucherID.ToString(),
                         sub_total = e.bill.SubTotal,
                         email = e.accountDetail.Email,
                         phone_number = e.accountDetail.PhoneNumber,
-                    }).ToList();
+                    }).OrderByDescending(e => e.order_Time).OrderBy(e => e.status).ToList();
 
             foreach (var e in result)
             {
@@ -379,6 +393,7 @@ namespace IceCreamBE.Controllers
 
         //GET: api/Bills/order/id
         [HttpGet("/api/search/order")]
+        [Authorize(Roles = "Admin")]
         public async Task<ActionResult<IEnumerable<BillOutDTO>>> SeachBill([FromQuery] PaginationFilter<BillOutDTO>? filter, string? query)
         {
             var bill = await _IRepositoryBill.GetAllAsync();
@@ -401,6 +416,7 @@ namespace IceCreamBE.Controllers
                         address = e.accountDetail.Address,
                         total = e.bill.Total,
                         voucher = e.bill.VoucherID.ToString(),
+                        discount = e.bill.Discount,
                         sub_total = e.bill.SubTotal,
                         email = e.accountDetail.Email,
                         phone_number = e.accountDetail.PhoneNumber,
@@ -460,6 +476,7 @@ namespace IceCreamBE.Controllers
 
         //GET: api/Bills/order/id
         [HttpGet("/api/invoices")]
+        [Authorize(Roles = "Admin")]
         public async Task<ActionResult<IEnumerable<BillOutDTO>>> GetInvoices([FromQuery] PaginationFilter<BillOutDTO>? filter)
         {
             var bill = await _IRepositoryBill.GetAllAsync();
@@ -480,6 +497,7 @@ namespace IceCreamBE.Controllers
                         order_Time = e.bill.OrderTime,
                         status = e.bill.Status,
                         address = e.accountDetail.Address,
+                        discount = e.bill.Discount,
                         total = e.bill.Total,
                         voucher = e.bill.VoucherID.ToString(),
                         sub_total = e.bill.SubTotal,
@@ -542,6 +560,7 @@ namespace IceCreamBE.Controllers
 
         //GET: api/Bills/order/id
         [HttpGet("/api/search/invoice")]
+        [Authorize(Roles = "Admin")]
         public async Task<ActionResult<IEnumerable<BillOutDTO>>> SearchInvoices([FromQuery] PaginationFilter<BillOutDTO>? filter, string? query)
         {
             var bill = await _IRepositoryBill.GetAllAsync();
@@ -562,6 +581,7 @@ namespace IceCreamBE.Controllers
                         order_Time = e.bill.OrderTime,
                         status = e.bill.Status,
                         address = e.accountDetail.Address,
+                        discount = e.bill.Discount,
                         total = e.bill.Total,
                         voucher = e.bill.VoucherID.ToString(),
                         sub_total = e.bill.SubTotal,
@@ -626,17 +646,18 @@ namespace IceCreamBE.Controllers
         // To protect from overposting attacks, see https://go.microsoft.com/fwlink/?linkid=2123754
 
         [HttpPut("{userID}")]
+        [Authorize]
         public async Task<IActionResult> PutBill(int userID, string voucher)
         {
             var getVoucher = await _IRepositoryVourcher.GetAsync(e => e.Voucher == voucher && e.Status == true);
 
             if (getVoucher == null)
             {
-                return NotFound(new Response<BillOutDTO> { Message = "voucher invalid", Succeeded = false });
+                return BadRequest(new Response<BillOutDTO> { Message = "voucher invalid", Succeeded = false });
             }
             else if (getVoucher.ExpirationDate < DateTime.Now)
             {
-                return NotFound(new Response<BillOutDTO> { Message = "the voucher has expired", Succeeded = false });
+                return BadRequest(new Response<BillOutDTO> { Message = "the voucher has expired", Succeeded = false });
             }
 
 
@@ -644,7 +665,7 @@ namespace IceCreamBE.Controllers
 
             if (result == null)
             {
-                return NotFound(new Response<BillOutDTO> { Message = "account invalid or the bill not available", Succeeded = false });
+                return BadRequest(new Response<BillOutDTO> { Message = "account invalid or the bill not available", Succeeded = false });
             }
 
             await _IRepositoryBill.UpdateVoucherAsync(new Bill
@@ -675,6 +696,7 @@ namespace IceCreamBE.Controllers
         // PUT: api/Bills/5
         // To protect from overposting attacks, see https://go.microsoft.com/fwlink/?linkid=2123754
         [HttpPut("/api/success/{billID:int}")]
+        [Authorize(Roles = "Admin")]
         public async Task<IActionResult> PutSuccess(int billID)
         {
             // ORDERING
@@ -687,13 +709,27 @@ namespace IceCreamBE.Controllers
             {
                 return BadRequest(new Response<BillOutDTO> { Message = "bill invalid", Succeeded = false });
             }
-            var user = await _IRepositoryAccounts.GetAsync(e => e.Id == bill.AccountID);
+            var user = await _IRepositoryAccountDetail.GetAsync(e => e.Id == bill.AccountID);
             if (user == null)
             {
                 return BadRequest(new Response<BillOutDTO> { Message = "user invalid", Succeeded = false });
             }
 
             await _IRepositoryBill.UpdateStatusAsync(new Bill { AccountID = user.Id, Status = "SUCCESSED" }, "PENDING");
+
+
+            _IMailHandle.send("Confirm order", "<h2>Ice Cream Shop</h2>" +
+                "<div style='display: inline-block; border: 1px solid #00000029; border-radius: 7px; padding: 15px'>" +
+                "<h3 style='font-weight: 100; color: black'> Woo hoo! Your order is on its way. Your order details can be found below.</h3>" +
+                "<h3>ORDER SUMMARY:</h3>" +
+                $"<p>Order : IC{bill.Id}</p>" +
+                $"<p>Order Date : {bill.OrderTime}</p>" +
+                $"<p>Order Total : {bill.Total}</p>" +
+                $"<p>SHIPPING ADDRESS: {user.Address}</p>" +
+                $"</div>",
+                user.Email);
+
+
             return Ok(new Response<BillDetailInDTO> { Succeeded = true });
         }
 
@@ -724,8 +760,9 @@ namespace IceCreamBE.Controllers
 
         // POST: api/Bills
         // To protect from overposting attacks, see https://go.microsoft.com/fwlink/?linkid=2123754
-        [HttpPut("/api/order/{userID:int}")]
-        public async Task<ActionResult<BillOutDTO>> PutBill(int userID)
+        [HttpPut("/api/order")]
+        [Authorize]
+        public async Task<ActionResult<BillOutDTO>> PutBilll(int userID, string? voucher)
         {
             if (userID <= 0)
             {
@@ -737,13 +774,36 @@ namespace IceCreamBE.Controllers
                 return BadRequest(new Response<BillOutDTO> { Message = "user incorrect", Succeeded = false });
             }
 
+
             var bill = await _IRepositoryBill.GetAsync(e => e.AccountID == userID && e.Status == "ORDERING");
             if (bill == null)
             {
                 return BadRequest(new Response<BillOutDTO> { Message = "order something please", Succeeded = false });
             }
 
+            if (voucher != null)
+            {
+                var Voucher = await _IRepositoryVourcher.GetAsync(e => e.Voucher == voucher);
+                if (Voucher == null)
+                {
+                    return BadRequest(new Response<BillOutDTO> { Message = "voucher not correct", Succeeded = false });
+                }
+                await _IRepositoryBill.UpdateVoucherAsync(new Bill
+                {
+                    VoucherID = Voucher.Id,
+                    AccountID = user.Id,
+                });
+            }
+
+
+            if (user.ExpirationDate > DateTime.Now)
+            {
+                await _IRepositoryBill.UpdateDiscountAsync(bill, 5);
+            }
+
             await _IRepositoryBill.UpdateStatusAsync(new Bill { AccountID = userID, Status = "PENDING", OrderTime = DateTime.Now }, "ORDERING");
+
+            var NewVoucher = await _IRepositoryVourcher.GetAsync(e => e.Voucher == voucher);
 
             var result = new BillOutDTO
             {
@@ -751,15 +811,18 @@ namespace IceCreamBE.Controllers
                 full_name = user.FullName,
                 order_Time = bill.OrderTime,
                 status = bill.Status,
-                total = bill.Total,
+                total = (user.ExpirationDate > DateTime.Now ? bill.Total * 0.95 : bill.Total) * (voucher != null ? (100 - NewVoucher.Discount) / 100 : 1),
                 voucher = bill.VoucherID.ToString(),
                 sub_total = bill.SubTotal,
+                discount = user.ExpirationDate > DateTime.Now ? 5 : 0,
                 email = user.Email,
                 phone_number = user.PhoneNumber,
             };
 
-            // get bill detail
             var billdetail = await _IRepositoryBillDetail.GetAllAsync(q => q.BillID == result.Id);
+
+            // get bill detail
+            billdetail = await _IRepositoryBillDetail.GetAllAsync(q => q.BillID == result.Id);
             var product = await _IRepositoryProduct.GetAllAsync();
             var brand = await _IRepositoryBrand.GetAllAsync();
             string url = $"{Request.Scheme}://{Request.Host}/api/image/";
@@ -787,25 +850,41 @@ namespace IceCreamBE.Controllers
                 })
                 .ToList();
 
-            //get voucher from voucherID
-            var voucherItem = (await _IRepositoryVourcher.GetAsync(v => v.Id == int.Parse(result.voucher.Equals("") ? "0" : result.voucher)));
 
-            result.voucher = voucherItem == null ? null : voucherItem.Voucher;
-            result.products = billDetailItem;
 
-            return Ok(new Response<BillOutDTO> { Data = result, Succeeded = true });
+            //update storage
+            foreach (var item in billDetailItem)
+            {
+                await _IRepositoryStorage.UpdateAsync(item.productID, 0 - item.quantity, false);
+            }
+
+            string urlConfirm = $"{Request.Scheme}://{Request.Host}/api/success/";
+
+            _IMailHandle.send("Confirm order", "<h2>Ice Cream Shop</h2>" +
+                "<div style='display: inline-block; border: 1px solid #00000029; border-radius: 7px; padding: 15px'>" +
+                $"<h3 style='font-weight: 100; color: black'> You have received a delivery request from {user.FullName}.</h3>" +
+                "<h3>ORDER SUMMARY:</h3>" +
+                $"<p>Order : IC{bill.Id}</p>" +
+                $"<p>Order Date : {bill.OrderTime}</p>" +
+                $"<p>Order Total : {bill.Total}</p>" +
+                $"<p>SHIPPING ADDRESS: {user.Address}</p>" +
+                $"</div>",
+                "icecreammra@gmail.com");
+
+            return Ok(new Response<BillOutDTO> { Succeeded = true });
 
         }
 
         //// DELETE: api/Bills/5
         [HttpDelete("{id}")]
+        [Authorize(Roles = "Admin")]
         public async Task<IActionResult> DeleteBill(int id)
         {
             var result = await _IRepositoryBill.GetAsync(e => e.Id == id);
 
             if (result == null)
             {
-                return NotFound(new Response<BillOutDTO> { Message = "not found", Succeeded = false });
+                return BadRequest(new Response<BillOutDTO> { Message = "not found", Succeeded = false });
             }
 
             await _IRepositoryBill.DeleteAsync(result);

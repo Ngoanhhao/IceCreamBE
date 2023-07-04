@@ -13,6 +13,8 @@ using IceCreamBE.Repository.Irepository;
 using IceCreamBE.Modules;
 using Microsoft.AspNetCore.Http.HttpResults;
 using System.Security.Policy;
+using Microsoft.AspNetCore.Authorization;
+using System.Data;
 
 namespace IceCreamBE.Controllers
 {
@@ -46,6 +48,7 @@ namespace IceCreamBE.Controllers
         // PUT: api/Accounts/5
         // To protect from overposting attacks, see https://go.microsoft.com/fwlink/?linkid=2123754
         [HttpPut("/api/ResetPassword/{userId}")]
+        [Authorize(Roles = "Admin")]
         public async Task<IActionResult> ResetPassword(int userId)
         {
 
@@ -65,7 +68,7 @@ namespace IceCreamBE.Controllers
 
             _IMailHandle.send("Reset Password", "<h3 style='font-weight: 100; color: black'>" +
                 "We received a request to reset your password. " +
-                "Don’t worry, we are here to help you. <br>" +
+                "Don’t worry, we are here to help you. <br/>" +
                 "Here your new password, please change new password if you see this mail </h3>" +
                 "<h2 style='color: black'>New password: " + random + "</h2>" +
                 "<button style='padding: 10px 50px;font-size: 1.5rem;border-radius: 50px;color: white;background: #ed7399;border: 0;'>Login</button>",
@@ -78,6 +81,7 @@ namespace IceCreamBE.Controllers
         // PUT: api/Accounts/5
         // To protect from overposting attacks, see https://go.microsoft.com/fwlink/?linkid=2123754
         [HttpPut("/api/ChangePassword/{userId}")]
+        [Authorize]
         public async Task<IActionResult> ChangePassword(int userId, string old_password, string new_password)
         {
 
@@ -109,6 +113,7 @@ namespace IceCreamBE.Controllers
         // PUT: api/Accounts/5
         // To protect from overposting attacks, see https://go.microsoft.com/fwlink/?linkid=2123754
         [HttpPut("/api/ForgotPassword/{userId}")]
+        [Authorize]
         public async Task<IActionResult> ForgotPassword(int userId, string new_password)
         {
 
@@ -207,13 +212,14 @@ namespace IceCreamBE.Controllers
         }
 
         [HttpPut("/api/updateaccount")]
+        [Authorize]
         public async Task<ActionResult<Accounts>> UpdateInfo(AccountDetailDTO entity)
         {
             var userdetail = await _RepositoryAccountDetail.GetAsync(e => e.Id == entity.Id);
 
             if (userdetail == null)
             {
-                return NotFound(new Response<List<AccountDetailDTO>>
+                return BadRequest(new Response<List<AccountDetailDTO>>
                 {
                     Succeeded = false,
                     Message = "user incorrect"
@@ -233,13 +239,14 @@ namespace IceCreamBE.Controllers
         }
 
         [HttpPut("/api/updatepremium")]
+        [Authorize]
         public async Task<ActionResult<Accounts>> UpdatePremium(int userID, int month)
         {
             var userdetail = await _RepositoryAccountDetail.GetAsync(e => e.Id == userID);
 
             if (userdetail == null)
             {
-                return NotFound(new Response<List<AccountDetailDTO>>
+                return BadRequest(new Response<List<AccountDetailDTO>>
                 {
                     Succeeded = false,
                     Message = "user incorrect"

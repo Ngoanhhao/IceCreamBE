@@ -1,5 +1,7 @@
 ﻿using IceCreamBE.DTO;
+using IceCreamBE.Models;
 using IceCreamBE.Repository.Irepository;
+using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 
 // For more information on enabling Web API for empty projects, visit https://go.microsoft.com/fwlink/?LinkID=397860
@@ -31,6 +33,7 @@ namespace IceCreamBE.Controllers
 
         // GET
         [HttpGet("/api/BrandReport")]
+        [Authorize(Roles = "Admin")]
         public async Task<IActionResult> GetBrandReport(int? month, int? year)
         {
             var billdetail = await _IRepositoryBillDetail.GetAllAsync();
@@ -68,6 +71,7 @@ namespace IceCreamBE.Controllers
 
         // GET
         [HttpGet("/api/MonthReport")]
+        [Authorize(Roles = "Admin")]
         public async Task<IActionResult> GetMonthReport(int? month, int? year)
         {
             var billdetail = await _IRepositoryBillDetail.GetAllAsync();
@@ -134,6 +138,7 @@ namespace IceCreamBE.Controllers
 
         // GET
         [HttpGet("/api/YearReport")]
+        [Authorize(Roles = "Admin")]
         public async Task<IActionResult> GetYearReport(int year)
         {
             var billdetail = await _IRepositoryBillDetail.GetAllAsync();

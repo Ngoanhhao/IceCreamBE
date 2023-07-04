@@ -11,6 +11,8 @@ using IceCreamBE.Migrations;
 using IceCreamBE.Repository.Irepository;
 using IceCreamBE.DTO;
 using IceCreamBE.DTO.PageList;
+using Microsoft.AspNetCore.Authorization;
+using System.Data;
 
 namespace IceCreamBE.Controllers
 {
@@ -31,6 +33,7 @@ namespace IceCreamBE.Controllers
 
         //GET: api/Storages
         [HttpGet]
+        [Authorize(Roles = "Admin")]
         public async Task<ActionResult<IEnumerable<StorageOutDTO>>> Getstorage([FromQuery] PaginationFilter<StorageOutDTO>? filter)
         {
             var storage = (await _IRepositoryStorage.GetAllAsync()).AsQueryable<Storage>();
@@ -66,12 +69,13 @@ namespace IceCreamBE.Controllers
 
         // GET: api/Storages/5
         [HttpGet("{id:int}")]
+        [Authorize(Roles = "Admin")]
         public async Task<ActionResult<StorageOutDTO>> GetStorage(int id)
         {
             var storage = (await _IRepositoryStorage.GetAsync(e => e.ProductID == id));
             if (storage == null)
             {
-                return NotFound(new Response<StorageOutDTO> { Message = "not found", Succeeded = false });
+                return BadRequest(new Response<StorageOutDTO> { Message = "not found", Succeeded = false });
             }
 
             var product = (await _IRepositoryProduct.GetAsync(e => e.Id == storage.ProductID));
@@ -90,6 +94,7 @@ namespace IceCreamBE.Controllers
 
         // GET: api/Storages/productname
         [HttpGet("/api/search/storage")]
+        [Authorize(Roles = "Admin")]
         public async Task<ActionResult<StorageOutDTO>> GetStorage(string? query)
         {
             var storage = (await _IRepositoryStorage.GetAllAsync()).AsQueryable<Storage>();
@@ -117,6 +122,7 @@ namespace IceCreamBE.Controllers
         // PUT: api/Storages/5
         // To protect from overposting attacks, see https://go.microsoft.com/fwlink/?linkid=2123754
         [HttpPut("{id}")]
+        [Authorize(Roles = "Admin")]
         public async Task<IActionResult> PutStorage(int id, int quantity)
         {
             if (!ModelState.IsValid)
@@ -127,7 +133,7 @@ namespace IceCreamBE.Controllers
             var result = await _IRepositoryStorage.GetAsync(e => e.ProductID == id);
             if (result == null)
             {
-                return NotFound(new Response<List<StorageOutDTO>> { Message = "not found", Succeeded = false });
+                return BadRequest(new Response<List<StorageOutDTO>> { Message = "not found", Succeeded = false });
             }
 
             await _IRepositoryStorage.UpdateAsync(id, quantity);
@@ -138,6 +144,7 @@ namespace IceCreamBE.Controllers
         // POST: api/Storages
         // To protect from overposting attacks, see https://go.microsoft.com/fwlink/?linkid=2123754
         [HttpPost]
+        [Authorize(Roles = "Admin")]
         public async Task<ActionResult<StorageOutDTO>> PostStorage(StorageInDTO storage)
         {
             var product = await _IRepositoryStorage.GetAsync(e => e.ProductID == storage.ProductId);

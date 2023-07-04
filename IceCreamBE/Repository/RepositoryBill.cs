@@ -23,6 +23,15 @@ namespace IceCreamBE.Repository
             await dbcontext.SaveChangesAsync();
         }
 
+        public async Task UpdateDiscountAsync(Bill entity, int discount)
+        {
+            var result = await dbcontext.Bill.FirstOrDefaultAsync(e => e.AccountID == entity.AccountID && e.Status == "ORDERING");
+            var total = result.Total;
+            result.Discount = discount;
+            result.Total = total * (double)(100 - discount) / 100;
+            await dbcontext.SaveChangesAsync();
+        }
+
         public async Task UpdateStatusAsync(Bill entity, string? oldStatus)
         {
             if (oldStatus != null)
@@ -44,9 +53,11 @@ namespace IceCreamBE.Repository
         public async Task UpdateVoucherAsync(Bill entity)
         {
             var result = await dbcontext.Bill.FirstOrDefaultAsync(e => e.AccountID == entity.AccountID && e.Status == "ORDERING");
+            var voucher = await dbcontext.Vouchers.FirstOrDefaultAsync(e => e.Id == entity.VoucherID);
             if (result != null)
             {
                 result.VoucherID = entity.VoucherID;
+                result.Total = result.Total * (100 - voucher.Discount) / 100;
                 await dbcontext.SaveChangesAsync();
             }
         }

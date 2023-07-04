@@ -13,11 +13,18 @@ namespace IceCreamBE.Repository
             dbcontext = _dbcontext;
         }
 
-        public async Task UpdateAsync(int id, int quantity)
+        public async Task UpdateAsync(int id, int quantity, bool In = true)
         {
             var value = await dbcontext.storage.FirstOrDefaultAsync(e => e.ProductID == id);
-            value.Quantity = value.Quantity + quantity;
-            value.LastOrder = DateTime.Now;
+            if (In)
+            {
+                value.Quantity = value.Quantity + quantity;
+                value.LastOrder = DateTime.Now;
+            }
+            else
+            {
+                value.Quantity = value.Quantity + quantity;
+            }
             await dbcontext.SaveChangesAsync();
         }
     }

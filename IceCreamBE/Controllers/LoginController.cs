@@ -118,7 +118,7 @@ namespace IceCreamBE.Controllers
                     var result = jwtSecurityToken.Header.Alg.Equals(SecurityAlgorithms.HmacSha512, StringComparison.InvariantCultureIgnoreCase);
                     if (!result)//false
                     {
-                        return Ok(new Response<TokenOutDTO>
+                        return BadRequest(new Response<TokenOutDTO>
                         {
                             Succeeded = false,
                             Message = "Invalid token"
@@ -130,9 +130,9 @@ namespace IceCreamBE.Controllers
                 var utcExpireDate = long.Parse(tokenInVerification.Claims.FirstOrDefault(x => x.Type == JwtRegisteredClaimNames.Exp).Value);
 
                 var expireDate = ConvertUnixTimeToDateTime(utcExpireDate);
-                if (expireDate > DateTime.UtcNow)
+                if (expireDate > DateTime.Now)
                 {
-                    return Ok(new Response<TokenOutDTO>
+                    return BadRequest(new Response<TokenOutDTO>
                     {
                         Succeeded = false,
                         Message = "Access token has not yet expired"
@@ -143,7 +143,7 @@ namespace IceCreamBE.Controllers
                 var storedToken = await _IRepositoryRefreshtoken.GetAsync(x => x.refreshToken == Token.RefreshToken);
                 if (storedToken == null)
                 {
-                    return Ok(new Response<TokenOutDTO>
+                    return BadRequest(new Response<TokenOutDTO>
                     {
                         Succeeded = false,
                         Message = "Refresh token does not exist"
@@ -153,7 +153,7 @@ namespace IceCreamBE.Controllers
                 //check 5: check refreshToken is used/revoked?
                 if (storedToken.isUsed)
                 {
-                    return Ok(new Response<TokenOutDTO>
+                    return BadRequest(new Response<TokenOutDTO>
                     {
                         Succeeded = false,
                         Message = "Refresh token has been used"
@@ -164,7 +164,7 @@ namespace IceCreamBE.Controllers
                 var jti = tokenInVerification.Claims.FirstOrDefault(x => x.Type == "ID").Value;
                 if (storedToken.userId != int.Parse(jti))
                 {
-                    return Ok(new Response<TokenOutDTO>
+                    return BadRequest(new Response<TokenOutDTO>
                     {
                         Succeeded = false,
                         Message = "Token doesn't match"
@@ -210,7 +210,7 @@ namespace IceCreamBE.Controllers
                 {
                     Succeeded = true,
                     Message = "Renew token success",
-                    Token = new TokenOutDTO { Token = token },
+                    Token = new TokenOutDTO { Token = token, Refresh_Token = refreshToken },
                 });
             }
             catch (Exception ex)

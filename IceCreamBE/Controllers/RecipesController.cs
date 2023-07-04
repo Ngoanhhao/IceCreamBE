@@ -14,6 +14,7 @@ using IceCreamBE.Migrations;
 using IceCreamBE.Repository;
 using Microsoft.AspNetCore.Http.HttpResults;
 using System.Security.Policy;
+using Microsoft.AspNetCore.Authorization;
 
 namespace IceCreamBE.Controllers
 {
@@ -34,6 +35,7 @@ namespace IceCreamBE.Controllers
 
         // GET: api/Recipes
         [HttpGet]
+        [Authorize]
         public async Task<ActionResult<IEnumerable<RecipeOutDTO>>> GetRecipe([FromQuery] PaginationFilter<RecipeOutDTO>? filter)
         {
             var recipe = (await _IRepositoryRecipe.GetAllAsync());
@@ -72,6 +74,7 @@ namespace IceCreamBE.Controllers
 
         // GET: api/Recipes/5
         [HttpGet("{id:int}")]
+        [Authorize]
         public async Task<ActionResult<RecipeOutDTO>> GetRecipe(int id)
         {
             var result = await _IRepositoryRecipe.GetAsync(e => e.Id == id);
@@ -100,6 +103,7 @@ namespace IceCreamBE.Controllers
 
         // GET: api/Recipes/product_name
         [HttpGet("/api/search/recipes")]
+        [Authorize(Roles = "Admin")]
         public async Task<ActionResult<RecipeOutDTO>> SearchRecipe([FromQuery] PaginationFilter<RecipeOutDTO>? filter, [FromQuery] string? query)
         {
             var recipe = (await _IRepositoryRecipe.GetAllAsync());
@@ -148,6 +152,7 @@ namespace IceCreamBE.Controllers
         // PUT: api/Recipes/5
         // To protect from overposting attacks, see https://go.microsoft.com/fwlink/?linkid=2123754
         [HttpPut("{id}")]
+        [Authorize(Roles = "Admin")]
         public async Task<IActionResult> PutRecipe(int id, RecipeInDTO recipe)
         {
             if (id != recipe.Id)
@@ -174,6 +179,7 @@ namespace IceCreamBE.Controllers
         // POST: api/Recipes
         // To protect from overposting attacks, see https://go.microsoft.com/fwlink/?linkid=2123754
         [HttpPost]
+        [Authorize(Roles = "Admin")]
         public async Task<ActionResult<RecipeOutDTO>> PostRecipe(RecipeInDTO recipe)
         {
             if (!ModelState.IsValid)
@@ -207,6 +213,7 @@ namespace IceCreamBE.Controllers
 
         // DELETE: api/Recipes/5
         [HttpDelete("{id}")]
+        [Authorize(Roles = "Admin")]
         public async Task<IActionResult> DeleteRecipe(int id)
         {
             var result = await _IRepositoryRecipe.GetAsync(e => e.Id == id);

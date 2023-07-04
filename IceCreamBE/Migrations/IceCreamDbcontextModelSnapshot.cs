@@ -72,10 +72,10 @@ namespace IceCreamBE.Migrations
                         {
                             Id = 1,
                             Address = "Hội An",
-                            CreateDate = new DateTime(2023, 6, 25, 16, 20, 25, 923, DateTimeKind.Local).AddTicks(8740),
+                            CreateDate = new DateTime(2023, 7, 2, 17, 11, 14, 846, DateTimeKind.Local).AddTicks(690),
                             Email = "ngoanhhao24@gmail.com",
-                            ExpirationDate = new DateTime(2023, 7, 5, 16, 20, 25, 923, DateTimeKind.Local).AddTicks(8753),
-                            ExtensionDate = new DateTime(2023, 6, 25, 16, 20, 25, 923, DateTimeKind.Local).AddTicks(8779),
+                            ExpirationDate = new DateTime(2023, 7, 12, 17, 11, 14, 846, DateTimeKind.Local).AddTicks(702),
+                            ExtensionDate = new DateTime(2023, 7, 2, 17, 11, 14, 846, DateTimeKind.Local).AddTicks(723),
                             FullName = "Ngô Anh Hào",
                             PhoneNumber = "1234567890",
                             ProtectID = new Guid("00000000-0000-0000-0000-000000000000"),
@@ -124,6 +124,9 @@ namespace IceCreamBE.Migrations
                     b.Property<int>("AccountID")
                         .HasColumnType("int");
 
+                    b.Property<int>("Discount")
+                        .HasColumnType("int");
+
                     b.Property<DateTime>("OrderTime")
                         .HasColumnType("datetime2");
 
@@ -153,7 +156,8 @@ namespace IceCreamBE.Migrations
                         {
                             Id = 1,
                             AccountID = 1,
-                            OrderTime = new DateTime(2023, 6, 25, 16, 20, 25, 923, DateTimeKind.Local).AddTicks(8861),
+                            Discount = 0,
+                            OrderTime = new DateTime(2023, 7, 2, 17, 11, 14, 846, DateTimeKind.Local).AddTicks(796),
                             Status = "DONE",
                             SubTotal = 30000.0,
                             Total = 30000.0
@@ -236,11 +240,16 @@ namespace IceCreamBE.Migrations
 
                     SqlServerPropertyBuilderExtensions.UseIdentityColumn(b.Property<int>("Id"));
 
-                    b.Property<string>("FeedBackProduct")
+                    b.Property<string>("Email")
                         .IsRequired()
                         .HasColumnType("nvarchar(max)");
 
                     b.Property<string>("FullName")
+                        .IsRequired()
+                        .HasColumnType("nvarchar(max)");
+
+                    b.Property<string>("Message")
+                        .IsRequired()
                         .HasColumnType("nvarchar(max)");
 
                     b.Property<DateTime>("ReleaseDate")

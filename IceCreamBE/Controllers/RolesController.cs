@@ -12,6 +12,7 @@ using IceCreamBE.DTO;
 using IceCreamBE.DTO.PageList;
 using Microsoft.AspNetCore.Http.HttpResults;
 using System.Data;
+using Microsoft.AspNetCore.Authorization;
 
 namespace IceCreamBE.Controllers
 {
@@ -28,6 +29,7 @@ namespace IceCreamBE.Controllers
 
         // GET: api/Roles
         [HttpGet]
+        [Authorize(Roles = "Admin")]
         public async Task<ActionResult> GetRoles([FromQuery] PaginationFilter<RolesDTO>? filter)
         {
             var roles = await _repository.GetAllAsync();
@@ -55,6 +57,7 @@ namespace IceCreamBE.Controllers
 
         // GET: api/Roles/5
         [HttpGet("{id}")]
+        [Authorize(Roles = "Admin")]
         public async Task<ActionResult> GetRoles(int id)
         {
             var item = await _repository.GetAsync(e => e.Id == id);
@@ -72,6 +75,7 @@ namespace IceCreamBE.Controllers
         // PUT: api/Roles/5
         // To protect from overposting attacks, see https://go.microsoft.com/fwlink/?linkid=2123754
         [HttpPut("{id}")]
+        [Authorize(Roles = "Admin")]
         public async Task<IActionResult> PutRoles(int id, RolesDTO roles)
         {
             if (id != roles.Id)
@@ -95,6 +99,7 @@ namespace IceCreamBE.Controllers
         // POST: api/Roles
         // To protect from overposting attacks, see https://go.microsoft.com/fwlink/?linkid=2123754
         [HttpPost]
+        [Authorize(Roles = "Admin")]
         public async Task<ActionResult> PostRoles(RolesDTO roles)
         {
             if (!ModelState.IsValid)
@@ -112,6 +117,7 @@ namespace IceCreamBE.Controllers
 
         // DELETE: api/Roles/5
         [HttpDelete("{id}")]
+        [Authorize(Roles = "Admin")]
         public async Task<IActionResult> DeleteRoles(int id)
         {
             var item = await _repository.GetAsync(e => e.Id == id);

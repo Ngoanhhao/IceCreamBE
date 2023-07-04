@@ -14,6 +14,7 @@ using IceCreamBE.DTO.PageList;
 using Microsoft.AspNetCore.Mvc.Filters;
 using IceCreamBE.Repository;
 using System.Diagnostics.Eventing.Reader;
+using Microsoft.AspNetCore.Authorization;
 
 namespace IceCreamBE.Controllers
 {
@@ -36,6 +37,7 @@ namespace IceCreamBE.Controllers
 
         // GET: api/Accounts
         [HttpGet]
+        [Authorize(Roles = "Admin")]
         public async Task<ActionResult> GetAccounts([FromQuery] PaginationFilter<AccountDetailDTO>? filter)
         {
             string url = $"{Request.Scheme}://{Request.Host}/api/image/";
@@ -86,6 +88,7 @@ namespace IceCreamBE.Controllers
 
         // GET: api/Accounts/5
         [HttpGet("{id:int}")]
+        [Authorize(Roles = "Admin")]
         public async Task<ActionResult<AccountDetailOutDTO>> GetAccount(string id)
         {
             var result = await _IRepositoryAccountDetail.GetAsync(e => e.Id == int.Parse(id));
@@ -122,7 +125,46 @@ namespace IceCreamBE.Controllers
             });
         }
 
+        // GET: api/Accounts/5
+        [HttpGet("/api/FoundAccount")]
+        public async Task<ActionResult<AccountDetailOutDTO>> GetAccounts(string email)
+        {
+            var result = await _IRepositoryAccountDetail.GetAsync(e => e.Email.ToLower() == email.ToLower());
+            if (result != null)
+            {
+                string url = $"{Request.Scheme}://{Request.Host}/api/image/";
+                var account = await _IRepositoryAccounts.GetAsync(e => e.Id == result.Id);
+                var roles = await _IRepositoryRoles.GetAsync(e => e.Id == result.RoleID);
+                return Ok(
+                    new Response<AccountDetailOutDTO>
+                    {
+                        Succeeded = true,
+                        Data = new AccountDetailOutDTO
+                        {
+                            Id = result.Id,
+                            Avatar = _IRepositoryFileService.CheckImage(result.Avatar, "Images") ? url + result.Avatar : null,
+                            Email = result.Email,
+                            Expiration_date = result.ExpirationDate,
+                            Extension_date = result.ExtensionDate,
+                            Full_name = result.FullName,
+                            UserName = account.Username,
+                            Phone_number = result.PhoneNumber,
+                            Address = result.Address,
+                            Role = roles.Role,
+                            Create_date = result.CreateDate
+                        }
+                    }
+                    );
+            }
+            return BadRequest(new Response<AccountDetailDTO>
+            {
+                Succeeded = false,
+                Message = "not found"
+            });
+        }
+
         [HttpGet("/api/getme/{protectID}")]
+        [Authorize]
         public async Task<ActionResult<AccountDetailDTO>> GetAccountss(Guid protectID)
         {
             var detail = await _IRepositoryAccountDetail.GetAsync(e => e.ProtectID == protectID);
@@ -132,6 +174,14 @@ namespace IceCreamBE.Controllers
                 var user = await _IRepositoryAccounts.GetAsync(e => e.Id == detail.Id);
                 var roles = await _IRepositoryRoles.GetAsync(e => e.Id == detail.RoleID);
                 string url = $"{Request.Scheme}://{Request.Host}/api/image/";
+
+
+                // check & update role
+                if (detail.ExpirationDate < DateTime.Now)
+                {
+                    await _IRepositoryAccountDetail.UpdateRole(user.Id, 3);
+                }
+
                 return Ok(new Response<AccountDetailOutDTO>
                 {
                     Data = new AccountDetailOutDTO
@@ -152,6 +202,7 @@ namespace IceCreamBE.Controllers
                     Succeeded = true
                 });
             }
+
             return BadRequest(new Response<AccountDetailDTO>
             {
                 Succeeded = false,
@@ -161,6 +212,7 @@ namespace IceCreamBE.Controllers
 
         //GET: api/Accounts/query
         [HttpGet("/api/search/user")]
+        [Authorize(Roles = "Admin")]
         public async Task<ActionResult<List<AccountDetailDTO>>> GetAccounts(string? query, [FromQuery] PaginationFilter<BrandsDTO>? filter)
         {
             var value = new List<AccountDetailDTO>();
@@ -209,6 +261,7 @@ namespace IceCreamBE.Controllers
         // PUT: api/Accounts/5
         // To protect from overposting attacks, see https://go.microsoft.com/fwlink/?linkid=2123754
         [HttpPut("{id}")]
+        [Authorize(Roles = "Admin")]
         public async Task<IActionResult> PutAccounts(int id, AccountDetailDTO accounts)
         {
             if (id != accounts.Id)

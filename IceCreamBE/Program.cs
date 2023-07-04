@@ -47,6 +47,7 @@ namespace IceCreamBE
                     ValidateIssuer = false,
                     ValidateAudience = false,
                     ValidateLifetime = true, //kiểm tra hạn token
+                    ClockSkew = TimeSpan.Zero,
                     //ký vào token
                     ValidateIssuerSigningKey = true,
                     IssuerSigningKey = new SymmetricSecurityKey(Encoding.UTF8.GetBytes(builder.Configuration["Authentication:key"])),

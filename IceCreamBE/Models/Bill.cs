@@ -7,6 +7,7 @@
         public Accounts Account { get; set; }
         public virtual ICollection<BillDetail> BillDetail { get; set; }
         public double SubTotal { get; set; }
+        public int? Discount { get; set; }
         public double Total { get; set; }
         public string Status { get; set; }
         public DateTime OrderTime { get; set; }

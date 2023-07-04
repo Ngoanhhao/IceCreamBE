@@ -7,5 +7,6 @@ namespace IceCreamBE.Repository.Irepository
     {
         Task UpdateAsync(AccountDetailDTO entity);
         Task UpdatePremium(int userID, int month);
+        Task UpdateRole(int userID, int roleID);
     }
 }
